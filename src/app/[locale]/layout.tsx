@@ -1,10 +1,12 @@
 import type {Metadata} from 'next';
+import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {locales, isLocale, type Locale} from '@/i18n/routing';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
 import '../globals.css';
 
@@ -36,6 +38,9 @@ export default async function LocaleLayout({
           <Header locale={locale as Locale} />
           {children}
           <Footer locale={locale as Locale} />
+          <Suspense fallback={null}>
+            <AnalyticsTracker />
+          </Suspense>
           <WhatsAppFloatingButton />
         </NextIntlClientProvider>
       </body>

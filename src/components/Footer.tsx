@@ -1,6 +1,7 @@
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
+import PaymentBadges from './PaymentBadges';
 import SocialLinks from './SocialLinks';
 
 export default async function Footer({locale}: {locale: Locale}) {
@@ -40,6 +41,7 @@ export default async function Footer({locale}: {locale: Locale}) {
           {common('whatsapp')}
         </a>
         <span>{common('address')}</span>
+        <PaymentBadges />
         <SocialLinks />
       </div>
       <div className="footer-bottom">

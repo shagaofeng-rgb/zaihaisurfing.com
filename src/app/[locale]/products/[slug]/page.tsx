@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
+import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
 import {productSlugs, products, type ProductSlug} from '@/lib/site';
 
@@ -54,9 +55,15 @@ export default async function ProductDetailPage({
               </div>
             ))}
           </dl>
-          <a className="button primary" href={`/${locale}/contact`}>
-            {common('requestQuote')}
-          </a>
+          <div className="product-actions">
+            <Link className="button primary" href={`/checkout?product=${slug}&qty=1`}>
+              Buy Now
+            </Link>
+            <a className="button dark" href={`/${locale}/contact`}>
+              {common('requestQuote')}
+            </a>
+          </div>
+          <p className="secure-note">Secure payment: Visa, Mastercard, American Express, JCB, Discover, Diners Club, PayPal, T/T and Qianhai credit card gateway ready.</p>
         </aside>
       </section>
       <section className="section">

@@ -2,6 +2,7 @@ node_modules/
 .next/
 .vercel/
 .tools/
+.data/
 
 # Local build and preview artifacts
 *.log
