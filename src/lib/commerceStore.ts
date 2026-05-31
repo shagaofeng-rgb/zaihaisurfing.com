@@ -54,6 +54,11 @@ export type AnalyticsEvent = {
   payload: Record<string, unknown>;
 };
 
+export type CommerceSnapshotFilter = {
+  from?: Date;
+  to?: Date;
+};
+
 function safeJson<T>(line: string): T | null {
   try {
     return JSON.parse(line) as T;
@@ -134,18 +139,33 @@ export async function readAnalyticsEvents() {
   return events.length ? events : mockAnalytics();
 }
 
-export async function getCommerceSnapshot() {
+function isInsideRange(value: string, filter?: CommerceSnapshotFilter) {
+  if (!filter?.from && !filter?.to) return true;
+  const time = new Date(value).getTime();
+  if (Number.isNaN(time)) return false;
+  if (filter.from && time < filter.from.getTime()) return false;
+  if (filter.to && time > filter.to.getTime()) return false;
+  return true;
+}
+
+export async function getCommerceSnapshot(filter?: CommerceSnapshotFilter) {
   const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
-  const paidOrders = orders.filter((order) => order.status === 'paid' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered');
-  const pendingOrders = orders.filter((order) => order.status === 'pending_payment');
-  const shippedOrders = orders.filter((order) => order.status === 'shipped' || order.status === 'delivered');
+  const filteredOrders = orders.filter((order) => isInsideRange(order.createdAt, filter));
+  const filteredEvents = events.filter((event) => isInsideRange(event.timestamp, filter));
+  const paidOrders = filteredOrders.filter((order) => order.status === 'paid' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered');
+  const pendingOrders = filteredOrders.filter((order) => order.status === 'pending_payment');
+  const shippedOrders = filteredOrders.filter((order) => order.status === 'shipped' || order.status === 'delivered');
   const revenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
-  const checkoutEvents = events.filter((event) => event.type === 'checkout_start' || event.type === 'checkout_submit');
-  const countries = countBy([...orders.map((order) => order.customer.country), ...events.map((event) => event.country)]);
-  const productDemand = countBy(orders.map((order) => order.productName));
+  const checkoutEvents = filteredEvents.filter((event) => event.type === 'checkout_start' || event.type === 'checkout_submit');
+  const countries = countBy([...filteredOrders.map((order) => order.customer.country), ...filteredEvents.map((event) => event.country)]);
+  const productDemand = countBy(filteredOrders.map((order) => order.productName));
 
   return {
     generatedAt: new Date().toISOString(),
+    filter: {
+      from: filter?.from?.toISOString() || '',
+      to: filter?.to?.toISOString() || ''
+    },
     paymentGateway: {
       provider: 'Qianhai credit card gateway',
       status: process.env.QIANHAI_MERCHANT_ID ? 'env_ready' : 'waiting_for_credentials',
@@ -153,17 +173,17 @@ export async function getCommerceSnapshot() {
       notifyEndpoint: '/api/payments/qianhai/notify'
     },
     metrics: {
-      orders: orders.length,
+      orders: filteredOrders.length,
       pendingPayment: pendingOrders.length,
       shipped: shippedOrders.length,
       revenue,
-      visitors: new Set(events.map((event) => event.visitorId)).size,
+      visitors: new Set(filteredEvents.map((event) => event.visitorId)).size,
       checkoutEvents: checkoutEvents.length
     },
     countries,
     productDemand,
-    recentOrders: orders.slice(-12).reverse(),
-    recentEvents: events.slice(-18).reverse()
+    recentOrders: filteredOrders.slice(-12).reverse(),
+    recentEvents: filteredEvents.slice(-18).reverse()
   };
 }
 

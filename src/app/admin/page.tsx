@@ -1,15 +1,102 @@
 import {requireAdminSession} from '@/lib/adminAuth';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {getCommerceSnapshot} from '@/lib/commerceStore';
 
 export const dynamic = 'force-dynamic';
+
+const rangeLabels: Record<string, string> = {
+  day: 'Today',
+  week: 'This week',
+  month: 'This month',
+  year: 'This year',
+  custom: 'Custom range'
+};
 
 function money(value: number) {
   return `USD ${value.toLocaleString()}`;
 }
 
-export default async function AdminDashboardPage() {
+function dateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function endOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+}
+
+function startOfWeek(date: Date) {
+  const day = date.getDay() || 7;
+  const start = startOfDay(date);
+  start.setDate(start.getDate() - day + 1);
+  return start;
+}
+
+function parseDate(value: string | undefined, fallback: Date) {
+  if (!value) return fallback;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? fallback : date;
+}
+
+function parseAdminTimeFilter(searchParams: Record<string, string | string[] | undefined>) {
+  const now = new Date();
+  const rangeParam = Array.isArray(searchParams.range) ? searchParams.range[0] : searchParams.range;
+  const range = (['day', 'week', 'month', 'year', 'custom'].includes(rangeParam || '') ? rangeParam : 'month') as 'day' | 'week' | 'month' | 'year' | 'custom';
+  const earliestCustomStart = new Date(now);
+  earliestCustomStart.setFullYear(earliestCustomStart.getFullYear() - 2);
+
+  let from = new Date(now.getFullYear(), now.getMonth(), 1);
+  let to = endOfDay(now);
+  let start = dateInputValue(from);
+  let end = dateInputValue(now);
+  let note = '';
+
+  if (range === 'day') {
+    from = startOfDay(now);
+  } else if (range === 'week') {
+    from = startOfWeek(now);
+  } else if (range === 'year') {
+    from = new Date(now.getFullYear(), 0, 1);
+  } else if (range === 'custom') {
+    const startParam = Array.isArray(searchParams.start) ? searchParams.start[0] : searchParams.start;
+    const endParam = Array.isArray(searchParams.end) ? searchParams.end[0] : searchParams.end;
+    from = parseDate(startParam, earliestCustomStart);
+    to = endOfDay(parseDate(endParam, now));
+    if (from < earliestCustomStart) {
+      from = earliestCustomStart;
+      note = 'Custom query is limited to the latest 2 years.';
+    }
+    if (from > to) {
+      const previousFrom = from;
+      from = startOfDay(to);
+      to = endOfDay(previousFrom);
+    }
+  }
+
+  start = dateInputValue(from);
+  end = dateInputValue(to);
+
+  return {
+    range,
+    start,
+    end,
+    from,
+    to,
+    summary: `${rangeLabels[range]} · ${start} to ${end}${note ? ` · ${note}` : ''}`
+  };
+}
+
+export default async function AdminDashboardPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await requireAdminSession();
-  const snapshot = await getCommerceSnapshot();
+  const timeFilter = parseAdminTimeFilter(await searchParams);
+  const snapshot = await getCommerceSnapshot({from: timeFilter.from, to: timeFilter.to});
 
   return (
     <main className="admin-dashboard">
@@ -38,6 +125,7 @@ export default async function AdminDashboardPage() {
           <p className="eyebrow">B2B commerce dashboard</p>
           <h1>Orders, Logistics, Payments and Buyer Data</h1>
           <p>Dashboard framework adapted from the cowinmagnet data backend and prepared for ZAIHAI SURFING.</p>
+          <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="Dashboard time range" summary={timeFilter.summary} />
         </div>
 
         <div className="admin-metrics">
@@ -81,16 +169,18 @@ export default async function AdminDashboardPage() {
           <div>
             <p className="eyebrow">Order statistics</p>
             <h2>Recent Orders</h2>
+            <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="Order time filter" summary={timeFilter.summary} />
           </div>
           <div className="admin-table-wrap">
             <table>
               <thead>
-                <tr><th>Order</th><th>Product</th><th>Country</th><th>Total</th><th>Status</th><th>Payment</th></tr>
+                <tr><th>Order</th><th>Date</th><th>Product</th><th>Country</th><th>Total</th><th>Status</th><th>Payment</th></tr>
               </thead>
               <tbody>
                 {snapshot.recentOrders.map((order) => (
                   <tr key={order.id}>
                     <td>{order.id}</td>
+                    <td>{order.createdAt.slice(0, 10)}</td>
                     <td>{order.productName} x {order.quantity}</td>
                     <td>{order.customer.country}</td>
                     <td>{money(order.total)}</td>
@@ -107,6 +197,7 @@ export default async function AdminDashboardPage() {
           <div>
             <p className="eyebrow">Logistics statistics</p>
             <h2>Shipment Tracking</h2>
+            <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="Logistics time filter" summary={timeFilter.summary} />
           </div>
           <div className="admin-grid-list">
             {snapshot.recentOrders.map((order) => (
@@ -123,6 +214,7 @@ export default async function AdminDashboardPage() {
           <div>
             <p className="eyebrow">Buyer data capture</p>
             <h2>Countries and Product Demand</h2>
+            <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="Visitor data time filter" summary={timeFilter.summary} />
           </div>
           <div className="admin-two-col">
             <div className="admin-bar-list">
