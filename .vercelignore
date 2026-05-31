@@ -1,0 +1,45 @@
+node_modules/
+.next/
+.git/
+.tools/
+
+# Local previews, screenshots, and one-off static exports
+*.png
+*.zip
+*.html
+*.js.map
+after-*.png
+alt-tab-*.png
+click-*.png
+css-*.png
+focused-*.png
+home-click-*.png
+layout-*.png
+preview-*.png
+rush-wave-reference*.png
+settings-*.png
+shopline-*.png
+win4-*.png
+
+# Shopline and old static-site workspaces
+assets/
+exports/
+shopline-import/
+shopline-theme-work/
+
+# Local helper projects and documentation not needed at runtime
+docs/
+mail-api/
+news_monitor/
+requirements-news-monitor.txt
+start-news-monitor.ps1
+
+# Standalone integration snippets kept for reference
+api-inquiry-example.js
+GoogleMapCard.jsx
+InquiryForm.jsx
+LocalVerticalVideo.jsx
+social-links.js
+social-links.json
+ZAIHAI建站信息表分析与规划.md
+ZAIHAI独立站SEO-AIO-GEO规划.md

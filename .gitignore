@@ -31,3 +31,5 @@ node_modules/
 /catalog-page.js
 /script.js
 /styles.css
+
+.vercel
