@@ -728,15 +728,15 @@ html[dir="rtl"] .catalog-product-card dd {
   }
 
   .whatsapp-float {
-    right: calc(84px + env(safe-area-inset-right, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
     left: auto;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
   }
 
   .whatsapp-float svg {
-    width: 31px;
-    height: 31px;
+    width: 29px;
+    height: 29px;
   }
 }
