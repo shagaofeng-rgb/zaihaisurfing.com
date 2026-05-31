@@ -1,9 +1,15 @@
 import type {MetadataRoute} from 'next';
 import {locales, pathnames} from '@/i18n/routing';
+import {newsSlugs} from '@/lib/news';
 import {siteUrl, productSlugs} from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = [...pathnames, '/checkout', ...productSlugs.map((slug) => `/products/${slug}`)];
+  const staticPaths = [
+    ...pathnames,
+    '/checkout',
+    ...productSlugs.map((slug) => `/products/${slug}`),
+    ...newsSlugs.map((slug) => `/blog/${slug}`)
+  ];
 
   return staticPaths.flatMap((path) =>
     locales.map((locale) => ({

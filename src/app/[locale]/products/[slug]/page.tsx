@@ -3,6 +3,8 @@ import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
+import RelatedProducts from '@/components/RelatedProducts';
+import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
 import {productSlugs, products, type ProductSlug} from '@/lib/site';
 
@@ -32,6 +34,7 @@ export default async function ProductDetailPage({
   if (!productSlugs.includes(slug as ProductSlug)) notFound();
   setRequestLocale(locale);
   const product = products[slug as ProductSlug];
+  const productSlug = slug as ProductSlug;
   const names = await getTranslations({locale, namespace: 'productNames'});
   const alt = await getTranslations({locale, namespace: 'alt'});
   const t = await getTranslations({locale, namespace: 'products'});
@@ -41,11 +44,11 @@ export default async function ProductDetailPage({
     <main>
       <section className="product-hero">
         <div className="product-gallery">
-          <img className="main-product-image" src={product.image} alt={alt(slug as ProductSlug)} />
+          <img className="main-product-image" src={product.image} alt={alt(productSlug)} />
         </div>
         <aside className="product-summary">
           <p className="eyebrow">{product.category}</p>
-          <h1>{names(slug as ProductSlug)}</h1>
+          <h1>{names(productSlug)}</h1>
           <p>{t('intro')}</p>
           <dl className="quick-specs">
             {product.specs.map((spec, index) => (
@@ -64,6 +67,7 @@ export default async function ProductDetailPage({
             </a>
           </div>
           <p className="secure-note">Secure payment: Visa, Mastercard, American Express, JCB, Discover, Diners Club, PayPal, T/T and Qianhai credit card gateway ready.</p>
+          <ShareButtons title={product.name} />
         </aside>
       </section>
       <section className="section">
@@ -73,6 +77,7 @@ export default async function ProductDetailPage({
           <p>{common('footer')}</p>
         </div>
       </section>
+      <RelatedProducts currentSlug={productSlug} />
     </main>
   );
 }
