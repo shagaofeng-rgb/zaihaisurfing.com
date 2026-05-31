@@ -1,0 +1,123 @@
+{
+  "language": {
+    "label": "Language",
+    "current": "English"
+  },
+  "nav": {
+    "products": "Products",
+    "applications": "Applications",
+    "about": "About Us",
+    "factory": "Factory",
+    "projects": "Projects",
+    "blog": "Blog",
+    "contact": "Contact",
+    "quote": "Get a Quote"
+  },
+  "common": {
+    "brand": "ZAIHAI SURFING",
+    "eyebrow": "Premium water sports equipment supplier",
+    "viewDetails": "View Details",
+    "sendInquiry": "Send Inquiry",
+    "requestQuote": "Request a Quote",
+    "whatsapp": "WhatsApp: +86 17621485205",
+    "email": "Email: davidsha@zaihaisurfing.com",
+    "address": "Quzhou, Zhejiang, China",
+    "footer": "Premium water sports equipment for distributors, resorts, rentals and water parks."
+  },
+  "seo": {
+    "homeTitle": "ZAIHAI SURFING | Water Sports Equipment for Resorts & Distributors",
+    "homeDescription": "High-performance electric surfboards, electric water karts and fuel-powered surfboards for resorts, rentals, water parks, yacht clubs and distributors.",
+    "productsTitle": "Products | ZAIHAI SURFING",
+    "productsDescription": "Explore ZAIHAI electric surfboards, electric water karts and fuel-powered surfboards for overseas B2B buyers.",
+    "applicationsTitle": "Applications | ZAIHAI SURFING",
+    "applicationsDescription": "Water sports equipment solutions for resorts, rentals, water parks, yacht clubs and distributors.",
+    "aboutTitle": "About Us | ZAIHAI SURFING",
+    "aboutDescription": "Learn about ZAIHAI SURFING, a premium water sports equipment supplier from Quzhou, China.",
+    "factoryTitle": "Factory & Quality | ZAIHAI SURFING",
+    "factoryDescription": "OEM/ODM, quality support, packaging and export documentation for water sports equipment buyers.",
+    "projectsTitle": "Projects | ZAIHAI SURFING",
+    "projectsDescription": "Project and application examples for resorts, rentals, water parks and distributor cooperation.",
+    "blogTitle": "Blog | ZAIHAI SURFING",
+    "blogDescription": "Buying guides and insights for electric surfboards, water karts and water sports rental projects.",
+    "contactTitle": "Contact | ZAIHAI SURFING",
+    "contactDescription": "Contact ZAIHAI SURFING in Quzhou, China for product quotation, OEM/ODM and distributor cooperation."
+  },
+  "home": {
+    "h1": "High-Performance Water Sports Equipment for Resorts, Rentals and Distributors",
+    "intro": "ZAIHAI SURFING supplies electric surfboards, electric water karts and fuel-powered surfboards for overseas buyers who need premium, fast and commercially attractive water experiences.",
+    "primaryCta": "Get Project Quote",
+    "secondaryCta": "View Products",
+    "stats": {
+      "lines": "Electric · Water Kart · Fuel",
+      "buyers": "Distributors · Resorts · Rentals",
+      "markets": "GCC · USA · Europe · Island Resorts"
+    },
+    "marketsTitle": "Built for High-Demand Resort and Water Sports Markets",
+    "marketsText": "ZAIHAI products are designed for coastal tourism, lake rentals, yacht clubs, island resorts and distributors serving premium water entertainment buyers.",
+    "productsTitle": "Core Product Lines",
+    "productsText": "Choose from electric surfboards, electric water karts and fuel-powered surfboards for different riding styles, project types and distribution channels.",
+    "applicationsTitle": "Solutions for Commercial Water Entertainment",
+    "applicationsText": "From resort experiences to water park attractions, ZAIHAI helps buyers choose the right product package.",
+    "oemTitle": "OEM/ODM, Export Support and Project Supply",
+    "oemText": "We support project-based product selection, custom branding, packaging, export documentation and distributor cooperation."
+  },
+  "products": {
+    "h1": "Explore ZAIHAI Water Sports Equipment",
+    "intro": "Choose from electric surfboards, electric water karts and fuel-powered surfboards for resorts, rentals, water parks and distributors.",
+    "categoryTitle": "Product Categories",
+    "allModels": "Available Models",
+    "specs": "Specifications",
+    "gallery": "Product Gallery",
+    "bestFor": "Best For",
+    "shipping": "Shipping, Packaging and Documentation"
+  },
+  "applications": {
+    "h1": "Water Entertainment Solutions for Commercial Buyers",
+    "intro": "ZAIHAI helps resorts, rentals, water parks, yacht clubs and distributors choose products for real operating scenarios.",
+    "resorts": "Resorts & Hotels",
+    "rentals": "Rental Businesses",
+    "parks": "Water Parks",
+    "yachts": "Yacht Clubs",
+    "distributors": "Distributors"
+  },
+  "about": {
+    "h1": "About ZAIHAI SURFING",
+    "intro": "ZAIHAI SURFING is a premium water sports brand and OEM/ODM solution provider focused on electric surfboards, electric water karts and fuel-powered surfboards.",
+    "positioning": "We serve distributors, resorts, rental operators, water parks, tourism projects and premium riders worldwide."
+  },
+  "factory": {
+    "h1": "Factory, Quality and Export Support",
+    "intro": "ZAIHAI supports product customization, quality inspection, packaging and export documentation according to project requirements.",
+    "items": "OEM/ODM customization, battery safety support, waterproof testing support, wooden crate packing and global delivery support."
+  },
+  "projects": {
+    "h1": "Projects and Use Cases",
+    "intro": "Explore how electric surfboards, water karts and fuel-powered surfboards can support resorts, rentals, water parks and distributor projects."
+  },
+  "blog": {
+    "h1": "Water Sports Buying Guides",
+    "intro": "Insights for overseas buyers choosing electric surfboards, water karts, fuel-powered boards and rental project equipment."
+  },
+  "contact": {
+    "h1": "Contact ZAIHAI SURFING",
+    "intro": "Contact our sales team for quotation, product videos, OEM/ODM customization, shipping support and distributor cooperation.",
+    "mapTitle": "Quzhou, Zhejiang, China",
+    "viewMap": "View on Google Maps"
+  },
+  "productNames": {
+    "x1": "ZAIHAI X1 Electric Surfboard",
+    "x1-pro": "ZAIHAI X1 Pro Electric Surfboard",
+    "rage-shark-x": "Rage Shark X Electric Kart Boat",
+    "p1": "ZAIHAI P1 Fuel-Powered Surfboard",
+    "p1-pro": "ZAIHAI P1 Pro Fuel-Powered Surfboard"
+  },
+  "alt": {
+    "hero": "ZAIHAI electric surfboard rider on lake water",
+    "logo": "ZAIHAI SURFING logo",
+    "x1": "ZAIHAI X1 electric surfboard product image",
+    "x1-pro": "ZAIHAI X1 Pro electric surfboard product image",
+    "rage-shark-x": "Rage Shark X electric kart boat product image",
+    "p1": "ZAIHAI P1 fuel-powered surfboard product image",
+    "p1-pro": "ZAIHAI P1 Pro fuel-powered surfboard product image"
+  }
+}

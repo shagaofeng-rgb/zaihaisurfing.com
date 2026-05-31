@@ -1,0 +1,33 @@
+node_modules/
+.next/
+.vercel/
+.tools/
+
+# Local build and preview artifacts
+*.log
+/.env
+/.env.local
+/.env.*.local
+/*.png
+/shopline-*/
+/shopline-theme-work/
+/shopline-import/
+/exports/
+/assets/
+
+# Temporary local static previews from the design phase
+/index.html
+/products.html
+/product.html
+/category.html
+/contact.html
+/inquiry.html
+/markets.html
+/solutions.html
+/oem-odm.html
+/news.html
+/privacy-policy.html
+/catalog-data.js
+/catalog-page.js
+/script.js
+/styles.css

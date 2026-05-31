@@ -1,0 +1,16 @@
+{
+  "name": "zaihai-inquiry-mail-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SMTP email API for ZAIHAI Shopline inquiry forms.",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}
