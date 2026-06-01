@@ -1441,54 +1441,61 @@ a {
 .payment-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 .payment-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 26px;
-  min-width: 54px;
-  padding: 4px 10px;
-  color: var(--white);
-  background: #253145;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 5px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-  font-family: var(--font-tech);
-  font-size: 10px;
+  width: 48px;
+  height: 30px;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.payment-badge svg {
+  width: 44px;
+  height: 25px;
+  display: block;
+}
+
+.payment-wordmark {
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: 900;
-  text-transform: uppercase;
+  dominant-baseline: middle;
 }
 
-.payment-visa {
-  background: linear-gradient(135deg, #1434cb, #1a4fff);
+.payment-visa-text {
+  fill: #1434cb;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  font-style: italic;
 }
 
-.payment-mastercard {
-  background: linear-gradient(135deg, #eb001b, #f79e1b);
+.payment-white-text {
+  fill: #ffffff;
+  font-size: 8px;
+  letter-spacing: 0.2px;
 }
 
-.payment-amex {
-  background: linear-gradient(135deg, #006fcf, #00a8d8);
+.payment-small-text {
+  font-size: 8px;
 }
 
-.payment-jcb {
-  background: linear-gradient(135deg, #0b8f43, #0d54a6 50%, #d20a2e);
+.payment-discover-text {
+  fill: #1f2937;
+  font-size: 7px;
+  letter-spacing: 0;
 }
 
-.payment-discover {
-  color: #111318;
-  background: linear-gradient(135deg, #f7f7f7, #f58220);
-}
-
-.payment-diners {
-  background: linear-gradient(135deg, #0079be, #005a8b);
-}
-
-.payment-paypal {
-  background: linear-gradient(135deg, #003087, #009cde);
+.payment-paypal-text {
+  fill: #003087;
+  font-size: 12px;
+  letter-spacing: 0;
 }
 
 .product-actions {
@@ -1584,10 +1591,6 @@ a {
   border-radius: 8px;
   font: inherit;
   font-weight: 900;
-}
-
-.product-summary .payment-badges {
-  margin-top: 14px;
 }
 
 .secure-note {

@@ -2,7 +2,6 @@
 
 import {useMemo, useState} from 'react';
 import type {ProductSlug} from '@/lib/site';
-import PaymentBadges from './PaymentBadges';
 
 type CheckoutFormProps = {
   locale: string;
@@ -166,7 +165,6 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         <section className="checkout-block">
           <h2>Payment</h2>
           <p className="checkout-help">Card fields are prepared for Qianhai gateway tokenization. Full card numbers and CVV should be handled by the payment gateway, not stored by this site.</p>
-          <PaymentBadges />
           <label className="checkout-method">
             <input name="paymentMethod" type="radio" value="qianhai_card" defaultChecked />
             <span>

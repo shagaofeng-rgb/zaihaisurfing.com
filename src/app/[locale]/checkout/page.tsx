@@ -2,7 +2,6 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import CheckoutForm from '@/components/CheckoutForm';
-import PaymentBadges from '@/components/PaymentBadges';
 import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
 import {productSlugs, products, type ProductSlug} from '@/lib/site';
@@ -39,7 +38,6 @@ export default async function CheckoutPage({
             Submit buyer, shipping and payment details. Credit card processing is reserved for the Qianhai gateway,
             while T/T and PayPal can be confirmed manually by the sales team.
           </p>
-          <PaymentBadges />
         </div>
       </section>
       <section className="checkout-section">

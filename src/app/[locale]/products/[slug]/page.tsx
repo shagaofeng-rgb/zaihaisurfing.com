@@ -3,7 +3,6 @@ import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
-import PaymentBadges from '@/components/PaymentBadges';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
@@ -97,7 +96,6 @@ export default async function ProductDetailPage({
               {common('requestQuote')}
             </a>
           </form>
-          <PaymentBadges />
           <p className="secure-note">Secure payment: Visa, Mastercard, American Express, JCB, Discover, Diners Club, PayPal, T/T and Qianhai credit card gateway ready.</p>
           <ShareButtons title={product.name} />
         </aside>
