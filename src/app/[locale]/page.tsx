@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import ProductGrid from '@/components/ProductGrid';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
+import {uiCopy} from '@/lib/uiCopy';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
@@ -17,46 +18,44 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
   setRequestLocale(locale);
   const t = await getTranslations({locale, namespace: 'home'});
   const common = await getTranslations({locale, namespace: 'common'});
+  const copy = uiCopy[locale];
 
   return (
     <main>
-      <Hero eyebrow={common('eyebrow')} title={t('h1')} intro={t('intro')} primary={t('primaryCta')} secondary={t('secondaryCta')} />
+      <Hero locale={locale} />
       <section className="collection-section" aria-labelledby="collection-title">
         <div className="section-heading compact">
-          <p className="eyebrow">Collection list</p>
-          <h2 id="collection-title">Choose the Right Water Sports Product Line</h2>
-          <p>Fast product entry for distributors, resort buyers, rental operators and water park project teams.</p>
+          <p className="eyebrow">{copy.homeSections.collectionEyebrow}</p>
+          <h2 id="collection-title">{copy.homeSections.collectionTitle}</h2>
+          <p>{copy.homeSections.collectionText}</p>
         </div>
         <div className="collection-grid">
           <Link className="collection-card" href="/products">
-            <span>Electric Surfboards</span>
+            <span>{copy.mega.electricSurfboards}</span>
             <img src="/assets/catalog/x1-pro/product.png" alt="ZAIHAI electric surfboard collection" />
           </Link>
           <Link className="collection-card" href="/products/rage-shark-x">
-            <span>Water Kart Boats</span>
+            <span>{copy.mega.electricWaterKarts}</span>
             <img src="/assets/catalog/rage-shark-x/main-boat.png" alt="Rage Shark X electric water kart collection" />
           </Link>
           <Link className="collection-card" href="/products/p1-pro">
-            <span>Fuel-Powered Surfboards</span>
+            <span>{copy.mega.fuelSurfboards}</span>
             <img src="/assets/catalog/p1-pro/main.png" alt="ZAIHAI fuel-powered surfboard collection" />
           </Link>
           <Link className="collection-card" href="/factory">
-            <span>OEM / Distributor Supply</span>
+            <span>{copy.mega.oem}</span>
             <img src="/assets/catalog/x1-pro/parts.png" alt="ZAIHAI OEM and distributor product package" />
           </Link>
         </div>
       </section>
 
-      <section className="video-showcase" aria-labelledby="video-showcase-title">
+      <section className="video-showcase" id="riding-video" aria-labelledby="video-showcase-title">
         <div className="video-copy">
-          <p className="eyebrow">Real riding footage</p>
-          <h2 id="video-showcase-title">See ZAIHAI Surfboards on the Water</h2>
-          <p>
-            Watch the actual riding scene and understand how the product looks in open-water entertainment,
-            resort demos and rental experiences.
-          </p>
+          <p className="eyebrow">{copy.homeSections.videoEyebrow}</p>
+          <h2 id="video-showcase-title">{copy.homeSections.videoTitle}</h2>
+          <p>{copy.homeSections.videoText}</p>
           <Link className="button dark" href="/products">
-            Explore Products
+            {copy.homeSections.explore}
           </Link>
         </div>
         <div className="vertical-video-card">
@@ -69,14 +68,11 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
       </section>
 
       <section className="brand-manifest" aria-labelledby="manifest-title">
-        <p className="eyebrow">Commercial water sports, built to be seen</p>
+        <p className="eyebrow">{copy.homeSections.manifestEyebrow}</p>
         <h2 id="manifest-title">FEEL THE WATER</h2>
-        <p>
-          Premium product visuals, clear specifications and practical export support help overseas buyers evaluate
-          ZAIHAI products before the first shipment.
-        </p>
+        <p>{copy.homeSections.manifestText}</p>
         <Link className="button primary" href="/products">
-          Explore the Collection
+          {copy.homeSections.explore}
         </Link>
       </section>
 
@@ -127,17 +123,12 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
       </section>
       <section className="section">
         <div className="section-heading">
-          <p className="eyebrow">OEM/ODM</p>
+          <p className="eyebrow">{copy.mega.oem}</p>
           <h2>{t('oemTitle')}</h2>
           <p>{t('oemText')}</p>
         </div>
         <div className="trust-grid">
-          {[
-            ['OEM/ODM Customization', 'Custom colors, logo branding, packaging, configuration and project-based water sports solutions.'],
-            ['Export Documentation', 'Battery safety, waterproof testing and quality inspection support can be prepared according to project requirements.'],
-            ['Global Delivery Support', 'Packing size, wooden crate, lithium battery documents, MSDS and shipping guidance are available for order planning.'],
-            ['Model Recommendation', 'Our team recommends suitable models based on country, use case, quantity and product line.']
-          ].map(([title, text]) => (
+          {copy.homeSections.trust.map(({title, text}) => (
             <article className="info-card" key={title}>
               <h3>{title}</h3>
               <p>{text}</p>

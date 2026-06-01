@@ -7,6 +7,7 @@ import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
 import {productSlugs, products, type ProductSlug} from '@/lib/site';
+import {uiCopy} from '@/lib/uiCopy';
 
 const productGalleries: Record<ProductSlug, string[]> = {
   x1: ['/assets/catalog/x1/main.png', '/assets/catalog/x1/product.png', '/assets/catalog/x1/parameters.png', '/assets/catalog/x1/parts.png'],
@@ -94,6 +95,7 @@ export default async function ProductDetailPage({
   const alt = await getTranslations({locale, namespace: 'alt'});
   const t = await getTranslations({locale, namespace: 'products'});
   const common = await getTranslations({locale, namespace: 'common'});
+  const copy = uiCopy[locale].productDetail;
 
   return (
     <main>
@@ -112,7 +114,11 @@ export default async function ProductDetailPage({
           <div className="product-price-row">
             <strong>{product.price}</strong>
             <span>USD {compareAt.toLocaleString()}</span>
-            <em>Factory direct</em>
+            <em>{copy.priceBadge}</em>
+          </div>
+          <div className="buyer-rating" aria-label={copy.buyerRecommended}>
+            <span>★★★★★</span>
+            <strong>{copy.buyerRecommended}</strong>
           </div>
           <div className="product-buyer-badges">
             {content.badges.map((badge) => <span key={badge}>{badge}</span>)}
@@ -129,41 +135,47 @@ export default async function ProductDetailPage({
           <form className="product-buy-form" action={`/${locale}/checkout`} method="get">
             <input type="hidden" name="product" value={slug} />
             <label>
-              Qty
+              {copy.qty}
               <input type="number" name="qty" min="1" max="99" defaultValue="1" />
             </label>
             <button className="button primary" type="submit">
-              Buy Now
+              {copy.buyNow}
             </button>
             <a className="button dark" href={`/${locale}/contact`}>
-              {common('requestQuote')}
+              {copy.requestQuote}
+            </a>
+            <a className="button ghost light" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+              {copy.whatsapp}
+            </a>
+            <a className="button ghost light" href={`/${locale}/contact`}>
+              {copy.download}
             </a>
           </form>
-          <p className="secure-note">Secure payment: Visa, Mastercard, American Express, JCB, Discover, Diners Club, PayPal, T/T and Qianhai credit card gateway ready.</p>
+          <p className="secure-note">{copy.secure}</p>
           <ShareButtons title={product.name} />
         </aside>
       </section>
       <section className="product-detail-layout">
         <div className="section-heading">
-          <p className="eyebrow">{t('specs')}</p>
+          <p className="eyebrow">{copy.overview}</p>
           <h2>{t('shipping')}</h2>
           <p>{common('footer')}</p>
         </div>
         <div className="product-info-grid">
           <article>
-            <h3>What overseas buyers receive</h3>
+            <h3>{copy.receive}</h3>
             <ul>
               {content.receive.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </article>
           <article>
-            <h3>Commercial purchasing support</h3>
+            <h3>{copy.support}</h3>
             <ul>
               {content.support.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </article>
           <article>
-            <h3>Before shipment</h3>
+            <h3>{copy.beforeShipment}</h3>
             <ul>
               {content.inspection.map((item) => <li key={item}>{item}</li>)}
             </ul>
@@ -174,6 +186,20 @@ export default async function ProductDetailPage({
             <img src={image} alt={`${product.name} commercial product detail`} key={`strip-${image}`} />
           ))}
         </div>
+        <section className="product-faq">
+          <div className="section-heading compact">
+            <p className="eyebrow">FAQ</p>
+            <h2>{copy.faqTitle}</h2>
+          </div>
+          <div className="faq-grid">
+            {copy.faq.map((question) => (
+              <article key={question}>
+                <h3>{question}</h3>
+                <p>Contact our sales team with your target market, quantity and shipping country for a project-specific answer.</p>
+              </article>
+            ))}
+          </div>
+        </section>
       </section>
       <RelatedProducts currentSlug={productSlug} />
     </main>

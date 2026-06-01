@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
+import MobileBottomCta from '@/components/MobileBottomCta';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -42,6 +43,7 @@ export default async function LocaleLayout({
             <AnalyticsTracker />
           </Suspense>
           <WhatsAppFloatingButton />
+          <MobileBottomCta locale={locale as Locale} />
         </NextIntlClientProvider>
       </body>
     </html>

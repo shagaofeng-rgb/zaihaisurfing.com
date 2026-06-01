@@ -5,11 +5,11 @@ export type Locale = (typeof locales)[number];
 
 export const localeNames: Record<Locale, string> = {
   en: 'English',
-  es: 'Espanol',
+  es: 'Español',
   ru: 'Russian',
   ar: 'Arabic',
-  fr: 'Francais',
-  pt: 'Portugues'
+  fr: 'Français',
+  pt: 'Português'
 };
 
 export const routing = defineRouting({

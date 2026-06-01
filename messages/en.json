@@ -25,16 +25,16 @@
     "footer": "Premium water sports equipment for distributors, resorts, rentals and water parks."
   },
   "seo": {
-    "homeTitle": "ZAIHAI SURFING | Water Sports Equipment for Resorts & Distributors",
-    "homeDescription": "High-performance electric surfboards, electric water karts and fuel-powered surfboards for resorts, rentals, water parks, yacht clubs and distributors.",
-    "productsTitle": "Products | ZAIHAI SURFING",
-    "productsDescription": "Explore ZAIHAI electric surfboards, electric water karts and fuel-powered surfboards for overseas B2B buyers.",
-    "applicationsTitle": "Applications | ZAIHAI SURFING",
-    "applicationsDescription": "Water sports equipment solutions for resorts, rentals, water parks, yacht clubs and distributors.",
+    "homeTitle": "ZAIHAI SURFING | Electric Surfboards & Water Karts for Resorts and Distributors",
+    "homeDescription": "ZAIHAI SURFING supplies electric surfboards, electric water kart boats and fuel-powered surfboards for resorts, rentals, yacht clubs, water parks and distributors.",
+    "productsTitle": "Electric Surfboards, Water Karts and Fuel Surfboards | ZAIHAI Products",
+    "productsDescription": "Explore ZAIHAI electric surfboards, water kart boats and fuel-powered surfboards for resort attractions, rental fleets and distributor catalogs.",
+    "applicationsTitle": "Water Sports Equipment Applications | Resorts, Rentals, Water Parks and Distributors",
+    "applicationsDescription": "Choose ZAIHAI water sports products by business model, including resorts, rental businesses, water parks, yacht clubs and distributors.",
     "aboutTitle": "About Us | ZAIHAI SURFING",
     "aboutDescription": "Learn about ZAIHAI SURFING, a premium water sports equipment supplier from Quzhou, China.",
-    "factoryTitle": "Factory & Quality | ZAIHAI SURFING",
-    "factoryDescription": "OEM/ODM, quality support, packaging and export documentation for water sports equipment buyers.",
+    "factoryTitle": "Quality & Export Support | ZAIHAI SURFING",
+    "factoryDescription": "OEM/ODM, product inspection, packaging, battery document support and export documentation for water sports equipment buyers.",
     "projectsTitle": "Projects | ZAIHAI SURFING",
     "projectsDescription": "Project and application examples for resorts, rentals, water parks and distributor cooperation.",
     "blogTitle": "Blog | ZAIHAI SURFING",
@@ -43,10 +43,10 @@
     "contactDescription": "Contact ZAIHAI SURFING in Quzhou, China for product quotation, OEM/ODM and distributor cooperation."
   },
   "home": {
-    "h1": "Electric Surfboards & Water Karts for Resort Attractions",
-    "intro": "ZAIHAI SURFING supplies high-speed electric surfboards, electric water kart boats and fuel-powered boards for resorts, rentals, yacht clubs, water parks and distributors.",
-    "primaryCta": "Get Project Quote",
-    "secondaryCta": "View Products",
+    "h1": "Electric Surfboards & Water Karts for Resorts, Rentals and Adventure Buyers",
+    "intro": "High-performance water sports equipment for beach resorts, lake rentals, yacht clubs, water parks, distributors and private riders.",
+    "primaryCta": "Request Distributor Quote",
+    "secondaryCta": "Shop Products",
     "stats": {
       "lines": "Electric · Water Kart · Fuel",
       "buyers": "Distributors · Resorts · Rentals",
@@ -86,8 +86,8 @@
     "positioning": "We serve distributors, resorts, rental operators, water parks, tourism projects and premium riders worldwide."
   },
   "factory": {
-    "h1": "Factory, Quality and Export Support",
-    "intro": "ZAIHAI supports product customization, quality inspection, packaging and export documentation according to project requirements.",
+    "h1": "Quality & Export Support",
+    "intro": "We coordinate production, inspection, packaging and export support according to project requirements.",
     "items": "OEM/ODM customization, battery safety support, waterproof testing support, wooden crate packing and global delivery support."
   },
   "projects": {
