@@ -33,6 +33,23 @@ export type StoreOrder = {
     address: string;
     message: string;
   };
+  checkout: {
+    contact: string;
+    firstName: string;
+    lastName: string;
+    apartment: string;
+    city: string;
+    state: string;
+    zip: string;
+    shippingMethod: string;
+    couponCode: string;
+    marketingOptIn: boolean;
+    billingSameAsShipping: boolean;
+    billingAddress: string;
+    cardBrand: string;
+    cardLast4: string;
+    cardholderName: string;
+  };
   createdAt: string;
   updatedAt: string;
 };
@@ -95,6 +112,7 @@ export async function createStoreOrder(input: {
   quantity: number;
   paymentMethod?: StoreOrder['paymentMethod'];
   customer: StoreOrder['customer'];
+  checkout?: Partial<StoreOrder['checkout']>;
 }) {
   const product = products[input.productSlug];
   const quantity = Math.max(1, Math.min(99, Number(input.quantity || 1)));
@@ -118,6 +136,23 @@ export async function createStoreOrder(input: {
     trackingNumber: '',
     logisticsStatus: 'Order received, waiting for payment confirmation',
     customer: input.customer,
+    checkout: {
+      contact: input.checkout?.contact || input.customer.email,
+      firstName: input.checkout?.firstName || '',
+      lastName: input.checkout?.lastName || '',
+      apartment: input.checkout?.apartment || '',
+      city: input.checkout?.city || '',
+      state: input.checkout?.state || '',
+      zip: input.checkout?.zip || '',
+      shippingMethod: input.checkout?.shippingMethod || 'standard_ocean_air_quote',
+      couponCode: input.checkout?.couponCode || '',
+      marketingOptIn: Boolean(input.checkout?.marketingOptIn),
+      billingSameAsShipping: input.checkout?.billingSameAsShipping !== false,
+      billingAddress: input.checkout?.billingAddress || '',
+      cardBrand: input.checkout?.cardBrand || '',
+      cardLast4: input.checkout?.cardLast4 || '',
+      cardholderName: input.checkout?.cardholderName || ''
+    },
     createdAt: now,
     updatedAt: now
   };
@@ -231,6 +266,23 @@ function sampleOrder(id: string, productSlug: ProductSlug, country: string, stat
       country,
       address: 'Commercial waterfront project',
       message: 'Demo order for dashboard preview'
+    },
+    checkout: {
+      contact: 'buyer@example.com',
+      firstName: 'Demo',
+      lastName: 'Buyer',
+      apartment: '',
+      city: country === 'United States' ? 'Miami' : '',
+      state: '',
+      zip: '',
+      shippingMethod: 'standard_ocean_air_quote',
+      couponCode: '',
+      marketingOptIn: true,
+      billingSameAsShipping: true,
+      billingAddress: '',
+      cardBrand: 'Visa',
+      cardLast4: '4242',
+      cardholderName: 'Demo Buyer'
     },
     createdAt: new Date(time).toISOString(),
     updatedAt: new Date(time).toISOString()

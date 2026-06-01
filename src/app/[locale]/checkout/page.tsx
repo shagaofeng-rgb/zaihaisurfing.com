@@ -47,6 +47,7 @@ export default async function CheckoutPage({
           locale={locale}
           productSlug={productSlug}
           productName={product.name}
+          productImage={product.image}
           unitPrice={product.priceAmount}
           quantity={quantity}
           shippingEstimate={shippingEstimate}

@@ -32,7 +32,24 @@ export async function POST(request: Request) {
       productSlug,
       quantity: Number(payload.quantity || 1),
       paymentMethod: payload.paymentMethod || 'qianhai_card',
-      customer
+      customer,
+      checkout: {
+        contact: clean(payload.checkout?.contact, 160),
+        firstName: clean(payload.checkout?.firstName, 80),
+        lastName: clean(payload.checkout?.lastName, 80),
+        apartment: clean(payload.checkout?.apartment, 160),
+        city: clean(payload.checkout?.city, 120),
+        state: clean(payload.checkout?.state, 120),
+        zip: clean(payload.checkout?.zip, 40),
+        shippingMethod: clean(payload.checkout?.shippingMethod, 80),
+        couponCode: clean(payload.checkout?.couponCode, 80),
+        marketingOptIn: Boolean(payload.checkout?.marketingOptIn),
+        billingSameAsShipping: payload.checkout?.billingSameAsShipping !== false,
+        billingAddress: clean(payload.checkout?.billingAddress, 260),
+        cardBrand: clean(payload.checkout?.cardBrand, 40),
+        cardLast4: clean(payload.checkout?.cardLast4, 4),
+        cardholderName: clean(payload.checkout?.cardholderName, 120)
+      }
     });
     await appendAnalyticsEvent({
       id: `${Date.now()}-checkout-submit`,
@@ -48,7 +65,7 @@ export async function POST(request: Request) {
       browser: 'Unknown',
       os: 'Unknown',
       timestamp: new Date().toISOString(),
-      payload: {orderId: order.id, total: order.total, productSlug}
+      payload: {orderId: order.id, total: order.total, productSlug, paymentMethod: order.paymentMethod, cardBrand: order.checkout.cardBrand}
     });
     return Response.json({ok: true, order});
   } catch (error) {
