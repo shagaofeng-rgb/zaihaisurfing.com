@@ -780,6 +780,149 @@ a {
   gap: 18px;
 }
 
+.application-section {
+  width: min(1180px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: clamp(62px, 8vw, 108px) 0;
+}
+
+.application-intro-band,
+.application-cta-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(320px, 0.74fr);
+  gap: clamp(22px, 4vw, 56px);
+  align-items: end;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(24px, 4vw, 38px);
+  color: var(--white);
+  background:
+    radial-gradient(circle at 86% 12%, rgba(155, 220, 24, 0.2), transparent 32%),
+    linear-gradient(135deg, rgba(13, 18, 24, 0.96), rgba(16, 38, 47, 0.94));
+  border: 1px solid rgba(155, 220, 24, 0.28);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgba(16, 28, 36, 0.18);
+}
+
+.application-intro-band h2,
+.application-cta-strip h2 {
+  max-width: 100%;
+  margin: 0;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 1.04;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.application-intro-band p:not(.eyebrow),
+.application-cta-strip p:not(.eyebrow) {
+  max-width: 100%;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.application-scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.application-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 330px;
+  padding: clamp(22px, 3vw, 30px);
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 248, 243, 0.92)),
+    var(--white);
+  border: 1px solid rgba(17, 19, 24, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 24px 70px rgba(15, 24, 34, 0.12);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.application-card:nth-child(1),
+.application-card:nth-child(2) {
+  grid-column: span 3;
+}
+
+.application-card:nth-child(n + 3) {
+  grid-column: span 2;
+}
+
+.application-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 72px;
+  height: 4px;
+  background: var(--lime);
+}
+
+.application-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(155, 220, 24, 0.62);
+  box-shadow: 0 32px 86px rgba(51, 96, 18, 0.18);
+}
+
+.application-card span {
+  color: var(--aqua);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.application-card h3 {
+  max-width: 100%;
+  margin: 10px 0 0;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.application-card p {
+  max-width: 100%;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.application-card strong {
+  margin-top: auto;
+  padding-top: 20px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.application-card .text-link {
+  margin-top: 14px;
+}
+
+.application-cta-strip {
+  align-items: center;
+  margin-top: 20px;
+  background:
+    linear-gradient(90deg, rgba(10, 14, 19, 0.94), rgba(14, 24, 30, 0.82)),
+    url("/assets/banners/zaihai-main-banner.png") center 54% / cover;
+}
+
+.application-cta-strip .button {
+  justify-self: end;
+  min-width: 220px;
+}
+
 .catalog-product-card,
 .info-card,
 .map-card {
@@ -2486,6 +2629,7 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .catalog-product-grid,
   .card-grid,
+  .application-scenario-grid,
   .collection-grid,
   .market-grid,
   .trust-grid,
@@ -2507,6 +2651,21 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .checkout-fields {
     grid-template-columns: 1fr;
+  }
+
+  .application-intro-band,
+  .application-cta-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .application-card:nth-child(1),
+  .application-card:nth-child(2),
+  .application-card:nth-child(n + 3) {
+    grid-column: auto;
+  }
+
+  .application-cta-strip .button {
+    justify-self: start;
   }
 
   .checkout-summary-card,
@@ -2623,9 +2782,25 @@ html[dir="rtl"] .catalog-product-card dd {
   .catalog-section,
   .map-section,
   .product-hero,
+  .application-section,
   .inquiry-section {
     width: min(calc(100vw - 28px), 1180px);
     padding-block: 48px;
+  }
+
+  .application-card {
+    min-height: auto;
+  }
+
+  .application-intro-band,
+  .application-cta-strip {
+    padding: 24px;
+  }
+
+  .application-intro-band h2,
+  .application-cta-strip h2 {
+    font-size: clamp(28px, 8.4vw, 36px);
+    line-height: 1.06;
   }
 
   .hero-content,
@@ -2699,8 +2874,8 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .page-hero,
   .contact-hero {
-    width: 100vw;
-    max-width: 100vw;
+    width: 100%;
+    max-width: 100%;
   }
 
   .news-card,
