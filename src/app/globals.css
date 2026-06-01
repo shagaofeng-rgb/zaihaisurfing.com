@@ -2985,14 +2985,14 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .nav-links {
     order: 3;
-    flex: 0 0 100%;
+    flex: 0 0 calc(100vw - 28px);
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
     gap: 8px 10px;
-    width: 100%;
+    width: calc(100vw - 28px);
     min-width: 0;
-    max-width: 100%;
+    max-width: calc(100vw - 28px);
     overflow: visible;
     padding: 4px 0 0;
     scrollbar-width: none;
@@ -3032,11 +3032,20 @@ html[dir="rtl"] .catalog-product-card dd {
   .hero h1,
   .page-hero h1,
   .contact-hero h1 {
-    max-width: min(360px, 100%);
-    font-size: clamp(34px, 10.2vw, 46px);
+    max-width: min(330px, calc(100vw - 36px));
+    font-size: clamp(30px, 8.2vw, 36px);
     line-height: 1;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  .page-hero p:not(.eyebrow),
+  .contact-hero p:not(.eyebrow),
+  .hero-copy {
+    max-width: min(330px, calc(100vw - 36px));
+    font-size: 16px;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .section,
@@ -3045,7 +3054,8 @@ html[dir="rtl"] .catalog-product-card dd {
   .product-hero,
   .application-section,
   .inquiry-section {
-    width: min(calc(100vw - 28px), 1180px);
+    width: calc(100vw - 28px);
+    max-width: calc(100vw - 28px);
     padding-block: 48px;
   }
 
@@ -3075,6 +3085,7 @@ html[dir="rtl"] .catalog-product-card dd {
   .product-summary,
   .map-card,
   .contact-info-card {
+    width: 100%;
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
@@ -3096,6 +3107,107 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .main-product-image {
     max-height: 560px;
+  }
+
+  .product-summary {
+    order: -1;
+  }
+
+  .product-summary h1 {
+    max-width: min(280px, 100%);
+    font-size: clamp(28px, 7.4vw, 34px);
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .product-price-row strong {
+    font-size: 28px;
+  }
+
+  .product-price-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .product-price-row em {
+    display: inline-block;
+    justify-self: start;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .product-buyer-badges {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .product-buyer-badges span {
+    justify-self: start;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .product-buy-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: end;
+  }
+
+  .product-buy-form label {
+    min-width: 0;
+  }
+
+  .product-buy-form input {
+    width: 92px;
+    max-width: 100%;
+  }
+
+  .product-buy-form .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .product-summary p,
+  .secure-note {
+    max-width: min(290px, 100%);
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .map-copy h2 {
+    max-width: min(330px, calc(100vw - 36px));
+    font-size: clamp(28px, 7.8vw, 34px);
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .map-copy,
+  .contact-info-card {
+    max-width: min(330px, calc(100vw - 28px));
+  }
+
+  .contact-info-card span,
+  .contact-info-card a {
+    display: block;
+    max-width: min(286px, 100%);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .map-frame-wrap {
+    min-height: 340px;
+  }
+
+  .map-actions {
+    justify-content: stretch;
+    padding-bottom: 74px;
+  }
+
+  .map-actions .button {
+    width: 100%;
+    justify-content: center;
   }
 
   .inquiry-section {
