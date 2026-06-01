@@ -426,16 +426,16 @@ a {
 }
 
 .hero-media {
-  background-image: url("/assets/banners/surfing-rider-01.png");
-  background-position: center 54%;
+  background-image: url("/assets/banners/zaihai-main-banner.png");
+  background-position: center center;
   background-size: cover;
   transform: scale(1.01);
 }
 
 .hero-overlay {
   background:
-    linear-gradient(90deg, rgba(4, 7, 10, 0.92) 0%, rgba(4, 7, 10, 0.62) 43%, rgba(4, 7, 10, 0.1) 100%),
-    linear-gradient(0deg, rgba(4, 7, 10, 0.9) 0%, rgba(4, 7, 10, 0.06) 62%),
+    linear-gradient(90deg, rgba(4, 7, 10, 0.9) 0%, rgba(4, 7, 10, 0.54) 42%, rgba(4, 7, 10, 0.05) 100%),
+    linear-gradient(0deg, rgba(4, 7, 10, 0.76) 0%, rgba(4, 7, 10, 0.02) 62%),
     radial-gradient(circle at 78% 40%, rgba(155, 220, 24, 0.16), transparent 32%);
 }
 
@@ -469,9 +469,10 @@ a {
 .hero-copy,
 .page-hero p:not(.eyebrow),
 .contact-hero p:not(.eyebrow) {
-  max-width: 680px;
+  max-width: min(680px, 100%);
   color: rgba(255, 255, 255, 0.8);
   font-size: 19px;
+  overflow-wrap: anywhere;
 }
 
 .hero-actions {
@@ -857,8 +858,8 @@ a {
   padding: clamp(64px, 8vw, 112px) clamp(18px, 4vw, 56px);
   color: var(--white);
   background:
-    linear-gradient(90deg, rgba(5, 8, 12, 0.9), rgba(5, 8, 12, 0.48)),
-    url("/assets/banners/surfing-rider-02.png") center / cover;
+    linear-gradient(90deg, rgba(5, 8, 12, 0.9), rgba(5, 8, 12, 0.46), rgba(5, 8, 12, 0.08)),
+    url("/assets/banners/zaihai-main-banner.png") center center / cover;
 }
 
 .page-hero > div,
@@ -1139,7 +1140,7 @@ a {
 .news-hero {
   background:
     linear-gradient(90deg, rgba(5, 8, 12, 0.9), rgba(5, 8, 12, 0.42)),
-    url("/assets/banners/surfing-rider-03.png") center / cover;
+    url("/assets/banners/zaihai-main-banner.png") center center / cover;
 }
 
 .news-section {
@@ -1344,6 +1345,36 @@ a {
   flex-wrap: wrap;
   gap: 10px;
   padding-top: 14px;
+}
+
+.contact-info-card {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding: clamp(18px, 3vw, 24px);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.contact-info-card p {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.contact-info-card strong {
+  color: var(--aqua);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.contact-info-card span,
+.contact-info-card a {
+  color: #39414d;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .inquiry-section {
@@ -1708,8 +1739,8 @@ a {
   padding: clamp(64px, 8vw, 112px) clamp(18px, 4vw, 56px);
   color: var(--white);
   background:
-    linear-gradient(90deg, rgba(5, 8, 12, 0.92), rgba(5, 8, 12, 0.54)),
-    url("/assets/banners/surfing-rider-02.png") center / cover;
+    linear-gradient(90deg, rgba(5, 8, 12, 0.92), rgba(5, 8, 12, 0.48), rgba(5, 8, 12, 0.08)),
+    url("/assets/banners/zaihai-main-banner.png") center center / cover;
 }
 
 .checkout-hero > div,
@@ -2591,9 +2622,28 @@ html[dir="rtl"] .catalog-product-card dd {
   .section,
   .catalog-section,
   .map-section,
+  .product-hero,
   .inquiry-section {
     width: min(calc(100vw - 28px), 1180px);
     padding-block: 48px;
+  }
+
+  .hero-content,
+  .product-gallery,
+  .product-summary,
+  .map-card,
+  .contact-info-card {
+    min-width: 0;
+  }
+
+  .hero-actions .button {
+    flex: 1 1 156px;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .main-product-image {
+    max-height: 560px;
   }
 
   .inquiry-section {

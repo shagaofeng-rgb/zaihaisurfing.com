@@ -18,7 +18,7 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       description,
       url: canonicalFor(locale, path),
       siteName: 'ZAIHAI SURFING',
-      images: ['/assets/banners/surfing-rider-03.png'],
+      images: ['/assets/banners/zaihai-main-banner.png'],
       type: 'website',
       locale
     }

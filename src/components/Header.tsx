@@ -46,10 +46,9 @@ export default async function Header({locale}: {locale: Locale}) {
                 <Link href="/products">All fuel boards</Link>
               </section>
               <section>
-                <p>Business Pages</p>
-                <Link href="/factory">OEM/ODM customization</Link>
-                <Link href="/about">Brand story</Link>
-                <Link href="/applications">Global markets</Link>
+                <p>Business Support</p>
+                <Link href="/applications">Markets & applications</Link>
+                <Link href="/factory">OEM/ODM & export support</Link>
                 <Link href="/contact">Distributor inquiry</Link>
               </section>
             </div>
@@ -57,10 +56,7 @@ export default async function Header({locale}: {locale: Locale}) {
         </div>
         <Link href="/products">Catalog</Link>
         <Link href="/applications">Markets</Link>
-        <Link href="/applications">Solutions</Link>
-        <Link href="/factory">OEM/ODM</Link>
         <Link href="/blog">News</Link>
-        <Link href="/contact">Quote</Link>
         <Link href="/contact">{nav('contact')}</Link>
       </nav>
       <div className="header-tools">

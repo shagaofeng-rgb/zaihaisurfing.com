@@ -16,6 +16,50 @@ const productGalleries: Record<ProductSlug, string[]> = {
   'p1-pro': ['/assets/catalog/p1-pro/main.png', '/assets/catalog/p1-pro/product.png', '/assets/catalog/p1-pro/scene-01.png', '/assets/catalog/p1-pro/scene-02.png']
 };
 
+const productContent: Record<ProductSlug, {
+  intro: string;
+  badges: string[];
+  receive: string[];
+  support: string[];
+  inspection: string[];
+}> = {
+  x1: {
+    intro: 'ZAIHAI X1 is a commercial electric surfboard for rental fleets, resort water sports centers and distributors who need a balanced model with approachable speed, stable endurance and clear accessory packaging.',
+    badges: ['Rental fleet choice', '10 kW electric drive', '60-80 min endurance'],
+    receive: ['X1 electric surfboard package with battery, charger and standard accessories.', 'Balanced performance for first-time electric surfboard buyers and rental operators.', 'Clear product media and specification support for distributor catalog listing.'],
+    support: ['Recommended for lake resorts, beach clubs, marina rentals and entry-level premium water sports programs.', 'Optional color, logo and package discussion for distributors and project buyers.', 'Sales support for spare battery planning, charger quantity and operator training notes.'],
+    inspection: ['Battery, charger, board surface and accessory set are checked before packing.', 'Export packaging photos and packing list can be provided before shipment.', 'Shipping documents are prepared according to destination and forwarder requirements.']
+  },
+  'x1-pro': {
+    intro: 'ZAIHAI X1 Pro is built for higher-impact riding, premium resort demonstrations and buyers who need stronger performance for videos, advanced riders and flagship product displays.',
+    badges: ['Flagship model', '12 kW high output', 'IP67 waterproof'],
+    receive: ['X1 Pro surfboard package with upgraded power system and matched accessories.', 'Premium visual impact for resorts, yacht clubs, promotional videos and distributor showrooms.', 'Detailed parameter sheets and product photos for commercial sales presentations.'],
+    support: ['Best for high-end resort demos, private clubs, advanced rental packages and premium distributors.', 'Model comparison support when pairing X1 Pro with X1 or Rage Shark X in one catalog.', 'Advice on batteries, spare parts and rider safety accessories for commercial operations.'],
+    inspection: ['Power system, waterproof areas, battery mounting and accessories are checked before shipment.', 'Factory photo confirmation and packing review can be shared with the buyer.', 'Export documentation support includes packing list, shipping size and lithium battery notes.']
+  },
+  'rage-shark-x': {
+    intro: 'Rage Shark X is an electric water kart boat designed for scenic attractions, water parks, family-friendly resort activities and operators who want an easy-drive product with strong visual appeal.',
+    badges: ['Family attraction', 'Electric water kart', 'Easy to operate'],
+    receive: ['Rage Shark X water kart boat with matched electric system and standard accessory package.', 'Beginner-friendly ride experience for families, scenic lakes, resorts and water parks.', 'Commercial product images and specification references for ticketing or rental promotion.'],
+    support: ['Suitable for operators who want faster guest turnover and lower learning difficulty than surfboards.', 'Fleet planning support for quantity, charging workflow, guest route and operating area.', 'Distributor support for positioning Rage Shark X as a water attraction product line.'],
+    inspection: ['Hull appearance, steering, power system and accessory packing are checked before delivery.', 'Packaging and loading photos can be supplied before export.', 'Shipping plan can be coordinated for single-unit samples or multi-unit fleet orders.']
+  },
+  p1: {
+    intro: 'ZAIHAI P1 is a fuel-powered surfboard for outdoor adventure operators and buyers who need longer running time, independent refueling workflow and strong open-water usability.',
+    badges: ['Fuel powered', 'Adventure operation', 'Longer ride time'],
+    receive: ['P1 fuel-powered surfboard package with engine system, board body and standard accessories.', 'Longer ride planning for outdoor bases, island activities and adventure operators.', 'Product parameter support for distributors comparing fuel and electric models.'],
+    support: ['Recommended for locations where charging infrastructure is limited or longer sessions are required.', 'Sales guidance for fuel workflow, maintenance planning and operator preparation.', 'Can be paired with electric models to build a broader water sports catalog.'],
+    inspection: ['Engine area, board body, accessories and key fittings are checked before shipment.', 'Packing list and export dimensions can be confirmed before loading.', 'Use and maintenance notes can be prepared for operator training.']
+  },
+  'p1-pro': {
+    intro: 'ZAIHAI P1 Pro is the stronger fuel-powered option for buyers who want maximum commercial attraction, higher top-speed positioning and a premium gasoline board for outdoor rental and distributor projects.',
+    badges: ['Fuel flagship', 'High-speed appeal', 'Distributor model'],
+    receive: ['P1 Pro fuel-powered surfboard package with flagship product configuration.', 'Stronger commercial positioning for advanced riders, adventure tourism and premium product catalogs.', 'Detailed product visuals and specification support for overseas promotion.'],
+    support: ['Best for distributors, outdoor adventure operators and projects where high-speed fuel boards are the main selling point.', 'Support for accessory planning, packaging details and model comparison with P1.', 'Export preparation for bulk orders, samples and destination-specific documentation.'],
+    inspection: ['Engine, board structure, accessories and packaging are inspected before shipment.', 'Shipment photos and packing details can be shared for buyer confirmation.', 'Forwarder coordination and documents are prepared according to export requirements.']
+  }
+};
+
 export function generateStaticParams() {
   return productSlugs.map((slug) => ({slug}));
 }
@@ -44,6 +88,7 @@ export default async function ProductDetailPage({
   const product = products[slug as ProductSlug];
   const productSlug = slug as ProductSlug;
   const gallery = productGalleries[productSlug];
+  const content = productContent[productSlug];
   const compareAt = Math.round(product.priceAmount * 1.18 / 100) * 100;
   const names = await getTranslations({locale, namespace: 'productNames'});
   const alt = await getTranslations({locale, namespace: 'alt'});
@@ -70,11 +115,9 @@ export default async function ProductDetailPage({
             <em>Factory direct</em>
           </div>
           <div className="product-buyer-badges">
-            <span>Commercial grade</span>
-            <span>Resort rental ready</span>
-            <span>Spare parts support</span>
+            {content.badges.map((badge) => <span key={badge}>{badge}</span>)}
           </div>
-          <p>{t('intro')}</p>
+          <p>{content.intro}</p>
           <dl className="quick-specs">
             {product.specs.map((spec, index) => (
               <div key={spec}>
@@ -110,25 +153,19 @@ export default async function ProductDetailPage({
           <article>
             <h3>What overseas buyers receive</h3>
             <ul>
-              <li>Complete board or water kart package with matched accessories.</li>
-              <li>Export packaging, photos before shipment and packing list support.</li>
-              <li>Spare battery, charger, life jacket and wear-part planning for rental fleets.</li>
+              {content.receive.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </article>
           <article>
             <h3>Commercial purchasing support</h3>
             <ul>
-              <li>Model comparison for resorts, distributors, yacht clubs and rental operators.</li>
-              <li>OEM/ODM color, logo and package discussion before bulk production.</li>
-              <li>Qianhai card gateway, T/T and PayPal manual payment routes prepared.</li>
+              {content.support.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </article>
           <article>
             <h3>Before shipment</h3>
             <ul>
-              <li>Factory inspection of appearance, accessories and key functional parts.</li>
-              <li>Order confirmation with destination, forwarder, port and documentation.</li>
-              <li>Sales follow-up for manuals, use cases, product photos and marketing assets.</li>
+              {content.inspection.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </article>
         </div>

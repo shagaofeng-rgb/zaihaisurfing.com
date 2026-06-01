@@ -14,11 +14,10 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
   setRequestLocale(locale);
   const t = await getTranslations({locale, namespace: 'contact'});
   const common = await getTranslations({locale, namespace: 'common'});
-  const address =
-    'Room 110, 1st Floor, Building 1, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China';
+  const company = 'Quzhou Qi Import and Export Co., Ltd.';
+  const address = 'Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China';
   const query = encodeURIComponent(address);
-  const mapSrc =
-    'https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d1037.8381299189082!2d118.84405914474489!3d28.96195222141102!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sRoom%20110%2C%201st%20Floor%2C%20Building%201%2C%20Qushidai%20Future%20Building%2C%20Kecheng%20District%2C%20Quzhou%2C%20Zhejiang%20Province%2C%20China!5e0!3m2!1sen!2sus!4v1780204792478!5m2!1sen!2sus';
+  const mapSrc = `https://www.google.com/maps?q=${query}&output=embed`;
 
   return (
     <main>
@@ -31,11 +30,13 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
       </section>
       <section className="map-section">
         <div className="map-copy">
-          <p className="eyebrow">{common('address')}</p>
-          <h2>{t('mapTitle')}</h2>
-          <p>
-            {common('email')} · {common('whatsapp')}
-          </p>
+          <p className="eyebrow">Quzhou, Zhejiang, China</p>
+          <h2>{company}</h2>
+          <div className="contact-info-card">
+            <p><strong>Address</strong><span>{address}</span></p>
+            <p><strong>Email</strong><a href="mailto:davidsha@zaihaisurfing.com">davidsha@zaihaisurfing.com</a></p>
+            <p><strong>WhatsApp</strong><a href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">+86 17621485205</a></p>
+          </div>
         </div>
         <div className="map-card">
           <div className="map-frame-wrap">
@@ -60,7 +61,7 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
           <h2>Send your product requirements</h2>
           <p>Tell us your project type, target market and preferred product line. We will reply with model suggestions and quotation details.</p>
         </div>
-        <form className="inquiry-form" action={`mailto:davidsha@zaihaisurfing.com`} method="post" encType="text/plain">
+        <form className="inquiry-form" action="mailto:davidsha@zaihaisurfing.com" method="post" encType="text/plain">
           <label>
             <span>Name *</span>
             <input name="name" required placeholder="Your name" autoComplete="name" />

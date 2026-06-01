@@ -21,7 +21,6 @@ export default function SimplePage({eyebrow, title, intro, cards = []}: SimplePa
             {cards.map((card) => (
               <article className="info-card" key={card}>
                 <h3>{card}</h3>
-                <p>{intro}</p>
               </article>
             ))}
           </div>
