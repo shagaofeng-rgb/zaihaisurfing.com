@@ -1,4 +1,4 @@
-export default async function AdminLoginPage({searchParams}: {searchParams: Promise<{error?: string}>}) {
+export default async function AdminLoginPage({searchParams}: {searchParams: Promise<{error?: string; reset?: string}>}) {
   const query = await searchParams;
 
   return (
@@ -8,6 +8,7 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
         <h1>Commerce Dashboard Login</h1>
         <p>Use the admin account to view orders, logistics, checkout events and Qianhai gateway status.</p>
         {query.error ? <strong className="admin-login-error">Login failed. Check email and password.</strong> : null}
+        {query.reset ? <strong className="admin-login-notice">Password reset request received. Configure SMTP to send secure reset links.</strong> : null}
         <label>
           Email
           <input name="email" type="email" defaultValue="davidsha@zaihaisurfing.com" required />
@@ -19,6 +20,7 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
         <button className="button primary" type="submit">
           Login
         </button>
+        <small><a href="/admin/forgot-password">Forgot password?</a></small>
         <small>Local development fallback: zaihai-admin-demo. Production requires ADMIN_PASSWORD in Vercel.</small>
       </form>
     </main>
