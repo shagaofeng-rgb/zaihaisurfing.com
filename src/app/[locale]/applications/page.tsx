@@ -102,7 +102,7 @@ export default async function ApplicationsPage({params}: {params: Promise<{local
         <div className="application-scenario-grid">
           {copy.scenarios.map((scenario, index) => (
             <article className="application-card" key={scenario.title}>
-              <img src={scenarioImages[index]} alt={`${scenario.title} ZAIHAI water sports application`} loading="lazy" />
+              <img src={scenarioImages[index]} alt={`${scenario.title} ZAIHAI water sports application`} />
               <span>{scenario.label}</span>
               <h3>{scenario.title}</h3>
               <p>{scenario.text}</p>

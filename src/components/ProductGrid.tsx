@@ -88,7 +88,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
       <div className="product-line-grid" id="product-list">
         {productLines.map((line) => (
           <article className="product-line-card" key={line.title}>
-            <img src={line.image} alt={`${line.title} for ZAIHAI B2B buyers`} loading="lazy" />
+            <img src={line.image} alt={`${line.title} for ZAIHAI B2B buyers`} />
             <div>
               <h3>{line.title}</h3>
               <p>{line.text}</p>
@@ -113,7 +113,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
           return (
             <article className="catalog-product-card ecommerce-card" key={slug}>
               <Link className="catalog-image-wrap" href={`/products/${slug}`}>
-                <img src={product.image} alt={alt(slug)} loading="lazy" />
+                <img src={product.image} alt={alt(slug)} />
               </Link>
               <div>
                 <p className="tag">{product.category}</p>
