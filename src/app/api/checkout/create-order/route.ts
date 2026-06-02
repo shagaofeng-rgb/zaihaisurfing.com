@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       visitorId: 'checkout',
       sessionId: order.id,
       page: '/checkout',
-      pageTitle: 'Checkout',
+      pageTitle: 'Project Order',
       referrer: '',
       country: customer.country,
       city: '',

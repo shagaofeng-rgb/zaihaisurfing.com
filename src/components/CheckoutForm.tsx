@@ -37,7 +37,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('Submitting secure order...');
+    setStatus('Submitting project order details...');
     const formData = new FormData(event.currentTarget);
     const firstName = String(formData.get('firstName') || '').trim();
     const lastName = String(formData.get('lastName') || '').trim();
@@ -91,12 +91,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       setStatus(result.message || 'Order submission failed. Please check required fields.');
       return;
     }
-    setStatus(`Order created: ${result.order.id}. Payment gateway is ready for Qianhai integration.`);
+    setStatus(`Project order received: ${result.order.id}. ZAIHAI sales will confirm quotation, logistics and payment next.`);
     window.location.href = `/${locale}/checkout/success?order=${encodeURIComponent(result.order.id)}`;
   }
 
   return (
-    <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Checkout form">
+    <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
       <div className="checkout-left">
         <section className="checkout-block">
           <div className="checkout-block-title">
@@ -106,7 +106,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           <input name="contact" type="email" required placeholder="Email or mobile phone number" />
           <label className="checkout-checkbox">
             <input name="marketingOptIn" type="checkbox" defaultChecked />
-            Receive exclusive offers and order updates
+            Receive product updates and quotation follow-up
           </label>
         </section>
 
@@ -163,8 +163,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         </section>
 
         <section className="checkout-block">
-          <h2>Payment</h2>
-          <p className="checkout-help">Card fields are prepared for Qianhai gateway tokenization. Full card numbers and CVV should be handled by the payment gateway, not stored by this site.</p>
+          <h2>Payment preference</h2>
+          <p className="checkout-help">Card fields are reserved for future Qianhai gateway tokenization. Full card numbers and CVV should be handled by the payment gateway, not stored by this site.</p>
           <label className="checkout-method">
             <input name="paymentMethod" type="radio" value="qianhai_card" defaultChecked />
             <span>
@@ -219,7 +219,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           </div>
           <div>
             <h3>{productName}</h3>
-            <p>Commercial water sports equipment order</p>
+            <p>Commercial water sports equipment project</p>
           </div>
           <strong>USD {(unitPrice * quantity).toLocaleString()}</strong>
         </div>
@@ -231,12 +231,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           <div><dt>Subtotal</dt><dd>USD {(unitPrice * quantity).toLocaleString()}</dd></div>
           <div><dt>Shipping</dt><dd>USD {shippingEstimate.toLocaleString()}</dd></div>
           {discount ? <div><dt>Discount</dt><dd>- USD {discount.toLocaleString()}</dd></div> : null}
-          <div className="summary-total"><dt>Total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
+          <div className="summary-total"><dt>Estimated total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
         </dl>
         <button className="button primary checkout-pay-button" type="submit">
-          Pay Now / Place Order
+          Submit Project Order
         </button>
-        <p className="form-note">{status || 'After submission, the order can connect to Qianhai card payment, T/T confirmation or manual PayPal handling.'}</p>
+        <p className="form-note">{status || 'After submission, ZAIHAI sales will confirm final quotation, logistics and payment method before any charge.'}</p>
       </aside>
     </form>
   );

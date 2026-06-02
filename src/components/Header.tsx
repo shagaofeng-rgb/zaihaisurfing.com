@@ -12,6 +12,25 @@ export default async function Header({locale}: {locale: Locale}) {
         <img src="/assets/logo.jpg" alt="ZAIHAI SURFING" />
         <span>ZAIHAI SURFING</span>
       </Link>
+      <details className="mobile-menu">
+        <summary>Menu</summary>
+        <div>
+          <Link href="/">{copy.nav.home}</Link>
+          <Link href="/products">{copy.nav.products}</Link>
+          <Link href="/applications">{copy.nav.applications}</Link>
+          <Link href="/products#fleet-packages">{copy.nav.fleet}</Link>
+          <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
+          <Link href="/factory">{copy.nav.support}</Link>
+          <Link href="/about">{copy.nav.about}</Link>
+          <Link href="/contact">{copy.nav.contact}</Link>
+        </div>
+      </details>
+      <a className="mobile-header-whatsapp" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+        WhatsApp
+      </a>
+      <Link className="mobile-header-quote" href="/contact">
+        {copy.nav.quote}
+      </Link>
       <nav className="nav-links">
         <Link href="/">{copy.nav.home}</Link>
         <div className="nav-item has-mega">
@@ -56,8 +75,9 @@ export default async function Header({locale}: {locale: Locale}) {
           </div>
         </div>
         <Link href="/applications">{copy.nav.applications}</Link>
+        <Link href="/products#fleet-packages">{copy.nav.fleet}</Link>
+        <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
         <Link href="/factory">{copy.nav.support}</Link>
-        <Link href="/blog">{copy.nav.news}</Link>
         <Link href="/about">{copy.nav.about}</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
       </nav>

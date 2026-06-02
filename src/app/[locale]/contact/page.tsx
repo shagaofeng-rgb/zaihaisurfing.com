@@ -20,6 +20,13 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
   const address = 'Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China';
   const query = encodeURIComponent(address);
   const mapSrc = `https://www.google.com/maps?q=${query}&output=embed`;
+  const trustBlocks = [
+    'Reply within 24 hours on business days',
+    'Product videos available on request',
+    'Distributor pricing available',
+    'OEM/ODM support available',
+    'Shipping and battery document support'
+  ];
 
   return (
     <main>
@@ -33,11 +40,15 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
       <section className="map-section">
         <div className="map-copy">
           <p className="eyebrow">{copy.region}</p>
-          <h2>{company}</h2>
+          <h2>ZAIHAI SURFING</h2>
           <div className="contact-info-card">
+            <p><strong>Operated by</strong><span>{company}</span></p>
             <p><strong>{copy.addressLabel}</strong><span>{address}</span></p>
             <p><strong>{copy.emailLabel}</strong><a href="mailto:davidsha@zaihaisurfing.com">davidsha@zaihaisurfing.com</a></p>
             <p><strong>{copy.whatsappLabel}</strong><a className="contact-whatsapp-link" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">+86 17621485205</a></p>
+          </div>
+          <div className="contact-trust-grid">
+            {trustBlocks.map((item) => <span key={item}>{item}</span>)}
           </div>
         </div>
         <div className="map-card">
@@ -77,10 +88,6 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
             <input name="phone" required type="tel" placeholder="+1 555 000 0000" autoComplete="tel" />
           </label>
           <label>
-            <span>{copy.fields.company}</span>
-            <input name="company" placeholder="Company name" autoComplete="organization" />
-          </label>
-          <label>
             <span>{copy.fields.country}</span>
             <input name="country" required placeholder="UAE, United States, Spain..." autoComplete="country-name" />
           </label>
@@ -98,18 +105,39 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
               {copy.productOptions.map((item) => <option value={item} key={item}>{item}</option>)}
             </select>
           </label>
-          <label>
-            <span>{copy.fields.quantity}</span>
-            <input name="quantity" placeholder="1 sample / 5 units / 20 units..." />
-          </label>
-          <label>
-            <span>{copy.fields.market}</span>
-            <input name="targetMarket" placeholder="GCC, USA, Europe, island resort..." />
-          </label>
           <label className="full">
             <span>{copy.fields.message}</span>
             <textarea name="message" required rows={5} placeholder="Quantity, application scenario, shipment plan, branding needs..." />
           </label>
+          <details className="form-more full">
+            <summary>More Project Details</summary>
+            <div className="advanced-fields">
+              <label>
+                <span>{copy.fields.company}</span>
+                <input name="company" placeholder="Company name" autoComplete="organization" />
+              </label>
+              <label>
+                <span>{copy.fields.quantity}</span>
+                <input name="quantity" placeholder="1 sample / 5 units / 20 units..." />
+              </label>
+              <label>
+                <span>{copy.fields.market}</span>
+                <input name="targetMarket" placeholder="GCC, USA, Europe, island resort..." />
+              </label>
+              <label>
+                <span>Water area type</span>
+                <input name="waterArea" placeholder="Beach / lake / lagoon / water park..." />
+              </label>
+              <label>
+                <span>OEM/ODM requirement</span>
+                <input name="oem" placeholder="Logo, color, packaging..." />
+              </label>
+              <label>
+                <span>Shipping destination port</span>
+                <input name="destinationPort" placeholder="Los Angeles / Jebel Ali / Barcelona..." />
+              </label>
+            </div>
+          </details>
           <button className="button primary" type="submit">
             {copy.fields.submit}
           </button>

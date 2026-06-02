@@ -25,6 +25,8 @@ type UiCopy = {
     about: string;
     contact: string;
     quote: string;
+    fleet: string;
+    oemDistributor: string;
   };
   mega: {
     featured: string;
@@ -183,7 +185,9 @@ const en: UiCopy = {
     news: 'News',
     about: 'About',
     contact: 'Contact',
-    quote: 'Get a Quote'
+    quote: 'Get Quote',
+    fleet: 'Fleet Packages',
+    oemDistributor: 'OEM & Distributor'
   },
   mega: {
     featured: 'Featured model',
@@ -207,10 +211,10 @@ const en: UiCopy = {
   },
   hero: {
     eyebrow: 'Premium ocean sports equipment',
-    title: 'Electric Surfboards & Water Karts for Resorts, Rentals and Adventure Buyers',
-    intro: 'High-performance water sports equipment for beach resorts, lake rentals, yacht clubs, water parks, distributors and private riders.',
-    shop: 'Shop Products',
-    quote: 'Request Distributor Quote',
+    title: 'Premium Electric Surfboards & Water Karts for Resorts, Rentals and Distributors',
+    intro: 'ZAIHAI helps water sports businesses, resorts, rental operators, yacht clubs and distributors build high-attraction water entertainment projects with electric surfboards, fuel-powered surfboards, electric water karts and export-ready support.',
+    shop: 'Explore Products',
+    quote: 'Get Distributor Quote',
     watch: 'Watch Riding Video',
     tags: ['Electric Surfboards', 'Water Kart Boats', 'OEM / Distributor Support'],
     cards: [
@@ -221,14 +225,14 @@ const en: UiCopy = {
   },
   homeSections: {
     collectionEyebrow: 'Collection list',
-    collectionTitle: 'Choose the Right Water Sports Product Line',
-    collectionText: 'Fast product entry for distributors, resort buyers, rental operators and water park project teams.',
+    collectionTitle: 'Choose Your Water Sports Product Line',
+    collectionText: 'Select the right ZAIHAI product line by water area, rider type, operating model, project budget and local market demand.',
     videoEyebrow: 'Real riding footage',
     videoTitle: 'See ZAIHAI Surfboards on the Water',
     videoText: 'Watch the actual riding scene and understand how the product looks in open-water entertainment, resort demos and rental experiences.',
     explore: 'Explore Products',
-    manifestEyebrow: 'Commercial water sports, built to be seen',
-    manifestText: 'Premium product visuals, clear specifications and practical export support help overseas buyers evaluate ZAIHAI products before the first shipment.',
+    manifestEyebrow: 'Premium ocean lifestyle, commercial project value',
+    manifestText: 'Speed, splash, strong visual attraction and export-ready support help overseas buyers turn water areas into memorable guest experiences and distributor-ready product lines.',
     trust: [
       {title: 'OEM/ODM Customization', text: 'Custom colors, logo branding, packaging and project-based product bundles.'},
       {title: 'Export Documentation', text: 'Battery notes, packing list, shipping size and document support for export planning.'},
@@ -254,24 +258,24 @@ const en: UiCopy = {
   },
   products: {
     tabs: ['All', 'Electric Surfboards', 'Electric Water Karts', 'Fuel-Powered Surfboards', 'For Resorts', 'For Rentals', 'For Distributors'],
-    price: 'Price',
+    price: 'Commercial supply',
     specs: 'Core specs',
     bestFor: 'Best for',
     viewDetails: 'View Details',
     requestQuote: 'Request Quote',
-    quickView: 'Quick View',
+    quickView: 'Ask for Package',
     compareTitle: 'Compare Models',
     compareText: 'Compare ZAIHAI X1, X1 Pro, Rage Shark X, P1 and P1 Pro by power, speed, endurance, buyer type and best use case.'
   },
   productDetail: {
-    priceBadge: 'Direct Export Price',
+    priceBadge: 'Distributor pricing available',
     buyerRecommended: 'Commercial buyer recommended',
-    qty: 'Qty',
-    buyNow: 'Buy Now',
+    qty: 'Target quantity',
+    buyNow: 'Get Distributor Price',
     requestQuote: 'Request Quote',
     whatsapp: 'WhatsApp Now',
-    download: 'Download Specs',
-    secure: 'Secure payment options are prepared for credit card, PayPal and T/T. Qianhai gateway integration can be connected when credentials are ready.',
+    download: 'Ask for Shipping Cost',
+    secure: 'Final quotation, shipping cost and project package are confirmed by the sales team according to destination, quantity, packaging and buyer type.',
     overview: 'Product Overview',
     receive: 'What overseas buyers receive',
     support: 'Commercial purchasing support',
@@ -284,7 +288,7 @@ const en: UiCopy = {
     h1: 'Choose Water Sports Equipment by Business Scenario',
     intro: 'ZAIHAI helps resorts, rentals, water parks, yacht clubs, distributors and private buyers choose products for real operating scenarios.',
     buyerFit: 'Buyer Fit',
-    matrixTitle: 'Choose products by business model, not only by speed.',
+    matrixTitle: 'Choose Products by Buyer Type',
     matrixText: 'Different buyers care about different outcomes: guest attraction, rental return, family safety, premium leisure or distributor margin. This section helps overseas buyers quickly understand where each ZAIHAI product line fits.',
     scenarios: [
       {title: 'Resorts & Hotels', label: 'Guest experience upgrade', text: 'Create a premium water attraction for beach resorts, island hotels and lake properties.', products: 'Recommended: X1 Pro / X1 / Rage Shark X', href: '/products/x1-pro', cta: 'View Resort Solution'},
@@ -346,7 +350,7 @@ const en: UiCopy = {
   },
   mobileCta: {
     whatsapp: 'WhatsApp',
-    quote: 'Quote'
+    quote: 'Get Quote'
   }
 };
 
@@ -386,7 +390,9 @@ function localizedCopy(locale: Locale): UiCopy {
       news: m.nav.blog,
       about: m.nav.about,
       contact: m.nav.contact,
-      quote: m.nav.quote
+      quote: m.nav.quote,
+      fleet: en.nav.fleet,
+      oemDistributor: en.nav.oemDistributor
     },
     mega: {
       ...en.mega,

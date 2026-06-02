@@ -9,7 +9,7 @@ import {shippingEstimateFor} from '@/lib/commerceStore';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
-  return localizedMetadata(locale, '/checkout', 'Checkout | ZAIHAI SURFING', 'Secure checkout for ZAIHAI SURFING water sports equipment orders.');
+  return localizedMetadata(locale, '/checkout', 'Project Order & Payment Preparation | ZAIHAI SURFING', 'Submit buyer, shipping and payment preparation details for ZAIHAI SURFING commercial water sports equipment projects.');
 }
 
 export default async function CheckoutPage({
@@ -32,11 +32,11 @@ export default async function CheckoutPage({
     <main>
       <section className="checkout-hero">
         <div>
-          <p className="eyebrow">Secure B2B Checkout</p>
-          <h1>Confirm Your Order and Payment Method</h1>
+          <p className="eyebrow">B2B Project Order</p>
+          <h1>Confirm Buyer Details and Payment Preparation</h1>
           <p>
-            Submit buyer, shipping and payment details. Credit card processing is reserved for the Qianhai gateway,
-            while T/T and PayPal can be confirmed manually by the sales team.
+            Submit buyer, delivery and payment preference details. Final quotation, logistics cost and payment collection
+            are confirmed by the ZAIHAI sales team before charging.
           </p>
         </div>
       </section>
