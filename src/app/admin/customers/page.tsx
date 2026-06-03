@@ -1,4 +1,5 @@
 import AdminShell from '@/components/AdminShell';
+import {zhLeadStatus} from '@/lib/adminZh';
 import {buildCustomerLeads} from '@/lib/backendStore';
 import {readAnalyticsEvents, readStoreOrders} from '@/lib/commerceStore';
 
@@ -8,28 +9,28 @@ export default async function AdminCustomersPage() {
   const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
   const customers = buildCustomerLeads(orders, events).filter((lead) => lead.email || lead.phone);
   return (
-    <AdminShell active="Customers">
+    <AdminShell active="客户管理">
       <div className="admin-title">
         <p className="eyebrow">CRM</p>
-        <h1>Customers</h1>
-        <p>Customers captured from checkout and inquiry workflows. Sales can follow status and notes here.</p>
+        <h1>客户管理</h1>
+        <p>这里只显示客户真实提交结账或询盘后留下联系方式的数据。</p>
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
           <table>
-            <thead><tr><th>Name</th><th>Contact</th><th>Company</th><th>Country</th><th>Products</th><th>Status</th><th>Last active</th></tr></thead>
+            <thead><tr><th>客户</th><th>联系方式</th><th>公司</th><th>国家/地区</th><th>关注产品</th><th>状态</th><th>最后活跃</th></tr></thead>
             <tbody>
-              {customers.map((customer) => (
+              {customers.length ? customers.map((customer) => (
                 <tr key={customer.id}>
                   <td><strong>{customer.name}</strong><br /><small>{customer.source}</small></td>
                   <td>{customer.email}<br /><small>{customer.phone}</small></td>
                   <td>{customer.company || '-'}</td>
                   <td>{customer.country || '-'}</td>
                   <td>{customer.interestedProducts.join(', ')}</td>
-                  <td><span className="admin-status published">{customer.status}</span></td>
+                  <td><span className="admin-status published">{zhLeadStatus(customer.status)}</span></td>
                   <td>{customer.lastActiveTime.slice(0, 10)}</td>
                 </tr>
-              ))}
+              )) : <tr><td colSpan={7}>暂无真实客户数据。客户提交结账或询盘后会出现在这里。</td></tr>}
             </tbody>
           </table>
         </div>

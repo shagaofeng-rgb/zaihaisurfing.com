@@ -134,7 +134,7 @@ export async function createStoreOrder(input: {
     paymentGateway: 'qianhai',
     gatewayStatus: 'not_submitted',
     trackingNumber: '',
-    logisticsStatus: 'Order received, waiting for payment confirmation',
+    logisticsStatus: '已收到订单，等待付款确认',
     customer: input.customer,
     checkout: {
       contact: input.checkout?.contact || input.customer.email,
@@ -161,8 +161,7 @@ export async function createStoreOrder(input: {
 }
 
 export async function readStoreOrders() {
-  const orders = await readJsonLines<StoreOrder>(ORDERS_FILE);
-  return orders.length ? orders : mockOrders();
+  return readJsonLines<StoreOrder>(ORDERS_FILE);
 }
 
 export async function appendAnalyticsEvent(event: AnalyticsEvent) {
@@ -170,8 +169,7 @@ export async function appendAnalyticsEvent(event: AnalyticsEvent) {
 }
 
 export async function readAnalyticsEvents() {
-  const events = await readJsonLines<AnalyticsEvent>(EVENTS_FILE);
-  return events.length ? events : mockAnalytics();
+  return readJsonLines<AnalyticsEvent>(EVENTS_FILE);
 }
 
 function isInsideRange(value: string, filter?: CommerceSnapshotFilter) {
@@ -226,84 +224,4 @@ function countBy(values: string[]) {
   const map = new Map<string, number>();
   values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1));
   return [...map.entries()].map(([label, value]) => ({label, value})).sort((a, b) => b.value - a.value).slice(0, 8);
-}
-
-function mockOrders(): StoreOrder[] {
-  const now = Date.now();
-  return [
-    sampleOrder('ZH-DEMO-1001', 'x1-pro', 'UAE', 'pending_payment', now - 3600000),
-    sampleOrder('ZH-DEMO-1002', 'rage-shark-x', 'United States', 'processing', now - 86400000),
-    sampleOrder('ZH-DEMO-1003', 'p1-pro', 'Spain', 'shipped', now - 172800000)
-  ];
-}
-
-function sampleOrder(id: string, productSlug: ProductSlug, country: string, status: OrderStatus, time: number): StoreOrder {
-  const product = products[productSlug];
-  const shippingEstimate = shippingEstimateFor(country);
-  const quantity = productSlug === 'rage-shark-x' ? 2 : 1;
-  const subtotal = product.priceAmount * quantity;
-  return {
-    id,
-    productSlug,
-    productName: product.name,
-    quantity,
-    unitPrice: product.priceAmount,
-    currency: 'USD',
-    subtotal,
-    shippingEstimate,
-    total: subtotal + shippingEstimate,
-    status,
-    paymentMethod: 'qianhai_card',
-    paymentGateway: 'qianhai',
-    gatewayStatus: status === 'pending_payment' ? 'pending' : 'success',
-    trackingNumber: status === 'shipped' ? 'ZHSEA20260531001' : '',
-    logisticsStatus: status === 'shipped' ? 'Packed and handed to forwarder' : 'Factory confirmation',
-    customer: {
-      name: 'Demo Buyer',
-      email: 'buyer@example.com',
-      phone: '+1 555 0100',
-      company: 'Demo Resort Group',
-      country,
-      address: 'Commercial waterfront project',
-      message: 'Demo order for dashboard preview'
-    },
-    checkout: {
-      contact: 'buyer@example.com',
-      firstName: 'Demo',
-      lastName: 'Buyer',
-      apartment: '',
-      city: country === 'United States' ? 'Miami' : '',
-      state: '',
-      zip: '',
-      shippingMethod: 'standard_ocean_air_quote',
-      couponCode: '',
-      marketingOptIn: true,
-      billingSameAsShipping: true,
-      billingAddress: '',
-      cardBrand: 'Visa',
-      cardLast4: '4242',
-      cardholderName: 'Demo Buyer'
-    },
-    createdAt: new Date(time).toISOString(),
-    updatedAt: new Date(time).toISOString()
-  };
-}
-
-function mockAnalytics(): AnalyticsEvent[] {
-  return ['US', 'AE', 'ES', 'TH', 'AU'].map((country, index) => ({
-    id: `demo-event-${index}`,
-    type: index % 2 ? 'product_view' : 'page_view',
-    visitorId: `demo-visitor-${index}`,
-    sessionId: `demo-session-${index}`,
-    page: index % 2 ? '/en/products/x1-pro' : '/en',
-    pageTitle: 'ZAIHAI SURFING',
-    referrer: index % 2 ? 'https://www.google.com/' : '',
-    country,
-    city: '',
-    device: index % 2 ? 'Mobile' : 'Desktop',
-    browser: 'Chrome',
-    os: 'Windows',
-    timestamp: new Date(Date.now() - index * 3600000).toISOString(),
-    payload: {}
-  }));
 }

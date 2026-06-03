@@ -204,7 +204,7 @@ export async function getAdminDashboardData() {
     leads,
     funnel: buildFunnel(events, orders),
     popularProducts: countBy([...orders.map((order) => order.productName), ...events.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
-    trafficSources: countBy(events.map((event) => event.referrer || 'Direct')),
+    trafficSources: countBy(events.map((event) => event.referrer || '直接访问')),
     countries: countBy([...orders.map((order) => order.customer.country), ...events.map((event) => event.country)])
   };
 }
@@ -212,7 +212,7 @@ export async function getAdminDashboardData() {
 export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[]): CustomerLead[] {
   const orderLeads = orders.map((order) => ({
     id: order.id,
-    name: order.customer.name || `${order.checkout.firstName} ${order.checkout.lastName}`.trim() || 'Unknown buyer',
+    name: order.customer.name || `${order.checkout.firstName} ${order.checkout.lastName}`.trim() || '未知客户',
     email: order.customer.email || order.checkout.contact,
     phone: order.customer.phone,
     country: order.customer.country,
@@ -222,14 +222,14 @@ export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[
     interestedProducts: [order.productName],
     cartItems: [`${order.productName} x ${order.quantity}`],
     lastActiveTime: order.updatedAt || order.createdAt,
-    trafficSource: 'Website checkout',
+    trafficSource: '网站结账',
     notes: order.customer.message || order.logisticsStatus
   }));
   const visitorIdsWithOrder = new Set(orders.map((order) => order.id));
   const checkoutEvents = events.filter((event) => /checkout|commerce_click|contact/i.test(event.type) && !visitorIdsWithOrder.has(event.sessionId));
   const eventLeads = checkoutEvents.slice(-30).reverse().map((event) => ({
     id: event.id,
-    name: 'Anonymous visitor',
+    name: '匿名访客',
     email: '',
     phone: '',
     country: event.country,
@@ -239,8 +239,8 @@ export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[
     interestedProducts: [String(event.payload?.productSlug || event.page)].filter(Boolean),
     cartItems: [],
     lastActiveTime: event.timestamp,
-    trafficSource: event.referrer || 'Direct',
-    notes: `Last page: ${event.page}`
+    trafficSource: event.referrer || '直接访问',
+    notes: `最后访问页面：${event.page}`
   }));
   return [...orderLeads, ...eventLeads].sort((a, b) => b.lastActiveTime.localeCompare(a.lastActiveTime));
 }
@@ -253,12 +253,12 @@ function buildFunnel(events: AnalyticsEvent[], orders: StoreOrder[]) {
   const paymentStarted = orders.filter((order) => order.gatewayStatus === 'pending' || order.gatewayStatus === 'success').length;
   const paid = orders.filter((order) => ['paid', 'processing', 'shipped', 'delivered'].includes(order.status)).length;
   return [
-    {label: 'Visit website', value: pageVisitors},
-    {label: 'View product', value: productViewers},
-    {label: 'Begin checkout', value: checkoutStarters},
-    {label: 'Create order', value: orderCount},
-    {label: 'Start payment', value: paymentStarted},
-    {label: 'Paid', value: paid}
+    {label: '访问网站', value: pageVisitors},
+    {label: '浏览产品', value: productViewers},
+    {label: '进入结账', value: checkoutStarters},
+    {label: '创建订单', value: orderCount},
+    {label: '发起支付', value: paymentStarted},
+    {label: '完成支付', value: paid}
   ].map((row, index, rows) => ({
     ...row,
     conversion: index === 0 ? 100 : rows[index - 1].value ? Math.round((row.value / rows[index - 1].value) * 1000) / 10 : 0
@@ -278,10 +278,10 @@ function createSeedStore(): AdminStore {
     id: `cat-${index + 1}`,
     name,
     slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-    description: `Commercial ${name.toLowerCase()} category for ZAIHAI B2B and B2C buyers.`,
+    description: `在海 ${name} 产品分类，用于 B2B 项目客户和零售客户筛选。`,
     coverImage: products[productSlugs[index] || 'x1'].image,
     seoTitle: `${name} Supplier | ZAIHAI SURFING`,
-    seoDescription: `Explore ZAIHAI ${name.toLowerCase()} for resorts, rentals, water parks and distributors.`,
+    seoDescription: `查看在海 ${name}，适用于度假村、租赁、水上乐园和经销商。`,
     sortOrder: index + 1,
     status: 'published' as const,
     parentId: '',
@@ -303,8 +303,8 @@ function createSeedStore(): AdminStore {
         `/assets/catalog/${slug}/parameters.png`,
         `/assets/catalog/${slug}/features.png`
       ],
-      shortDescription: `${product.name} prepared for resort, rental, distributor and water entertainment projects.`,
-      fullDescription: `${product.name} is managed in the ZAIHAI backend as a commercial water sports product with model parameters, buyer scenarios, pricing and SEO fields.`,
+      shortDescription: `${product.name}，适用于度假村、租赁、经销商和商业水上娱乐项目。`,
+      fullDescription: `${product.name} 已接入在海后台，可管理参数、应用场景、价格、库存和 SEO 字段。`,
       keyFeatures: product.specs,
       specifications: product.specs.map((value, specIndex) => ({label: ['Power/System', 'Battery/Voltage', 'Speed', 'Endurance/Feature'][specIndex] || `Spec ${specIndex + 1}`, value})),
       applicationScenarios: ['Resorts', 'Rental businesses', 'Water parks', 'Yacht clubs', 'Distributors'],
@@ -314,8 +314,8 @@ function createSeedStore(): AdminStore {
       sku: `ZH-${String(slug).toUpperCase()}`,
       stock: 20,
       moq: 1,
-      weightDimension: 'Confirm by model and export package',
-      shippingInfo: 'Sea freight, air freight or buyer forwarder pickup available after quotation.',
+      weightDimension: '按型号和出口包装确认',
+      shippingInfo: '报价后可确认海运、空运或客户货代自提。',
       seoTitle: `${product.name} | ZAIHAI SURFING`,
       seoDescription: `${product.name} for overseas resorts, rentals, yacht clubs, water parks and distributors.`,
       status: 'published' as const,
@@ -368,7 +368,7 @@ function createSeedStore(): AdminStore {
       whatsapp: '+86 17621485205',
       address: 'Room 110, 1st Floor, Building 1, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China',
       paymentCurrency: 'USD',
-      qianhaiStatus: process.env.QIANHAI_MERCHANT_ID ? 'Configured' : 'Waiting for Qianhai credentials',
+      qianhaiStatus: process.env.QIANHAI_MERCHANT_ID ? '已配置' : '等待前海通道参数',
       cookieConsentReady: false,
       updatedAt: createdAt
     }

@@ -1,16 +1,17 @@
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
+import {zhOrderStatus, zhPaymentStatus} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
 import {getCommerceSnapshot} from '@/lib/commerceStore';
 
 export const dynamic = 'force-dynamic';
 
 const rangeLabels: Record<string, string> = {
-  day: 'Today',
-  week: 'This week',
-  month: 'This month',
-  year: 'This year',
-  custom: 'Custom range'
+  day: '今天',
+  week: '本周',
+  month: '本月',
+  year: '今年',
+  custom: '自定义'
 };
 
 function money(value: number) {
@@ -62,14 +63,14 @@ function parseAdminTimeFilter(searchParams: Record<string, string | string[] | u
     to = endOfDay(parseDate(endParam, now));
     if (from < earliestCustomStart) {
       from = earliestCustomStart;
-      note = 'Custom query is limited to the latest 2 years.';
+      note = '自定义查询最多保留最近 2 年。';
     }
     if (from > to) [from, to] = [startOfDay(to), endOfDay(from)];
   }
 
   const start = dateInputValue(from);
   const end = dateInputValue(to);
-  return {range, start, end, from, to, summary: `${rangeLabels[range]} | ${start} to ${end}${note ? ` | ${note}` : ''}`};
+  return {range, start, end, from, to, summary: `${rangeLabels[range]} | ${start} 至 ${end}${note ? ` | ${note}` : ''}`};
 }
 
 export default async function AdminDashboardPage({
@@ -84,50 +85,64 @@ export default async function AdminDashboardPage({
   ]);
 
   return (
-    <AdminShell active="Dashboard">
+    <AdminShell active="数据总览">
       <div className="admin-title" id="overview">
-        <p className="eyebrow">B2B + B2C commerce backend</p>
-        <h1>Orders, Leads, Content and Conversion Data</h1>
-        <p>The backend is prepared for CMS management, checkout tracking, Qianhai payment ports and conversion analytics without changing the approved storefront design.</p>
-        <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="Dashboard time range" summary={timeFilter.summary} />
+        <p className="eyebrow">B2B + B2C 后台系统</p>
+        <h1>订单、线索、内容与转化数据</h1>
+        <p>后台只显示真实采集到的数据：访问事件来自前台埋点，订单来自结账提交，内容来自后台管理数据。</p>
+        <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="数据统计时间" summary={timeFilter.summary} />
       </div>
 
       <div className="admin-metrics">
-        <article><span>Today / Range orders</span><strong>{snapshot.metrics.orders}</strong><small>Submitted checkout orders</small></article>
-        <article><span>Pending payment</span><strong>{snapshot.metrics.pendingPayment}</strong><small>Need card/T/T confirmation</small></article>
-        <article><span>Estimated revenue</span><strong>{money(snapshot.metrics.revenue)}</strong><small>Paid/processing/shipped</small></article>
-        <article><span>Visitors captured</span><strong>{snapshot.metrics.visitors}</strong><small>Anonymous visitor IDs</small></article>
-        <article><span>Products</span><strong>{backend.metrics.publishedProducts}/{backend.metrics.products}</strong><small>Published / total</small></article>
-        <article><span>Content posts</span><strong>{backend.metrics.posts}</strong><small>Blog and news CMS</small></article>
-        <article><span>Leads</span><strong>{backend.metrics.leads}</strong><small>Orders + abandoned checkout</small></article>
-        <article><span>Conversion</span><strong>{backend.metrics.conversionRate}%</strong><small>Orders / unique visitors</small></article>
+        <article><span>订单数</span><strong>{snapshot.metrics.orders}</strong><small>客户提交结账后生成</small></article>
+        <article><span>待付款</span><strong>{snapshot.metrics.pendingPayment}</strong><small>等待信用卡/T/T/PayPal 确认</small></article>
+        <article><span>已确认销售额</span><strong>{money(snapshot.metrics.revenue)}</strong><small>已付款/处理中/已发货订单</small></article>
+        <article><span>真实访客</span><strong>{snapshot.metrics.visitors}</strong><small>前台匿名访客 ID</small></article>
+        <article><span>产品数据</span><strong>{backend.metrics.publishedProducts}/{backend.metrics.products}</strong><small>已发布 / 总数</small></article>
+        <article><span>内容数据</span><strong>{backend.metrics.posts}</strong><small>博客与新闻</small></article>
+        <article><span>客户线索</span><strong>{backend.metrics.leads}</strong><small>订单 + 结账行为</small></article>
+        <article><span>转化率</span><strong>{backend.metrics.conversionRate}%</strong><small>订单 / 独立访客</small></article>
       </div>
 
       <section className="admin-panel">
         <div>
-          <p className="eyebrow">Payment Gateway</p>
-          <h2>Qianhai Credit Card Port</h2>
-          <p>Status: <strong>{snapshot.paymentGateway.status}</strong></p>
+          <p className="eyebrow">支付接口</p>
+          <h2>前海信用卡通道</h2>
+          <p>状态：<strong>{snapshot.paymentGateway.status}</strong></p>
         </div>
         <dl className="admin-config-list">
-          <div><dt>Create payment</dt><dd>{snapshot.paymentGateway.createEndpoint}</dd></div>
-          <div><dt>Payment callback</dt><dd>{snapshot.paymentGateway.notifyEndpoint}</dd></div>
-          <div><dt>Provider</dt><dd>{snapshot.paymentGateway.provider}</dd></div>
-          <div><dt>Required env</dt><dd>QIANHAI_MERCHANT_ID, QIANHAI_GATEWAY_URL, QIANHAI_SECRET_KEY</dd></div>
+          <div><dt>创建支付</dt><dd>{snapshot.paymentGateway.createEndpoint}</dd></div>
+          <div><dt>支付回调</dt><dd>{snapshot.paymentGateway.notifyEndpoint}</dd></div>
+          <div><dt>通道</dt><dd>{snapshot.paymentGateway.provider}</dd></div>
+          <div><dt>所需变量</dt><dd>QIANHAI_MERCHANT_ID, QIANHAI_GATEWAY_URL, QIANHAI_SECRET_KEY</dd></div>
         </dl>
       </section>
 
       <section className="admin-panel">
         <div>
-          <p className="eyebrow">Conversion funnel</p>
-          <h2>Buyer Journey</h2>
+          <p className="eyebrow">同步状态</p>
+          <h2>前台与后台实时同步检查</h2>
+          <p>后台每次打开都会重新读取订单、访问事件和 CMS 数据，不使用演示数据。</p>
+        </div>
+        <dl className="admin-config-list">
+          <div><dt>访问统计</dt><dd>前台 `/api/analytics/track` 写入，后台“访问统计/数据总览”实时读取。</dd></div>
+          <div><dt>订单数据</dt><dd>前台结账 `/api/checkout/create-order` 写入，后台“订单管理/客户管理/线索”实时读取。</dd></div>
+          <div><dt>CMS 数据</dt><dd>后台产品、分类、媒体、博客、新闻表单写入后台数据源。</dd></div>
+          <div><dt>当前存储</dt><dd>{process.env.DATABASE_URL ? '已配置数据库连接' : '文件型临时存储；正式商用需要配置 DATABASE_URL'}</dd></div>
+        </dl>
+      </section>
+
+      <section className="admin-panel">
+        <div>
+          <p className="eyebrow">转化漏斗</p>
+          <h2>客户访问路径</h2>
         </div>
         <div className="admin-grid-list">
           {backend.funnel.map((step) => (
             <article key={step.label}>
               <strong>{step.label}</strong>
-              <span>{step.value.toLocaleString()} users/events</span>
-              <small>{step.conversion}% from previous step</small>
+              <span>{step.value.toLocaleString()} 人/次</span>
+              <small>相对上一步 {step.conversion}%</small>
             </article>
           ))}
         </div>
@@ -135,26 +150,26 @@ export default async function AdminDashboardPage({
 
       <section className="admin-panel">
         <div>
-          <p className="eyebrow">Recent orders</p>
-          <h2>Order Feed</h2>
+          <p className="eyebrow">最新订单</p>
+          <h2>订单记录</h2>
         </div>
         <div className="admin-table-wrap">
           <table>
             <thead>
-              <tr><th>Order</th><th>Date</th><th>Product</th><th>Country</th><th>Total</th><th>Status</th><th>Payment</th></tr>
+              <tr><th>订单号</th><th>日期</th><th>产品</th><th>国家/地区</th><th>金额</th><th>订单状态</th><th>支付状态</th></tr>
             </thead>
             <tbody>
-              {snapshot.recentOrders.map((order) => (
+              {snapshot.recentOrders.length ? snapshot.recentOrders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
                   <td>{order.createdAt.slice(0, 10)}</td>
                   <td>{order.productName} x {order.quantity}</td>
                   <td>{order.customer.country}</td>
                   <td>{money(order.total)}</td>
-                  <td>{order.status}</td>
-                  <td>{order.gatewayStatus}</td>
+                  <td>{zhOrderStatus(order.status)}</td>
+                  <td>{zhPaymentStatus(order.gatewayStatus)}</td>
                 </tr>
-              ))}
+              )) : <tr><td colSpan={7}>暂无真实订单数据。</td></tr>}
             </tbody>
           </table>
         </div>
@@ -162,12 +177,12 @@ export default async function AdminDashboardPage({
 
       <section className="admin-panel">
         <div>
-          <p className="eyebrow">Demand signals</p>
-          <h2>Countries and Product Demand</h2>
+          <p className="eyebrow">需求信号</p>
+          <h2>访问国家与产品需求</h2>
         </div>
         <div className="admin-two-col">
-          <div className="admin-bar-list">{backend.countries.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>)}</div>
-          <div className="admin-bar-list">{backend.popularProducts.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>)}</div>
+          <div className="admin-bar-list">{backend.countries.length ? backend.countries.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实国家/地区数据</span><strong>0</strong></p>}</div>
+          <div className="admin-bar-list">{backend.popularProducts.length ? backend.popularProducts.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实产品需求数据</span><strong>0</strong></p>}</div>
         </div>
       </section>
     </AdminShell>

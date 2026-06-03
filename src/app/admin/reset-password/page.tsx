@@ -2,19 +2,19 @@ export default function AdminResetPasswordPage() {
   return (
     <main className="admin-login-page">
       <form className="admin-login-card" action="/api/admin/reset-password" method="post">
-        <p className="eyebrow">Password reset</p>
-        <h1>Set New Password</h1>
-        <p>This page is prepared for token-based password reset. Configure SMTP and token storage before public use.</p>
+        <p className="eyebrow">密码重置</p>
+        <h1>设置新密码</h1>
+        <p>此页面预留给邮件 Token 重置流程。正式使用前需要配置 SMTP 和重置 Token 存储。</p>
         <label>
-          Reset token
-          <input name="token" required placeholder="Token from email" />
+          重置 Token
+          <input name="token" required placeholder="邮件中的 Token" />
         </label>
         <label>
-          New password
-          <input name="password" type="password" required placeholder="New secure password" />
+          新密码
+          <input name="password" type="password" required placeholder="新的安全密码" />
         </label>
-        <button className="button primary" type="submit">Reset Password</button>
-        <small><a href="/admin/login">Back to login</a></small>
+        <button className="button primary" type="submit">重置密码</button>
+        <small><a href="/admin/login">返回登录</a></small>
       </form>
     </main>
   );

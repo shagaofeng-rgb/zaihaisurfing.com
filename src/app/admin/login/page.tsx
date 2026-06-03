@@ -4,24 +4,24 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
   return (
     <main className="admin-login-page">
       <form className="admin-login-card" action="/api/admin/login" method="post">
-        <p className="eyebrow">ZAIHAI Admin</p>
-        <h1>Commerce Dashboard Login</h1>
-        <p>Use the admin account to view orders, logistics, checkout events and Qianhai gateway status.</p>
-        {query.error ? <strong className="admin-login-error">Login failed. Check email and password.</strong> : null}
-        {query.reset ? <strong className="admin-login-notice">Password reset request received. Configure SMTP to send secure reset links.</strong> : null}
+        <p className="eyebrow">在海后台</p>
+        <h1>后台登录</h1>
+        <p>登录后可查看订单、客户线索、访问统计、转化漏斗和支付接口状态。</p>
+        {query.error ? <strong className="admin-login-error">登录失败，请检查邮箱和密码。</strong> : null}
+        {query.reset ? <strong className="admin-login-notice">已收到重置请求。需要配置 SMTP 后才能发送安全重置邮件。</strong> : null}
         <label>
-          Email
+          邮箱
           <input name="email" type="email" defaultValue="davidsha@zaihaisurfing.com" required />
         </label>
         <label>
-          Password
-          <input name="password" type="password" placeholder="Set ADMIN_PASSWORD in Vercel" required />
+          密码
+          <input name="password" type="password" placeholder="请输入后台密码" required />
         </label>
         <button className="button primary" type="submit">
-          Login
+          登录后台
         </button>
-        <small><a href="/admin/forgot-password">Forgot password?</a></small>
-        <small>Local development fallback: zaihai-admin-demo. Production requires ADMIN_PASSWORD in Vercel.</small>
+        <small><a href="/admin/forgot-password">忘记密码？</a></small>
+        <small>生产环境密码存放在 Vercel 环境变量中，不会写入前端代码。</small>
       </form>
     </main>
   );

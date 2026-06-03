@@ -8,30 +8,30 @@ type AdminTimeFilterProps = {
 
 export default function AdminTimeFilter({range, start, end, label, summary}: AdminTimeFilterProps) {
   return (
-    <form className="admin-time-filter" action="/admin" method="get" aria-label={`${label} time filter`}>
+    <form className="admin-time-filter" action="/admin" method="get" aria-label={`${label}时间筛选`}>
       <div>
         <span>{label}</span>
         <small>{summary}</small>
       </div>
       <label>
-        <span>Period</span>
+        <span>周期</span>
         <select name="range" defaultValue={range}>
-          <option value="day">Today</option>
-          <option value="week">This week</option>
-          <option value="month">This month</option>
-          <option value="year">This year</option>
-          <option value="custom">Custom</option>
+          <option value="day">今天</option>
+          <option value="week">本周</option>
+          <option value="month">本月</option>
+          <option value="year">今年</option>
+          <option value="custom">自定义</option>
         </select>
       </label>
       <label>
-        <span>From</span>
+        <span>开始</span>
         <input type="date" name="start" defaultValue={start} />
       </label>
       <label>
-        <span>To</span>
+        <span>结束</span>
         <input type="date" name="end" defaultValue={end} />
       </label>
-      <button type="submit">Apply</button>
+      <button type="submit">应用</button>
     </form>
   );
 }

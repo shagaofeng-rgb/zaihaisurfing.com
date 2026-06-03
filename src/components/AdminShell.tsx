@@ -1,18 +1,18 @@
 import {requireAdminSession} from '@/lib/adminAuth';
 
 const navItems = [
-  ['Dashboard', '/admin'],
-  ['Products', '/admin/products'],
-  ['Categories', '/admin/categories'],
-  ['Media', '/admin/media'],
-  ['Blog', '/admin/blog'],
-  ['News', '/admin/news'],
-  ['Orders', '/admin/orders'],
-  ['Customers', '/admin/customers'],
-  ['Leads', '/admin/leads'],
-  ['Analytics', '/admin/analytics'],
-  ['Funnel', '/admin/funnel'],
-  ['Settings', '/admin/settings']
+  ['数据总览', '/admin'],
+  ['产品管理', '/admin/products'],
+  ['分类管理', '/admin/categories'],
+  ['媒体库', '/admin/media'],
+  ['博客管理', '/admin/blog'],
+  ['新闻管理', '/admin/news'],
+  ['订单管理', '/admin/orders'],
+  ['客户管理', '/admin/customers'],
+  ['线索/弃单', '/admin/leads'],
+  ['访问统计', '/admin/analytics'],
+  ['转化漏斗', '/admin/funnel'],
+  ['系统设置', '/admin/settings']
 ] as const;
 
 export default async function AdminShell({active, children}: {active: string; children: React.ReactNode}) {
@@ -22,7 +22,7 @@ export default async function AdminShell({active, children}: {active: string; ch
       <aside className="admin-sidebar">
         <a className="admin-logo" href="/admin">
           <span>ZH</span>
-          <strong>ZAIHAI Commerce Admin</strong>
+          <strong>在海后台管理</strong>
         </a>
         <nav>
           {navItems.map(([label, href]) => (
@@ -32,10 +32,10 @@ export default async function AdminShell({active, children}: {active: string; ch
           ))}
         </nav>
         <div className="admin-sidebar-foot">
-          <small>Current account</small>
+          <small>当前账号</small>
           <span>{session.email}</span>
           <form action="/api/admin/logout" method="post">
-            <button type="submit">Logout</button>
+            <button type="submit">退出登录</button>
           </form>
         </div>
       </aside>
