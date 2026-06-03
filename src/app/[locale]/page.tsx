@@ -87,25 +87,29 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
             {
               market: 'GCC',
               title: 'Luxury resorts, yacht clubs & Red Sea tourism',
-              text: 'Strong fit for UAE, Saudi Arabia, Qatar and Gulf buyers building premium beach and yacht-side experiences.'
+              text: 'Strong fit for UAE, Saudi Arabia, Qatar and Gulf buyers building premium beach and yacht-side experiences.',
+              image: '/assets/banners/market-middle-east.png'
             },
             {
               market: 'United States',
               title: 'Lake rentals, marinas & adventure operators',
-              text: 'Ideal for Florida, California, lake resorts, rental businesses and outdoor recreation distributors.'
+              text: 'Ideal for Florida, California, lake resorts, rental businesses and outdoor recreation distributors.',
+              image: '/assets/banners/market-north-america.png'
             },
             {
               market: 'Mediterranean Europe',
               title: 'Beach clubs, coastal resorts & tourism rentals',
-              text: 'Suitable for Spain, Greece, Italy and France where coastal leisure and premium water sports are mature.'
+              text: 'Suitable for Spain, Greece, Italy and France where coastal leisure and premium water sports are mature.',
+              image: '/assets/banners/market-europe.png'
             },
             {
               market: 'Island Resorts',
               title: 'Maldives, Thailand & Indonesia resort activities',
-              text: 'Practical for island hotels, lagoon experiences, water sports centers and tourism attraction packages.'
+              text: 'Practical for island hotels, lagoon experiences, water sports centers and tourism attraction packages.',
+              image: '/assets/banners/market-asia.png'
             }
           ].map((item) => (
-            <article key={item.market}>
+            <article key={item.market} style={{'--market-bg': `url(${item.image})`} as React.CSSProperties}>
               <span>{item.market}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
