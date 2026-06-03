@@ -36,11 +36,11 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
           </Link>
           <Link className="collection-card" href="/products/rage-shark-x">
             <span>{copy.mega.electricWaterKarts}</span>
-            <img src="/assets/catalog/rage-shark-x/main-boat.png" alt="Rage Shark X electric water kart collection" />
+            <img src="/assets/catalog/rage-shark-x/main-boat.png" alt="Rage Shark X electric go-kart boat collection" />
           </Link>
           <Link className="collection-card" href="/products/p1-pro">
             <span>{copy.mega.fuelSurfboards}</span>
-            <img src="/assets/catalog/p1-pro/main.png" alt="ZAIHAI fuel-powered surfboard collection" />
+            <img src="/assets/catalog/p1-pro/product.png" alt="ZAIHAI fuel-powered surfboard collection" />
           </Link>
           <Link className="collection-card" href="/factory">
             <span>{copy.mega.oem}</span>

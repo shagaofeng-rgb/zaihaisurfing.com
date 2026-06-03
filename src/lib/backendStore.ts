@@ -274,6 +274,13 @@ function countBy(values: string[]) {
 function createSeedStore(): AdminStore {
   const createdAt = now();
   const categoryNames = [...new Set(productSlugs.map((slug) => products[slug].category))];
+  const productGalleryImages: Record<ProductSlug, string[]> = {
+    x1: ['/assets/catalog/x1/product.png', '/assets/catalog/x1/parts.png', '/assets/catalog/x1/detail.png', '/assets/catalog/x1/battery-detail.png', '/assets/catalog/x1/tail-detail.png'],
+    'x1-pro': ['/assets/catalog/x1-pro/product.png', '/assets/catalog/x1-pro/parts.png', '/assets/catalog/x1-pro/parts-detail.png', '/assets/catalog/x1-pro/battery-detail.png', '/assets/catalog/x1-pro/tail-detail.png'],
+    'rage-shark-x': ['/assets/catalog/rage-shark-x/main-boat.png', '/assets/catalog/rage-shark-x/front.png', '/assets/catalog/rage-shark-x/side.png', '/assets/catalog/rage-shark-x/parts.png'],
+    p1: ['/assets/catalog/p1/hero.png', '/assets/catalog/p1/detail.png', '/assets/catalog/p1/bottom.png', '/assets/catalog/p1/tail.png'],
+    'p1-pro': ['/assets/catalog/p1-pro/product.png', '/assets/catalog/p1-pro/detail.png', '/assets/catalog/p1-pro/bottom.png', '/assets/catalog/p1-pro/tail.png', '/assets/catalog/p1-pro/scene-01.png', '/assets/catalog/p1-pro/scene-02.png']
+  };
   const categories = categoryNames.map((name, index) => ({
     id: `cat-${index + 1}`,
     name,
@@ -297,12 +304,7 @@ function createSeedStore(): AdminStore {
       categorySlug: category?.slug || '',
       categoryName: product.category,
       coverImage: product.image,
-      galleryImages: [
-        product.image,
-        `/assets/catalog/${slug}/product.png`,
-        `/assets/catalog/${slug}/parameters.png`,
-        `/assets/catalog/${slug}/features.png`
-      ],
+      galleryImages: productGalleryImages[slug],
       shortDescription: `${product.name}，适用于度假村、租赁、经销商和商业水上娱乐项目。`,
       fullDescription: `${product.name} 已接入在海后台，可管理参数、应用场景、价格、库存和 SEO 字段。`,
       keyFeatures: product.specs,

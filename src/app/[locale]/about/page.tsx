@@ -40,7 +40,7 @@ export default async function AboutPage({params}: {params: Promise<{locale: Loca
           <p className="eyebrow">Premium water sports equipment brand</p>
           <h2>Water sports equipment for commercial projects and global buyers</h2>
           <p>
-            ZAIHAI SURFING focuses on electric surfboards, fuel-powered surfboards, electric water karts and commercial water entertainment product supply for overseas buyers. We help buyers compare models, plan project packages, prepare spare parts and coordinate export support before shipment.
+            ZAIHAI SURFING focuses on electric surfboards, fuel-powered surfboards, electric go-kart boats and commercial water entertainment product supply for overseas buyers. We help buyers compare models, plan project packages, prepare spare parts and coordinate export support before shipment.
           </p>
         </div>
         <div className="about-split-grid">

@@ -18,7 +18,7 @@ export default async function AdminMediaPage() {
           <h2>添加已有图片</h2>
         </div>
         <form className="admin-form-grid" action="/api/admin/media" method="post">
-          <input name="url" placeholder="/assets/catalog/x1/main.png" required />
+          <input name="url" placeholder="/assets/catalog/x1/product.png" required />
           <input name="alt" placeholder="图片 ALT 描述" required />
           <input name="usage" placeholder="使用位置，例如产品/新闻" />
           <button type="submit">加入媒体库</button>

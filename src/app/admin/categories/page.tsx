@@ -21,7 +21,7 @@ export default async function AdminCategoriesPage() {
         <form className="admin-form-grid" action="/api/admin/categories" method="post">
           <input name="name" placeholder="分类名称" required />
           <input name="slug" placeholder="分类链接 slug" required />
-          <input name="coverImage" placeholder="/assets/catalog/x1/main.png" />
+          <input name="coverImage" placeholder="/assets/catalog/x1/product.png" />
           <input name="seoTitle" placeholder="SEO 标题" />
           <button type="submit">保存分类</button>
         </form>

@@ -7,11 +7,11 @@ import {uiCopy} from '@/lib/uiCopy';
 
 const scenarioImages = [
   '/assets/banners/zaihai-main-banner.png',
-  '/assets/catalog/x1/main.png',
+  '/assets/catalog/x1/product.png',
   '/assets/catalog/rage-shark-x/main-boat.png',
   '/assets/catalog/x1-pro/product.png',
   '/assets/catalog/p1-pro/scene-01.png',
-  '/assets/catalog/p1/main.png'
+  '/assets/catalog/p1/hero.png'
 ];
 
 const solutionSections = [
@@ -19,7 +19,7 @@ const solutionSections = [
     id: 'resorts-hotels',
     title: 'Resorts & Hotels',
     buyer: 'Premium guest experience teams',
-    text: 'Create a high-visibility water attraction for beach resorts, island hotels, lake properties and premium guest programs. Electric surfboards help create photo and video moments, while water karts can serve a broader family audience.',
+    text: 'Create a high-visibility water attraction for beach resorts, island hotels, lake properties and premium guest programs. Electric surfboards help create photo and video moments, while go-kart boats can serve a broader family audience.',
     products: ['ZAIHAI X1 Pro', 'ZAIHAI X1', 'Rage Shark X'],
     quantity: 'Starter quantity: 1-2 demo units, then scale by guest demand',
     considerations: ['Rider supervision', 'Charging area', 'Photo/video experience', 'Spare battery and safety accessories']
@@ -55,7 +55,7 @@ const solutionSections = [
     id: 'distributors',
     title: 'Distributors',
     buyer: 'Importers, dealers and regional water sports suppliers',
-    text: 'Build a local product line with electric surfboards, fuel surfboards, water karts, spare parts, model comparison support and product media for sales teams.',
+    text: 'Build a local product line with electric surfboards, fuel surfboards, go-kart boats, spare parts, model comparison support and product media for sales teams.',
     products: ['Full catalog', 'Distributor starter package'],
     quantity: 'Starter quantity: model mix to be confirmed by target market',
     considerations: ['Catalog positioning', 'OEM branding', 'Spare parts supply', 'Product media and showroom display']
@@ -64,8 +64,8 @@ const solutionSections = [
     id: 'tourism-projects',
     title: 'Tourism Projects',
     buyer: 'Scenic lakes, island resorts, beach clubs and adventure parks',
-    text: 'Match products to water area, customer profile and operating model. Tourism projects may combine easy-drive water karts with electric or fuel-powered surfboards for a stronger attraction mix.',
-    products: ['Electric surfboards', 'Fuel-powered surfboards', 'Electric water karts'],
+    text: 'Match products to water area, customer profile and operating model. Tourism projects may combine easy-drive go-kart boats with electric or fuel-powered surfboards for a stronger attraction mix.',
+    products: ['Electric surfboards', 'Fuel-powered surfboards', 'Electric go-kart boats'],
     quantity: 'Starter quantity: project recommendation required',
     considerations: ['Water area type', 'Guest skill level', 'Maintenance staff', 'Export and shipping planning']
   }

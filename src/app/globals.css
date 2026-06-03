@@ -2400,6 +2400,7 @@ a {
 .technical-specs table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .technical-specs th,
@@ -2407,6 +2408,7 @@ a {
   padding: 15px 24px;
   border-top: 1px solid var(--line);
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .technical-specs th {
@@ -2418,6 +2420,7 @@ a {
 
 .technical-specs td {
   font-weight: 900;
+  line-height: 1.45;
 }
 
 .use-case-strip {
@@ -3965,6 +3968,20 @@ html[dir="rtl"] .catalog-product-card dd {
     max-width: min(290px, 100%);
     overflow-wrap: anywhere;
     word-break: normal;
+  }
+
+  .technical-specs .section-heading {
+    padding: 18px 16px 0;
+  }
+
+  .technical-specs th,
+  .technical-specs td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .technical-specs th {
+    width: 34%;
   }
 
   .map-copy h2 {

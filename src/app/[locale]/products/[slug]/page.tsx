@@ -6,15 +6,23 @@ import {Link} from '@/i18n/navigation';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
-import {productSlugs, products, type ProductSlug} from '@/lib/site';
+import {productDetailedSpecs, productSlugs, products, type ProductSlug} from '@/lib/site';
 import {uiCopy} from '@/lib/uiCopy';
 
 const productGalleries: Record<ProductSlug, string[]> = {
-  x1: ['/assets/catalog/x1/main.png', '/assets/catalog/x1/product.png', '/assets/catalog/x1/parameters.png', '/assets/catalog/x1/parts.png'],
-  'x1-pro': ['/assets/catalog/x1-pro/main.png', '/assets/catalog/x1-pro/product.png', '/assets/catalog/x1-pro/parameters.png', '/assets/catalog/x1-pro/parts.png'],
-  'rage-shark-x': ['/assets/catalog/rage-shark-x/main.png', '/assets/catalog/rage-shark-x/main-boat.png', '/assets/catalog/rage-shark-x/front.png', '/assets/catalog/rage-shark-x/side.png'],
-  p1: ['/assets/catalog/p1/main.png', '/assets/catalog/p1/hero.png', '/assets/catalog/p1/detail.png', '/assets/catalog/p1/bottom.png'],
-  'p1-pro': ['/assets/catalog/p1-pro/main.png', '/assets/catalog/p1-pro/product.png', '/assets/catalog/p1-pro/scene-01.png', '/assets/catalog/p1-pro/scene-02.png']
+  x1: ['/assets/catalog/x1/product.png', '/assets/catalog/x1/parts.png', '/assets/catalog/x1/detail.png', '/assets/catalog/x1/battery-detail.png', '/assets/catalog/x1/tail-detail.png'],
+  'x1-pro': ['/assets/catalog/x1-pro/product.png', '/assets/catalog/x1-pro/parts.png', '/assets/catalog/x1-pro/parts-detail.png', '/assets/catalog/x1-pro/battery-detail.png', '/assets/catalog/x1-pro/tail-detail.png'],
+  'rage-shark-x': ['/assets/catalog/rage-shark-x/main-boat.png', '/assets/catalog/rage-shark-x/front.png', '/assets/catalog/rage-shark-x/side.png', '/assets/catalog/rage-shark-x/parts.png'],
+  p1: ['/assets/catalog/p1/hero.png', '/assets/catalog/p1/detail.png', '/assets/catalog/p1/bottom.png', '/assets/catalog/p1/tail.png'],
+  'p1-pro': ['/assets/catalog/p1-pro/product.png', '/assets/catalog/p1-pro/detail.png', '/assets/catalog/p1-pro/bottom.png', '/assets/catalog/p1-pro/tail.png', '/assets/catalog/p1-pro/scene-01.png', '/assets/catalog/p1-pro/scene-02.png']
+};
+
+const quickSpecLabels: Record<ProductSlug, string[]> = {
+  x1: ['Power', 'Voltage', 'Speed', 'Endurance'],
+  'x1-pro': ['Power', 'Voltage', 'Speed', 'Waterproof'],
+  'rage-shark-x': ['Power', 'Battery', 'Speed', 'Endurance'],
+  p1: ['Power', 'Max speed', 'Engine', 'Fuel tank'],
+  'p1-pro': ['Power', 'Max speed', 'Engine', 'Fuel tank']
 };
 
 const productContent: Record<ProductSlug, {
@@ -45,11 +53,11 @@ const productContent: Record<ProductSlug, {
     inspection: ['Power system, waterproof areas, battery mounting and accessories are checked before shipment.', 'Pre-shipment photo confirmation and packing review can be shared with the buyer.', 'Export documentation support includes packing list, shipping size and lithium battery notes.']
   },
   'rage-shark-x': {
-    intro: 'Rage Shark X is an electric water kart boat designed for scenic attractions, water parks, family-friendly resort activities and operators who want an easy-drive product with strong visual appeal.',
-    badges: ['Family attraction', 'Electric water kart', 'Easy to operate'],
+    intro: 'Rage Shark X is an electric go-kart boat designed for scenic attractions, water parks, family-friendly resort activities and operators who want an easy-drive product with strong visual appeal.',
+    badges: ['Family attraction', 'Electric go-kart boat', 'Easy to operate'],
     sellingPoints: ['Easy-drive guest experience', 'Family-friendly attraction', 'Controlled water area fit', 'Fleet operation support'],
     useCases: ['Water parks', 'Scenic lakes', 'Family resort programs', 'Rental attractions'],
-    receive: ['Rage Shark X water kart boat with matched electric system and standard accessory package.', 'Beginner-friendly ride experience for families, scenic lakes, resorts and water parks.', 'Commercial product images and specification references for ticketing or rental promotion.'],
+    receive: ['Rage Shark X electric go-kart boat with matched electric system and standard accessory package.', 'Beginner-friendly ride experience for families, scenic lakes, resorts and water parks.', 'Commercial product images and specification references for ticketing or rental promotion.'],
     support: ['Suitable for operators who want faster guest turnover and lower learning difficulty than surfboards.', 'Fleet planning support for charging workflow, guest route and operating area.', 'Distributor support for positioning Rage Shark X as a water attraction product line.'],
     inspection: ['Hull appearance, steering, power system and accessory packing are checked before delivery.', 'Packaging and loading photos can be supplied before export.', 'Shipping plan can be coordinated for sample review or multi-unit fleet orders.']
   },
@@ -106,18 +114,8 @@ export default async function ProductDetailPage({
   const alt = await getTranslations({locale, namespace: 'alt'});
   const copy = uiCopy[locale].productDetail;
   const specRows = [
-    ['Model', names(productSlug)],
-    ['Product type', product.category],
-    ['Power', product.specs[0] || 'To be confirmed'],
-    ['Voltage / Engine', product.specs[1] || 'To be confirmed'],
-    ['Top speed', product.specs[2] || 'To be confirmed'],
-    ['Runtime', product.specs[3] || 'To be confirmed'],
-    ['Charging time', productSlug.includes('p1') ? 'Not applicable' : 'To be confirmed'],
-    ['Board / hull material', 'To be confirmed'],
-    ['Weight', 'To be confirmed'],
-    ['Load capacity', 'To be confirmed'],
-    ['Package size', 'To be confirmed'],
-    ['Recommended use', content.useCases.join(' / ')]
+    ...productDetailedSpecs[productSlug].map((spec) => [spec.label, spec.value] as const),
+    ['Recommended use', content.useCases.join(' / ')] as const
   ];
 
   return (
@@ -155,7 +153,7 @@ export default async function ProductDetailPage({
           <dl className="quick-specs">
             {product.specs.map((spec, index) => (
               <div key={spec}>
-                <dt>{index === 0 ? 'Power' : index === 1 ? 'System' : index === 2 ? 'Speed' : 'Feature'}</dt>
+                <dt>{quickSpecLabels[productSlug][index] || `Spec ${index + 1}`}</dt>
                 <dd>{spec}</dd>
               </div>
             ))}

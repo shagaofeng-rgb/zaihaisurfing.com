@@ -15,7 +15,7 @@ const bestFor: Record<string, string[]> = {
 const buyerDescriptions: Record<ProductSlug, string> = {
   x1: 'Balanced electric surfboard for resort demos, lake rentals and distributor catalogs.',
   'x1-pro': 'Flagship electric surfboard for premium resorts, yacht clubs, video demos and advanced riders.',
-  'rage-shark-x': 'Easy-drive electric water kart attraction for water parks, scenic lakes and family resort programs.',
+  'rage-shark-x': 'Easy-drive electric go-kart boat attraction for water parks, scenic lakes and family resort programs.',
   p1: 'Fuel-powered surfboard for open-water projects, outdoor adventure operators and longer ride sessions.',
   'p1-pro': 'Premium fuel-powered model for high-speed outdoor projects and distributor showroom positioning.'
 };
@@ -30,13 +30,13 @@ const productLines = [
   },
   {
     title: 'Fuel-Powered Surfboards',
-    image: '/assets/catalog/p1-pro/main.png',
+    image: '/assets/catalog/p1-pro/product.png',
     text: 'Longer ride time and strong outdoor performance for adventure operators, open-water projects and distributors.',
     buyer: 'Best buyer: outdoor projects, beach clubs and distributors',
     href: '/products/p1-pro'
   },
   {
-    title: 'Electric Water Karts',
+    title: 'Electric Go-Kart Boats',
     image: '/assets/catalog/rage-shark-x/main-boat.png',
     text: 'Easy-drive, family-friendly attraction for water parks, scenic lakes, resorts and controlled rental areas.',
     buyer: 'Best buyer: water parks, family attractions and scenic lake operators',
@@ -58,7 +58,7 @@ const productLines = [
   },
   {
     title: 'Distributor Starter Packages',
-    image: '/assets/catalog/x1/main.png',
+    image: '/assets/catalog/x1/product.png',
     text: 'Starter model combination, product media, catalog support and spare parts planning for local distributors.',
     buyer: 'Best buyer: importers, dealers and regional water sports distributors',
     href: '/contact'
@@ -67,10 +67,10 @@ const productLines = [
 
 const comparisonRows = [
   ['ZAIHAI X1', 'Electric surfboard', '10 kW', '72 V', '0-51 km/h', '60-80 min', 'Rental / resort / distributor', 'Balanced commercial fleet model'],
-  ['ZAIHAI X1 Pro', 'Electric surfboard', '12 kW', '72 V', '0-61 km/h', 'To be confirmed', 'Premium resort / yacht club', 'Flagship riding and demo videos'],
-  ['Rage Shark X', 'Electric water kart', '15 kW', '76 Ah battery', '0-51 km/h', '60-80 min', 'Water park / family attraction', 'Easy-drive controlled water experience'],
-  ['ZAIHAI P1', 'Fuel-powered surfboard', '10.5 kW', '110 cc engine', '62 km/h', 'To be confirmed', 'Outdoor operator / distributor', 'Longer open-water ride sessions'],
-  ['ZAIHAI P1 Pro', 'Fuel-powered surfboard', '10.5 kW', '110 cc engine', '64 km/h', 'To be confirmed', 'Adventure project / distributor', 'Premium fuel board positioning']
+  ['ZAIHAI X1 Pro', 'Electric surfboard', '12 kW', '72 V', '0-61 km/h', '45 min', 'Premium resort / yacht club', 'Flagship riding and demo videos'],
+  ['Rage Shark X', 'Electric go-kart boat', '15 kW', '76 Ah battery', '0-51 km/h', '60-80 min', 'Water park / family attraction', 'Easy-drive controlled water experience'],
+  ['ZAIHAI P1', 'Fuel-powered surfboard', '10.5 kW / 8700 rpm', '110 cc engine', '62 km/h', '3.5 L fuel tank', 'Outdoor operator / distributor', 'Longer open-water ride sessions'],
+  ['ZAIHAI P1 Pro', 'Fuel-powered surfboard', '10.5 kW / 8700 rpm', '110 cc engine', '64 km/h', '3.5 L fuel tank', 'Adventure project / distributor', 'Premium fuel board positioning']
 ];
 
 export default async function ProductGrid({locale}: {locale: Locale}) {
@@ -104,7 +104,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
       <div className="section-heading compact model-heading" id="featured-models">
         <p className="eyebrow">Featured models</p>
         <h2>ZAIHAI Product Models for Commercial Buyers</h2>
-        <p>Compare the main surfboards and water kart models before requesting a project quotation or distributor package.</p>
+        <p>Compare the main surfboards and go-kart boat models before requesting a project quotation or distributor package.</p>
       </div>
 
       <div className="catalog-product-grid">

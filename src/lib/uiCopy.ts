@@ -194,7 +194,7 @@ const en: UiCopy = {
     featuredText: '12 kW electric surfboard for premium riding, resort demos and high-impact videos.',
     featuredLink: 'View X1 Pro details',
     electricSurfboards: 'Electric Surfboards',
-    electricWaterKarts: 'Electric Water Karts',
+    electricWaterKarts: 'Electric Go-Kart Boats',
     fuelSurfboards: 'Fuel-Powered Surfboards',
     accessories: 'Accessories & Spare Parts',
     allProducts: 'All Products',
@@ -211,15 +211,15 @@ const en: UiCopy = {
   },
   hero: {
     eyebrow: 'Premium ocean sports equipment',
-    title: 'Premium Electric Surfboards & Water Karts for Resorts, Rentals and Distributors',
-    intro: 'ZAIHAI helps water sports businesses, resorts, rental operators, yacht clubs and distributors build high-attraction water entertainment projects with electric surfboards, fuel-powered surfboards, electric water karts and export-ready support.',
+    title: 'Premium Electric Surfboards & Go-Kart Boats for Resorts, Rentals and Distributors',
+    intro: 'ZAIHAI helps water sports businesses, resorts, rental operators, yacht clubs and distributors build high-attraction water entertainment projects with electric surfboards, fuel-powered surfboards, electric go-kart boats and export-ready support.',
     shop: 'Explore Products',
     quote: 'Get Distributor Quote',
     watch: 'Watch Riding Video',
-    tags: ['Electric Surfboards', 'Water Kart Boats', 'OEM / Distributor Support'],
+    tags: ['Electric Surfboards', 'Go-Kart Boats', 'OEM / Distributor Support'],
     cards: [
       {label: 'Electric Surfboards', title: 'X1 Pro / X1 Series', text: 'High-speed attraction for resorts, yacht clubs and premium demos.', href: '/products/x1-pro'},
-      {label: 'Water Kart Boats', title: 'Rage Shark X', text: 'Easy-drive guest experience for water parks and scenic rentals.', href: '/products/rage-shark-x'},
+      {label: 'Go-Kart Boats', title: 'Rage Shark X', text: 'Easy-drive guest experience for water parks and scenic rentals.', href: '/products/rage-shark-x'},
       {label: 'Fuel Surfboards', title: 'P1 / P1 Pro Series', text: 'Longer ride time for outdoor adventure operators and distributors.', href: '/products/p1-pro'}
     ]
   },
@@ -257,7 +257,7 @@ const en: UiCopy = {
     copyright: '2026 ZAIHAI SURFING. Premium water sports equipment supplier.'
   },
   products: {
-    tabs: ['All', 'Electric Surfboards', 'Electric Water Karts', 'Fuel-Powered Surfboards', 'For Resorts', 'For Rentals', 'For Distributors'],
+    tabs: ['All', 'Electric Surfboards', 'Electric Go-Kart Boats', 'Fuel-Powered Surfboards', 'For Resorts', 'For Rentals', 'For Distributors'],
     price: 'Commercial supply',
     specs: 'Core specs',
     bestFor: 'Best for',
@@ -293,7 +293,7 @@ const en: UiCopy = {
     scenarios: [
       {title: 'Resorts & Hotels', label: 'Guest experience upgrade', text: 'Create a premium water attraction for beach resorts, island hotels and lake properties.', products: 'Recommended: X1 Pro / X1 / Rage Shark X', href: '/products/x1-pro', cta: 'View Resort Solution'},
       {title: 'Rental Businesses', label: 'Fleet revenue and durability', text: 'Match products by rider level, session length, maintenance workflow and local water conditions.', products: 'Recommended: X1, Rage Shark X and spare parts package', href: '/products', cta: 'View Rental Solution'},
-      {title: 'Water Parks', label: 'Family-friendly attraction', text: 'Use easy-drive water kart boats for controlled water areas, ticketed entertainment and family guests.', products: 'Recommended: Rage Shark X electric water kart', href: '/products/rage-shark-x', cta: 'View Water Park Solution'},
+      {title: 'Water Parks', label: 'Family-friendly attraction', text: 'Use easy-drive electric go-kart boats for controlled water areas, ticketed entertainment and family guests.', products: 'Recommended: Rage Shark X electric go-kart boat', href: '/products/rage-shark-x', cta: 'View Water Park Solution'},
       {title: 'Yacht Clubs', label: 'Premium leisure add-on', text: 'Add compact electric surfboards as a member benefit, demo product or private buyer attraction.', products: 'Recommended: X1 Pro electric surfboard', href: '/products/x1-pro', cta: 'View Yacht Club Solution'},
       {title: 'Distributors', label: 'Market-ready product line', text: 'Build a local catalog with clear positioning, packaging, model comparison and after-sales support.', products: 'Recommended: full catalog and distributor inquiry', href: '/contact', cta: 'View Distributor Solution'},
       {title: 'Private Buyers', label: 'Premium personal riding', text: 'Choose a model for private leisure, lake houses, yacht-side riding and personal adventure use.', products: 'Recommended: X1 Pro / P1 Pro', href: '/products', cta: 'View Buyer Options'}
@@ -346,7 +346,7 @@ const en: UiCopy = {
       submit: 'Send Inquiry'
     },
     buyerTypes: ['Resort / Hotel', 'Rental Operator', 'Water Park', 'Yacht Club', 'Distributor', 'Private Buyer', 'Other'],
-    productOptions: ['X1 Electric Surfboard', 'X1 Pro Electric Surfboard', 'Rage Shark X Water Kart', 'P1 Fuel-Powered Surfboard', 'P1 Pro Fuel-Powered Surfboard', 'Multiple Products', 'Not Sure Yet']
+    productOptions: ['X1 Electric Surfboard', 'X1 Pro Electric Surfboard', 'Rage Shark X Electric Go-Kart Boat', 'P1 Fuel-Powered Surfboard', 'P1 Pro Fuel-Powered Surfboard', 'Multiple Products', 'Not Sure Yet']
   },
   mobileCta: {
     whatsapp: 'WhatsApp',

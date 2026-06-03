@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       name: text(formData, 'name', 180),
       categorySlug,
       categoryName: category?.name || categorySlug,
-      coverImage: text(formData, 'coverImage', 260) || '/assets/catalog/x1/main.png',
+      coverImage: text(formData, 'coverImage', 260) || '/assets/catalog/x1/product.png',
       galleryImages: text(formData, 'galleryImages', 1200).split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean),
       shortDescription: text(formData, 'shortDescription', 500),
       fullDescription: text(formData, 'fullDescription', 2000),

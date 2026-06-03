@@ -67,7 +67,7 @@ export default async function AdminProductsPage() {
           <input name="compareAtPrice" type="number" min="0" step="1" placeholder="原价 / 划线价 USD" />
           <input name="moq" type="number" min="1" step="1" placeholder="MOQ，默认 1" />
           <input name="sortOrder" type="number" min="1" step="1" placeholder="排序权重" />
-          <input name="coverImage" placeholder="产品主图路径，例如 /assets/catalog/x1/main.png" />
+          <input name="coverImage" placeholder="产品主图路径，例如 /assets/catalog/x1/product.png" />
           <input name="weightDimension" placeholder="重量/尺寸/包装，例如 Export wooden crate by model" />
           <textarea name="galleryImages" placeholder="产品相册图片路径，每行一个，或用英文逗号分隔" />
           <textarea name="shortDescription" placeholder="产品短描述，用于产品卡片和详情页摘要" />

@@ -43,7 +43,7 @@ export const newsArticles: NewsArticle[] = [
         heading: 'Why it matters for water sports buyers',
         paragraphs: [
           'For resorts, yacht clubs and tourism developers, water equipment is no longer just a rental add-on. It is part of the guest experience, photo content, membership value and destination differentiation.',
-          'Electric surfboards and electric water kart boats fit this trend because they are visually strong, easy to explain to guests and suitable for high-value waterfront operations.'
+          'Electric surfboards and electric go-kart boats fit this trend because they are visually strong, easy to explain to guests and suitable for high-value waterfront operations.'
         ]
       },
       {
@@ -94,7 +94,7 @@ export const newsArticles: NewsArticle[] = [
       {
         heading: 'ZAIHAI product angle',
         paragraphs: [
-          'For lake rentals and marina entertainment zones, Rage Shark X can serve as an easy-drive water kart attraction, while X1 and X1 Pro target riders who want a faster board experience.',
+          'For lake rentals and marina entertainment zones, Rage Shark X can serve as an easy-drive go-kart boat attraction, while X1 and X1 Pro target riders who want a faster board experience.',
           'The best purchase plan usually separates beginner-friendly fleet products from premium demo products, then adds spare batteries, chargers, protective gear and maintenance parts.'
         ]
       }
@@ -140,7 +140,7 @@ export const newsArticles: NewsArticle[] = [
         heading: 'ZAIHAI product angle',
         paragraphs: [
           'ZAIHAI X1 Pro is suitable for premium demos and advanced users, while X1 can be positioned as a volume model for resorts and rental packages.',
-          'For distributors, pairing electric surfboards with water kart boats can create a broader catalog: one product line for high-speed riders and another for family-friendly attractions.'
+          'For distributors, pairing electric surfboards with go-kart boats can create a broader catalog: one product line for high-speed riders and another for family-friendly attractions.'
         ]
       }
     ],

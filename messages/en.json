@@ -25,10 +25,10 @@
     "footer": "Premium water sports equipment for distributors, resorts, rentals and water parks."
   },
   "seo": {
-    "homeTitle": "Premium Electric Surfboards & Water Karts for Resorts & Distributors | ZAIHAI SURFING",
-    "homeDescription": "ZAIHAI SURFING supplies electric surfboards, fuel-powered surfboards and electric water karts for resorts, rental operators, water parks, yacht clubs and distributors, with OEM/ODM and export support.",
-    "productsTitle": "Electric Surfboards, Fuel Surfboards & Water Karts | ZAIHAI SURFING",
-    "productsDescription": "Explore ZAIHAI electric surfboards, fuel-powered surfboards, electric water karts, spare parts, rental fleet packages and distributor starter packages.",
+    "homeTitle": "Premium Electric Surfboards & Go-Kart Boats for Resorts & Distributors | ZAIHAI SURFING",
+    "homeDescription": "ZAIHAI SURFING supplies electric surfboards, fuel-powered surfboards and electric go-kart boats for resorts, rental operators, water parks, yacht clubs and distributors, with OEM/ODM and export support.",
+    "productsTitle": "Electric Surfboards, Fuel Surfboards & Go-Kart Boats | ZAIHAI SURFING",
+    "productsDescription": "Explore ZAIHAI electric surfboards, fuel-powered surfboards, electric go-kart boats, spare parts, rental fleet packages and distributor starter packages.",
     "applicationsTitle": "Water Sports Equipment Solutions for Resorts, Rentals & Distributors | ZAIHAI SURFING",
     "applicationsDescription": "Choose ZAIHAI water sports equipment by resort, rental fleet, water park, yacht club, distributor and tourism project business scenario.",
     "aboutTitle": "About ZAIHAI SURFING | Premium Water Sports Equipment Brand",
@@ -38,24 +38,24 @@
     "projectsTitle": "Projects | ZAIHAI SURFING",
     "projectsDescription": "Project and application examples for resorts, rentals, water parks and distributor cooperation.",
     "blogTitle": "Blog | ZAIHAI SURFING",
-    "blogDescription": "Buying guides and insights for electric surfboards, water karts and water sports rental projects.",
-    "contactTitle": "Contact ZAIHAI SURFING | Get Electric Surfboard & Water Kart Quote",
-    "contactDescription": "Contact ZAIHAI SURFING for electric surfboard, fuel surfboard and water kart project quotations, distributor pricing, OEM/ODM support and export shipping support."
+    "blogDescription": "Buying guides and insights for electric surfboards, electric go-kart boats and water sports rental projects.",
+    "contactTitle": "Contact ZAIHAI SURFING | Get Electric Surfboard & Go-Kart Boat Quote",
+    "contactDescription": "Contact ZAIHAI SURFING for electric surfboard, fuel surfboard and electric go-kart boat project quotations, distributor pricing, OEM/ODM support and export shipping support."
   },
   "home": {
-    "h1": "Premium Electric Surfboards & Water Karts for Resorts, Rentals and Distributors",
-    "intro": "ZAIHAI helps water sports businesses, resorts, rental operators, yacht clubs and distributors build high-attraction water entertainment projects with electric surfboards, fuel-powered surfboards, electric water karts and export-ready support.",
+    "h1": "Premium Electric Surfboards & Go-Kart Boats for Resorts, Rentals and Distributors",
+    "intro": "ZAIHAI helps water sports businesses, resorts, rental operators, yacht clubs and distributors build high-attraction water entertainment projects with electric surfboards, fuel-powered surfboards, electric go-kart boats and export-ready support.",
     "primaryCta": "Get Distributor Quote",
     "secondaryCta": "Explore Products",
     "stats": {
-      "lines": "Electric · Water Kart · Fuel",
+      "lines": "Electric · Go-Kart Boat · Fuel",
       "buyers": "Distributors · Resorts · Rentals",
       "markets": "GCC · USA · Europe · Island Resorts"
     },
     "marketsTitle": "Built for High-Demand Resort and Water Sports Markets",
     "marketsText": "ZAIHAI products are designed for coastal tourism, lake rentals, yacht clubs, island resorts and distributors serving premium water entertainment buyers.",
     "productsTitle": "Choose Your Water Sports Product Line",
-    "productsText": "Select electric surfboards, fuel-powered surfboards, water kart boats, accessories, rental fleet packages or distributor starter packages by buyer type and project goal.",
+    "productsText": "Select electric surfboards, fuel-powered surfboards, electric go-kart boats, accessories, rental fleet packages or distributor starter packages by buyer type and project goal.",
     "applicationsTitle": "Built for Real Water Sports Business Scenarios",
     "applicationsText": "From resort experiences to water park attractions, ZAIHAI helps buyers choose models, accessories and export support for real operating conditions.",
     "oemTitle": "OEM/ODM, Branding and Distributor Cooperation",
@@ -63,7 +63,7 @@
   },
   "products": {
     "h1": "Explore ZAIHAI Water Sports Equipment",
-    "intro": "Choose from electric surfboards, electric water karts and fuel-powered surfboards for resorts, rentals, water parks and distributors.",
+    "intro": "Choose from electric surfboards, electric go-kart boats and fuel-powered surfboards for resorts, rentals, water parks and distributors.",
     "categoryTitle": "Product Categories",
     "allModels": "Available Models",
     "specs": "Specifications",
@@ -82,7 +82,7 @@
   },
   "about": {
     "h1": "About ZAIHAI SURFING",
-    "intro": "ZAIHAI SURFING is a premium water sports brand and OEM/ODM solution provider focused on electric surfboards, electric water karts and fuel-powered surfboards.",
+    "intro": "ZAIHAI SURFING is a premium water sports brand and OEM/ODM solution provider focused on electric surfboards, electric go-kart boats and fuel-powered surfboards.",
     "positioning": "We serve distributors, resorts, rental operators, water parks, tourism projects and premium riders worldwide."
   },
   "factory": {
@@ -92,11 +92,11 @@
   },
   "projects": {
     "h1": "Projects and Use Cases",
-    "intro": "Explore how electric surfboards, water karts and fuel-powered surfboards can support resorts, rentals, water parks and distributor projects."
+    "intro": "Explore how electric surfboards, electric go-kart boats and fuel-powered surfboards can support resorts, rentals, water parks and distributor projects."
   },
   "blog": {
     "h1": "Water Sports Buying Guides",
-    "intro": "Insights for overseas buyers choosing electric surfboards, water karts, fuel-powered boards and rental project equipment."
+    "intro": "Insights for overseas buyers choosing electric surfboards, electric go-kart boats, fuel-powered boards and rental project equipment."
   },
   "contact": {
     "h1": "Contact ZAIHAI SURFING",
@@ -107,7 +107,7 @@
   "productNames": {
     "x1": "ZAIHAI X1 Electric Surfboard",
     "x1-pro": "ZAIHAI X1 Pro Electric Surfboard",
-    "rage-shark-x": "Rage Shark X Electric Kart Boat",
+    "rage-shark-x": "Rage Shark X Electric Go-Kart Boat",
     "p1": "ZAIHAI P1 Fuel-Powered Surfboard",
     "p1-pro": "ZAIHAI P1 Pro Fuel-Powered Surfboard"
   },
@@ -116,7 +116,7 @@
     "logo": "ZAIHAI SURFING logo",
     "x1": "ZAIHAI X1 electric surfboard product image",
     "x1-pro": "ZAIHAI X1 Pro electric surfboard product image",
-    "rage-shark-x": "Rage Shark X electric kart boat product image",
+    "rage-shark-x": "Rage Shark X electric go-kart boat product image",
     "p1": "ZAIHAI P1 fuel-powered surfboard product image",
     "p1-pro": "ZAIHAI P1 Pro fuel-powered surfboard product image"
   }
