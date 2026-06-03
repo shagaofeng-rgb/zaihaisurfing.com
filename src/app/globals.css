@@ -602,13 +602,12 @@ a {
 .collection-card {
   position: relative;
   display: grid;
+  align-content: start;
   min-height: 260px;
   overflow: hidden;
   padding: 22px;
-  color: var(--ink);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(210, 219, 212, 0.72)),
-    #d9ded9;
+  color: var(--white);
+  background: #070a0f;
   border: 1px solid rgba(155, 220, 24, 0.18);
   border-radius: 8px;
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
@@ -616,6 +615,17 @@ a {
     transform 180ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease;
+}
+
+.collection-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 12, 0.76), rgba(5, 8, 12, 0.16) 44%, rgba(5, 8, 12, 0.38)),
+    radial-gradient(circle at 50% 65%, rgba(155, 220, 24, 0.18), transparent 54%);
+  pointer-events: none;
 }
 
 .collection-card:hover {
@@ -626,7 +636,7 @@ a {
 
 .collection-card span {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 190px;
   font-size: 19px;
   font-weight: 950;
@@ -635,13 +645,18 @@ a {
 }
 
 .collection-card img {
-  align-self: end;
-  justify-self: center;
-  width: min(260px, 100%);
-  height: 170px;
-  object-fit: contain;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   object-position: center;
-  filter: drop-shadow(0 16px 28px rgba(12, 16, 20, 0.18));
+  filter: saturate(1.04) contrast(1.02);
+  transition: transform 220ms ease;
+}
+
+.collection-card:hover img {
+  transform: scale(1.045);
 }
 
 .video-showcase {
@@ -4170,6 +4185,10 @@ html[dir="rtl"] .catalog-product-card dd {
   .video-showcase,
   .brand-manifest {
     padding-inline: 14px;
+  }
+
+  .collection-section {
+    padding-bottom: 104px;
   }
 
   .collection-card {

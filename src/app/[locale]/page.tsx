@@ -32,19 +32,19 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
         <div className="collection-grid">
           <Link className="collection-card" href="/products">
             <span>{copy.mega.electricSurfboards}</span>
-            <img src="/assets/catalog/x1-pro/product.png" alt="ZAIHAI electric surfboard collection" />
+            <img src="/assets/catalog/collection-electric-surfboard.png" alt="ZAIHAI X1 electric surfboard collection" />
           </Link>
           <Link className="collection-card" href="/products/rage-shark-x">
             <span>{copy.mega.electricWaterKarts}</span>
-            <img src="/assets/catalog/rage-shark-x/main-boat.png" alt="Rage Shark X electric go-kart boat collection" />
+            <img src="/assets/catalog/collection-go-kart-boat.png" alt="Rage Shark X electric go-kart boat collection" />
           </Link>
           <Link className="collection-card" href="/products/p1-pro">
             <span>{copy.mega.fuelSurfboards}</span>
-            <img src="/assets/catalog/p1-pro/product.png" alt="ZAIHAI fuel-powered surfboard collection" />
+            <img src="/assets/catalog/collection-fuel-surfboard.png" alt="ZAIHAI fuel-powered surfboard collection" />
           </Link>
           <Link className="collection-card" href="/factory">
             <span>{copy.mega.oem}</span>
-            <img src="/assets/catalog/x1-pro/parts.png" alt="ZAIHAI OEM and distributor product package" />
+            <img src="/assets/catalog/collection-oem-support.png" alt="ZAIHAI OEM and distributor product package" />
           </Link>
         </div>
       </section>
