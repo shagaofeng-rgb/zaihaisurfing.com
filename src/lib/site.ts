@@ -14,7 +14,7 @@ export type ProductSpecRow = {
 export const products = {
   x1: {
     name: 'ZAIHAI X1 Electric Surfboard',
-    image: '/assets/catalog/x1/product.png',
+    image: '/assets/catalog/x1/hero-angle.png',
     category: 'Electric Surfboards',
     price: 'USD 3,200',
     priceAmount: 3200,
@@ -22,7 +22,7 @@ export const products = {
   },
   'x1-pro': {
     name: 'ZAIHAI X1 Pro Electric Surfboard',
-    image: '/assets/catalog/x1-pro/product.png',
+    image: '/assets/catalog/x1-pro/hero-angle.png',
     category: 'Electric Surfboards',
     price: 'USD 3,600',
     priceAmount: 3600,
@@ -30,7 +30,7 @@ export const products = {
   },
   'rage-shark-x': {
     name: 'Rage Shark X Electric Go-Kart Boat',
-    image: '/assets/catalog/rage-shark-x/main-boat.png',
+    image: '/assets/catalog/rage-shark-x/hero-angle.png',
     category: 'Electric Go-Kart Boats',
     price: 'USD 4,000',
     priceAmount: 4000,

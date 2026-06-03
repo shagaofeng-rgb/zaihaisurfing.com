@@ -3,6 +3,7 @@ import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
+import ProductGallery from '@/components/ProductGallery';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
@@ -10,9 +11,9 @@ import {productDetailedSpecs, productSlugs, products, type ProductSlug} from '@/
 import {uiCopy} from '@/lib/uiCopy';
 
 const productGalleries: Record<ProductSlug, string[]> = {
-  x1: ['/assets/catalog/x1/product.png', '/assets/catalog/x1/parts.png', '/assets/catalog/x1/detail.png', '/assets/catalog/x1/battery-detail.png', '/assets/catalog/x1/tail-detail.png'],
-  'x1-pro': ['/assets/catalog/x1-pro/product.png', '/assets/catalog/x1-pro/parts.png', '/assets/catalog/x1-pro/parts-detail.png', '/assets/catalog/x1-pro/battery-detail.png', '/assets/catalog/x1-pro/tail-detail.png'],
-  'rage-shark-x': ['/assets/catalog/rage-shark-x/main-boat.png', '/assets/catalog/rage-shark-x/front.png', '/assets/catalog/rage-shark-x/side.png', '/assets/catalog/rage-shark-x/parts.png'],
+  x1: ['/assets/catalog/x1/hero-angle.png', '/assets/catalog/x1/side-view.png', '/assets/catalog/x1/rear-view.png', '/assets/catalog/x1/tail-closeup.png', '/assets/catalog/x1/top-view.png'],
+  'x1-pro': ['/assets/catalog/x1-pro/hero-angle.png', '/assets/catalog/x1-pro/side-view.png', '/assets/catalog/x1-pro/rear-view.png', '/assets/catalog/x1-pro/detail-closeup.png', '/assets/catalog/x1-pro/top-view.png'],
+  'rage-shark-x': ['/assets/catalog/rage-shark-x/hero-angle.png', '/assets/catalog/rage-shark-x/side-view.png', '/assets/catalog/rage-shark-x/top-view.png', '/assets/catalog/rage-shark-x/head-closeup.png', '/assets/catalog/rage-shark-x/front-view.png'],
   p1: ['/assets/catalog/p1/hero.png', '/assets/catalog/p1/detail.png', '/assets/catalog/p1/bottom.png', '/assets/catalog/p1/tail.png'],
   'p1-pro': ['/assets/catalog/p1-pro/product.png', '/assets/catalog/p1-pro/detail.png', '/assets/catalog/p1-pro/bottom.png', '/assets/catalog/p1-pro/tail.png', '/assets/catalog/p1-pro/scene-01.png', '/assets/catalog/p1-pro/scene-02.png']
 };
@@ -121,14 +122,7 @@ export default async function ProductDetailPage({
   return (
     <main>
       <section className="product-hero">
-        <div className="product-gallery">
-          <img className="main-product-image" src={product.image} alt={alt(productSlug)} />
-          <div className="product-thumbs" aria-label="Product detail images">
-            {gallery.slice(1).map((image) => (
-              <img src={image} alt={`${product.name} detail view`} key={image} />
-            ))}
-          </div>
-        </div>
+        <ProductGallery images={gallery} mainAlt={alt(productSlug)} productName={product.name} />
         <aside className="product-summary">
           <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link href="/products">Products</Link>
