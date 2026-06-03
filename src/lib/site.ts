@@ -38,7 +38,7 @@ export const products = {
   },
   p1: {
     name: 'ZAIHAI P1 Fuel-Powered Surfboard',
-    image: '/assets/catalog/p1/hero.png',
+    image: '/assets/catalog/p1/hero-angle.png',
     category: 'Fuel-Powered Surfboards',
     price: 'USD 5,800',
     priceAmount: 5800,
