@@ -7,7 +7,7 @@ import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrd
 const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
 const STORE_FILE = path.join(DATA_DIR, 'admin-store.json');
 
-export type PublishStatus = 'draft' | 'published' | 'archived';
+export type PublishStatus = 'draft' | 'published' | 'unpublished' | 'scheduled' | 'archived';
 export type ContentType = 'blog' | 'news';
 
 export type AdminCategory = {

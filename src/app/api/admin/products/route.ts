@@ -8,6 +8,19 @@ function text(formData: FormData, key: string, limit = 240) {
   return String(formData.get(key) || '').trim().slice(0, limit);
 }
 
+function moneyCents(formData: FormData, key: string) {
+  return Math.max(0, Math.round(Number(text(formData, key, 24) || 0) * 100));
+}
+
+function numberValue(formData: FormData, key: string, fallback = 0) {
+  const value = Number(text(formData, key, 24));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function publishStatus(value: string): AdminProduct['status'] {
+  return ['draft', 'published', 'unpublished', 'scheduled', 'archived'].includes(value) ? value as AdminProduct['status'] : 'draft';
+}
+
 export async function GET() {
   const {response} = await requireAdminApiSession();
   if (response) return response;
@@ -29,27 +42,27 @@ export async function POST(request: Request) {
       categorySlug,
       categoryName: category?.name || categorySlug,
       coverImage: text(formData, 'coverImage', 260) || '/assets/catalog/x1/main.png',
-      galleryImages: [],
-      shortDescription: '',
-      fullDescription: '',
+      galleryImages: text(formData, 'galleryImages', 1200).split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean),
+      shortDescription: text(formData, 'shortDescription', 500),
+      fullDescription: text(formData, 'fullDescription', 2000),
       keyFeatures: [],
       specifications: [],
       applicationScenarios: [],
-      priceCents: Math.max(0, Number(text(formData, 'price', 24) || 0)) * 100,
-      salePriceCents: 0,
+      priceCents: moneyCents(formData, 'compareAtPrice') || moneyCents(formData, 'price'),
+      salePriceCents: moneyCents(formData, 'price'),
       currency: 'USD',
-      sku: `ZH-${text(formData, 'slug', 80).toUpperCase()}`,
-      stock: 0,
-      moq: 1,
-      weightDimension: '',
-      shippingInfo: '',
-      seoTitle: `${text(formData, 'name', 180)} | ZAIHAI SURFING`,
-      seoDescription: '',
-      status: 'draft',
-      sortOrder: store.products.length + 1,
-      showOnHome: false,
-      allowCart: true,
-      allowDirectOrder: true,
+      sku: text(formData, 'sku', 100) || `ZH-${text(formData, 'slug', 80).toUpperCase()}`,
+      stock: Math.max(0, numberValue(formData, 'stock', 0)),
+      moq: Math.max(1, numberValue(formData, 'moq', 1)),
+      weightDimension: text(formData, 'weightDimension', 220),
+      shippingInfo: text(formData, 'shippingInfo', 360),
+      seoTitle: text(formData, 'seoTitle', 180) || `${text(formData, 'name', 180)} | ZAIHAI SURFING`,
+      seoDescription: text(formData, 'seoDescription', 320),
+      status: publishStatus(text(formData, 'status', 24)),
+      sortOrder: Math.max(1, numberValue(formData, 'sortOrder', store.products.length + 1)),
+      showOnHome: formData.get('showOnHome') === 'on',
+      allowCart: formData.get('allowCart') !== 'off',
+      allowDirectOrder: formData.get('allowDirectOrder') !== 'off',
       createdAt: now,
       updatedAt: now
     };

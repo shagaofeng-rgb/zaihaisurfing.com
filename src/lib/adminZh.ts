@@ -2,6 +2,7 @@ export function zhPublishStatus(status: string) {
   const map: Record<string, string> = {
     draft: '草稿',
     published: '已发布',
+    unpublished: '已下架',
     archived: '已归档',
     scheduled: '定时发布'
   };

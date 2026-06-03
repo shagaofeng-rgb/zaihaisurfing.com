@@ -1,18 +1,18 @@
 import {requireAdminSession} from '@/lib/adminAuth';
 
 const navItems = [
-  ['数据总览', '/admin'],
-  ['产品管理', '/admin/products'],
-  ['分类管理', '/admin/categories'],
-  ['媒体库', '/admin/media'],
-  ['博客管理', '/admin/blog'],
-  ['新闻管理', '/admin/news'],
-  ['订单管理', '/admin/orders'],
-  ['客户管理', '/admin/customers'],
-  ['线索/弃单', '/admin/leads'],
-  ['访问统计', '/admin/analytics'],
-  ['转化漏斗', '/admin/funnel'],
-  ['系统设置', '/admin/settings']
+  {key: 'dashboard', label: '数据总览', href: '/admin'},
+  {key: 'products', label: '产品管理', href: '/admin/products'},
+  {key: 'categories', label: '分类管理', href: '/admin/categories'},
+  {key: 'media', label: '媒体库', href: '/admin/media'},
+  {key: 'blog', label: '博客管理', href: '/admin/blog'},
+  {key: 'news', label: '新闻管理', href: '/admin/news'},
+  {key: 'orders', label: '订单管理', href: '/admin/orders'},
+  {key: 'customers', label: '客户管理', href: '/admin/customers'},
+  {key: 'leads', label: '线索/弃单', href: '/admin/leads'},
+  {key: 'analytics', label: '访问统计', href: '/admin/analytics'},
+  {key: 'funnel', label: '转化漏斗', href: '/admin/funnel'},
+  {key: 'settings', label: '系统设置', href: '/admin/settings'}
 ] as const;
 
 export default async function AdminShell({active, children}: {active: string; children: React.ReactNode}) {
@@ -25,9 +25,9 @@ export default async function AdminShell({active, children}: {active: string; ch
           <strong>在海后台管理</strong>
         </a>
         <nav>
-          {navItems.map(([label, href]) => (
-            <a className={active === label ? 'is-active' : ''} href={href} key={href}>
-              {label}
+          {navItems.map((item) => (
+            <a className={active === item.key || active === item.label || active === item.href ? 'is-active' : ''} href={item.href} key={item.href}>
+              {item.label}
             </a>
           ))}
         </nav>
