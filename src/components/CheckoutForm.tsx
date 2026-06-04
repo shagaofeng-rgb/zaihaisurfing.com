@@ -324,7 +324,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           <div className="summary-total"><dt>Estimated total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
         </dl>
         <button className="button primary checkout-pay-button" type="submit">
-          Submit Project Order
+          Place Order / Pay Now
         </button>
         <p className="form-note">{status || 'After submission, ZAIHAI sales will confirm final quotation, logistics and payment method before any charge.'}</p>
       </aside>

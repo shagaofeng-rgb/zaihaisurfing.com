@@ -132,9 +132,9 @@ export default async function ProductDetailPage({
           <p className="eyebrow">{product.category}</p>
           <h1>{names(productSlug)}</h1>
           <div className="product-price-row b2b-price-row">
-            <strong>Distributor pricing available</strong>
-            <span>Quotation by model mix, target quantity, destination and package.</span>
-            <em>{copy.priceBadge}</em>
+            <strong>{product.price}</strong>
+            <span>Commercial checkout available. Final shipping is confirmed by destination and quantity.</span>
+            <em>Factory direct price</em>
           </div>
           <div className="buyer-rating" aria-label={copy.buyerRecommended}>
             <span>★★★★★</span>
@@ -153,8 +153,8 @@ export default async function ProductDetailPage({
             ))}
           </dl>
           <div className="product-buy-form b2b-actions">
-            <a className="button primary" href={`/${locale}/contact?product=${slug}`}>
-              {copy.buyNow}
+            <a className="button primary" href={`/${locale}/checkout?product=${productSlug}&qty=1`}>
+              Buy Now
             </a>
             <a className="button dark" href={`/${locale}/contact`}>
               {copy.requestQuote}
@@ -257,7 +257,10 @@ export default async function ProductDetailPage({
           <p className="eyebrow">Project quotation</p>
           <h3>Need distributor price, shipping cost or a rental fleet package?</h3>
           <p>Send your buyer type, destination country, preferred model and expected quantity. ZAIHAI will recommend suitable models, accessories and export support options.</p>
-          <Link className="button primary" href="/contact">Request Quote / Get Distributor Price</Link>
+          <div className="cta-actions">
+            <Link className="button primary" href={`/checkout?product=${productSlug}&qty=1`}>Buy Now</Link>
+            <Link className="button dark" href="/contact">Request Quote</Link>
+          </div>
         </section>
       </section>
       <RelatedProducts currentSlug={productSlug} />

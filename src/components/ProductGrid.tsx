@@ -54,7 +54,11 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
                 <h3>
                   <Link href={`/products/${slug}`}>{names(slug)}</Link>
                 </h3>
-                <p className="catalog-b2b-note">Distributor pricing available after market, quantity and shipping review.</p>
+                <div className="catalog-price-row">
+                  <strong>{product.price}</strong>
+                  <span>Factory direct</span>
+                </div>
+                <p className="catalog-b2b-note">Shipping and bulk order support confirmed by destination and quantity.</p>
                 <p className="catalog-description">{buyerDescriptions[slug]}</p>
                 <dl>
                   <div>
@@ -70,8 +74,11 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
                   <Link className="button dark small" href={`/products/${slug}`}>
                     {copy.viewDetails}
                   </Link>
-                  <Link className="button primary small" href="/contact">
-                    {copy.requestQuote}
+                  <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`}>
+                    Buy Now
+                  </Link>
+                  <Link className="button ghost small" href="/contact">
+                    Request Quote
                   </Link>
                   <a className="text-link" href={`#quick-${slug}`}>
                     {copy.quickView}

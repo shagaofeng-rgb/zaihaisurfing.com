@@ -16,24 +16,29 @@ export default function HomeRecommendedProducts() {
     <section className="home-recommend-products" aria-labelledby="home-recommend-products-title">
       <div className="section-heading centered">
         <p className="eyebrow">ZAIHAI SURFING</p>
-        <h2 id="home-recommend-products-title">推荐产品</h2>
+        <h2 id="home-recommend-products-title">Recommended Products</h2>
         <p>Explore our main electric surfboards, electric go-kart boat and fuel-powered surfboard models for commercial buyers.</p>
       </div>
       <div className="home-recommend-grid">
         {recommendedSlugs.map((slug) => {
           const product = products[slug];
           return (
-            <Link className="home-recommend-card" href={`/products/${slug}`} key={slug}>
-              <span className="home-recommend-image">
+            <article className="home-recommend-card" key={slug}>
+              <Link className="home-recommend-image" href={`/products/${slug}`} aria-label={`View ${product.name}`}>
                 <img src={product.image} alt={`${product.name} recommended product`} loading="lazy" />
-              </span>
-              <span className="home-recommend-body">
+              </Link>
+              <div className="home-recommend-body">
                 <span className="tag">{product.category}</span>
-                <strong>{product.name}</strong>
+                <Link className="home-recommend-title" href={`/products/${slug}`}>{product.name}</Link>
                 <em>{product.specs.slice(0, 3).join(' / ')}</em>
+                <strong className="home-recommend-price">{product.price}</strong>
                 <span>{productHighlights[slug]}</span>
-              </span>
-            </Link>
+                <div className="home-recommend-actions">
+                  <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`}>Buy Now</Link>
+                  <Link className="button dark small" href={`/products/${slug}`}>View Details</Link>
+                </div>
+              </div>
+            </article>
           );
         })}
       </div>

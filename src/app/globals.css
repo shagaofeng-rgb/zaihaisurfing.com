@@ -789,11 +789,21 @@ a {
   padding: 18px;
 }
 
+.home-recommend-title,
 .home-recommend-body strong {
   font-family: var(--font-display);
+  color: var(--ink);
   font-size: clamp(19px, 1.65vw, 24px);
   font-weight: 950;
   line-height: 1.05;
+}
+
+.home-recommend-title:hover {
+  color: var(--red);
+}
+
+.home-recommend-price {
+  color: var(--red);
 }
 
 .home-recommend-body em {
@@ -803,10 +813,17 @@ a {
   font-weight: 850;
 }
 
-.home-recommend-body span:last-child {
+.home-recommend-body > span:last-of-type {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.home-recommend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .brand-manifest {
