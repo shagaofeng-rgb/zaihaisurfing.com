@@ -18,8 +18,8 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
   const copy = uiCopy[locale].contactPage;
   const company = copy.company;
   const address = 'Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China';
-  const query = encodeURIComponent(address);
-  const mapSrc = `https://www.google.com/maps?q=${query}&output=embed`;
+  const mapSrc = 'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d738.4079128143358!2d118.8398291714169!3d28.96554554896867!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2sus!4v1780549851421!5m2!1sen!2sus';
+  const mapUrl = 'https://www.google.com/maps/search/?api=1&query=28.96554554896867,118.8398291714169';
   const trustBlocks = [
     'Reply within 24 hours on business days',
     'Product videos available on request',
@@ -62,7 +62,7 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
             />
           </div>
           <div className="map-actions">
-            <a className="button primary" href={`https://www.google.com/maps/search/?api=1&query=${query}`} target="_blank" rel="noopener noreferrer">
+            <a className="button primary" href={mapUrl} target="_blank" rel="noopener noreferrer">
               {t('viewMap')}
             </a>
           </div>

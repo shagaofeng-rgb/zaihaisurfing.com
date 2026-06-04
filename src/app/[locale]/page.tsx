@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import Hero from '@/components/Hero';
+import HomeRecommendedProducts from '@/components/HomeRecommendedProducts';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
 import {uiCopy} from '@/lib/uiCopy';
@@ -38,6 +39,8 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
           </div>
         </div>
       </section>
+
+      <HomeRecommendedProducts />
 
       <section className="brand-manifest" aria-labelledby="manifest-title">
         <p className="eyebrow">{copy.homeSections.manifestEyebrow}</p>
