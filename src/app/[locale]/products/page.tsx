@@ -19,16 +19,12 @@ export default async function ProductsPage({params}: {params: Promise<{locale: L
     <main>
       <section className="page-hero">
         <div>
-          <p className="eyebrow">{t('categoryTitle')}</p>
+          <p className="eyebrow">{t('allModels')}</p>
           <h1>{t('h1')}</h1>
           <p>{t('intro')}</p>
         </div>
       </section>
       <section className="catalog-section">
-        <div className="section-heading">
-          <p className="eyebrow">{t('allModels')}</p>
-          <h2>{t('categoryTitle')}</h2>
-        </div>
         <ProductGrid locale={locale} />
       </section>
     </main>

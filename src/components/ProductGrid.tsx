@@ -20,51 +20,6 @@ const buyerDescriptions: Record<ProductSlug, string> = {
   'p1-pro': 'Premium fuel-powered model for high-speed outdoor projects and distributor showroom positioning.'
 };
 
-const productLines = [
-  {
-    title: 'Electric Surfboards',
-    image: '/assets/catalog/x1-pro/product.png',
-    text: 'High-speed riding experience for resorts, yacht clubs, premium demos, private riders and distributors.',
-    buyer: 'Best buyer: resorts, yacht clubs, rental operators and distributors',
-    href: '/products#featured-models'
-  },
-  {
-    title: 'Fuel-Powered Surfboards',
-    image: '/assets/catalog/p1-pro/product.png',
-    text: 'Longer ride time and strong outdoor performance for adventure operators, open-water projects and distributors.',
-    buyer: 'Best buyer: outdoor projects, beach clubs and distributors',
-    href: '/products/p1-pro'
-  },
-  {
-    title: 'Electric Go-Kart Boats',
-    image: '/assets/catalog/rage-shark-x/main-boat.png',
-    text: 'Easy-drive, family-friendly attraction for water parks, scenic lakes, resorts and controlled rental areas.',
-    buyer: 'Best buyer: water parks, family attractions and scenic lake operators',
-    href: '/products/rage-shark-x'
-  },
-  {
-    title: 'Accessories & Spare Parts',
-    image: '/assets/catalog/x1-pro/parts.png',
-    text: 'Batteries, chargers, fins, safety accessories, maintenance parts and project spare part packages.',
-    buyer: 'Best buyer: rental fleets, distributors and repeat commercial operators',
-    href: '/contact'
-  },
-  {
-    title: 'Rental Fleet Packages',
-    image: '/assets/banners/zaihai-main-banner.png',
-    text: 'Model mix, spare parts, charging workflow and operator support for rental businesses.',
-    buyer: 'Best buyer: beach rentals, lake resorts and commercial operators',
-    href: '/contact'
-  },
-  {
-    title: 'Distributor Starter Packages',
-    image: '/assets/catalog/x1/product.png',
-    text: 'Starter model combination, product media, catalog support and spare parts planning for local distributors.',
-    buyer: 'Best buyer: importers, dealers and regional water sports distributors',
-    href: '/contact'
-  }
-];
-
 const comparisonRows = [
   ['ZAIHAI X1', 'Electric surfboard', '10 kW', '72 V', '0-51 km/h', '60-80 min', 'Rental / resort / distributor', 'Balanced commercial fleet model'],
   ['ZAIHAI X1 Pro', 'Electric surfboard', '12 kW', '72 V', '0-61 km/h', '45 min', 'Premium resort / yacht club', 'Flagship riding and demo videos'],
@@ -80,27 +35,6 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
 
   return (
     <>
-      <div className="product-filter-tabs" aria-label="Product filters">
-        {copy.tabs.map((tab) => (
-          <a href="#product-list" key={tab}>{tab}</a>
-        ))}
-      </div>
-      <div className="product-line-grid" id="product-list">
-        {productLines.map((line) => (
-          <article className="product-line-card" key={line.title}>
-            <img src={line.image} alt={`${line.title} for ZAIHAI B2B buyers`} />
-            <div>
-              <h3>{line.title}</h3>
-              <p>{line.text}</p>
-              <strong>{line.buyer}</strong>
-              <Link className="button dark small" href={line.href}>
-                View Products
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-
       <div className="section-heading compact model-heading" id="featured-models">
         <p className="eyebrow">Featured models</p>
         <h2>ZAIHAI Product Models for Commercial Buyers</h2>
