@@ -1,4 +1,5 @@
 import type {Metadata} from 'next';
+import Script from 'next/script';
 import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
@@ -47,6 +48,10 @@ export default async function LocaleLayout({
           <BackToTopButton />
           <MobileBottomCta locale={locale as Locale} />
         </NextIntlClientProvider>
+        <Script
+          src="https://plugin-code.salesmartly.com/js/project_653905_759291_1780551668.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

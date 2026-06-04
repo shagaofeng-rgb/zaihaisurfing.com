@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo, useState} from 'react';
+import Script from 'next/script';
 import type {ProductSlug} from '@/lib/site';
 
 type CheckoutFormProps = {
@@ -13,27 +14,66 @@ type CheckoutFormProps = {
   shippingEstimate: number;
 };
 
-function detectCardBrand(value: FormDataEntryValue | null) {
-  const digits = String(value || '').replace(/\D/g, '');
-  if (/^4/.test(digits)) return 'Visa';
-  if (/^(5[1-5]|2[2-7])/.test(digits)) return 'Mastercard';
-  if (/^3[47]/.test(digits)) return 'American Express';
-  if (/^35/.test(digits)) return 'JCB';
-  if (/^6(?:011|5)/.test(digits)) return 'Discover';
-  return digits ? 'Card' : '';
-}
+type OceanpaymentTab = 'oceanpayment_card' | 'oceanpayment_google_pay' | 'oceanpayment_apple_pay';
+type CheckoutPaymentMethod = OceanpaymentTab | 'bank_transfer' | 'paypal';
+type OceanpaymentScene = '3d' | 'non-3d';
 
-function cardLast4(value: FormDataEntryValue | null) {
-  return String(value || '').replace(/\D/g, '').slice(-4);
-}
+const oceanpaymentTabs: {id: OceanpaymentTab; label: string; note: string}[] = [
+  {id: 'oceanpayment_card', label: 'Credit Card', note: 'Visa, Mastercard, American Express, JCB, Discover and Diners Club'},
+  {id: 'oceanpayment_google_pay', label: 'Google Pay', note: 'Fast checkout on supported Chrome and Android devices'},
+  {id: 'oceanpayment_apple_pay', label: 'Apple Pay', note: 'Safari and Apple Pay enabled devices'}
+];
 
 export default function CheckoutForm({locale, productSlug, productName, productImage, unitPrice, quantity, shippingEstimate}: CheckoutFormProps) {
   const [status, setStatus] = useState('');
   const [coupon, setCoupon] = useState('');
   const [billingMode, setBillingMode] = useState('same');
+  const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
+  const [paymentScene, setPaymentScene] = useState<OceanpaymentScene>('3d');
   const total = unitPrice * quantity + shippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
+
+  function submitOceanpaymentFallback(gatewayUrl: string, fields: Record<string, string>) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = gatewayUrl;
+    form.style.display = 'none';
+    Object.entries(fields).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = String(value);
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function submitOceanpayment(method: OceanpaymentTab, oceanpayment: {gatewayUrl: string; fields: Record<string, string>}) {
+    const gatewayWindow = window as unknown as {
+      Oceanpayment?: {checkout?: (fields: Record<string, string>) => void; submit?: (fields: Record<string, string>) => void};
+      onePageGooglePay?: {checkout?: (fields: Record<string, string>) => void};
+      onePageApplePay?: {checkout?: (fields: Record<string, string>) => void};
+    };
+    if (method === 'oceanpayment_google_pay' && gatewayWindow.onePageGooglePay?.checkout) {
+      gatewayWindow.onePageGooglePay.checkout(oceanpayment.fields);
+      return;
+    }
+    if (method === 'oceanpayment_apple_pay' && gatewayWindow.onePageApplePay?.checkout) {
+      gatewayWindow.onePageApplePay.checkout(oceanpayment.fields);
+      return;
+    }
+    if (gatewayWindow.Oceanpayment?.checkout) {
+      gatewayWindow.Oceanpayment.checkout(oceanpayment.fields);
+      return;
+    }
+    if (gatewayWindow.Oceanpayment?.submit) {
+      gatewayWindow.Oceanpayment.submit(oceanpayment.fields);
+      return;
+    }
+    submitOceanpaymentFallback(oceanpayment.gatewayUrl, oceanpayment.fields);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,7 +88,6 @@ export default function CheckoutForm({locale, productSlug, productName, productI
     const state = String(formData.get('state') || '').trim();
     const zip = String(formData.get('zip') || '').trim();
     const fullAddress = [address, apartment, city, state, zip].filter(Boolean).join(', ');
-    const paymentMethod = String(formData.get('paymentMethod') || 'qianhai_card');
     const body = {
       productSlug,
       quantity,
@@ -75,9 +114,9 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         marketingOptIn: formData.get('marketingOptIn') === 'on',
         billingSameAsShipping: billingMode === 'same',
         billingAddress: billingMode === 'same' ? fullAddress : formData.get('billingAddress'),
-        cardBrand: paymentMethod === 'qianhai_card' ? detectCardBrand(formData.get('cardNumber')) : '',
-        cardLast4: paymentMethod === 'qianhai_card' ? cardLast4(formData.get('cardNumber')) : '',
-        cardholderName: paymentMethod === 'qianhai_card' ? formData.get('cardholderName') : ''
+        cardBrand: '',
+        cardLast4: '',
+        cardholderName: ''
       }
     };
 
@@ -91,12 +130,35 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       setStatus(result.message || 'Order submission failed. Please check required fields.');
       return;
     }
+    if (String(paymentMethod).startsWith('oceanpayment')) {
+      setStatus(`Order ${result.order.id} created. Preparing Oceanpayment ${paymentScene.toUpperCase()} request...`);
+      const paymentResponse = await fetch('/api/payments/oceanpayment/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({orderId: result.order.id, paymentMethod, scene: paymentScene, locale})
+      });
+      const paymentResult = await paymentResponse.json();
+      if (!paymentResponse.ok) {
+        setStatus(paymentResult.message || 'Oceanpayment request failed. Please contact ZAIHAI sales.');
+        return;
+      }
+      if (paymentResult.status === 'waiting_for_credentials') {
+        setStatus(`Order ${result.order.id} saved. Oceanpayment credentials are not configured yet: ${paymentResult.oceanpayment.requiredEnv.join(', ')}.`);
+        return;
+      }
+      setStatus('Opening Oceanpayment secure payment window...');
+      submitOceanpayment(paymentMethod as OceanpaymentTab, paymentResult.oceanpayment);
+      return;
+    }
     setStatus(`Project order received: ${result.order.id}. ZAIHAI sales will confirm quotation, logistics and payment next.`);
     window.location.href = `/${locale}/checkout/success?order=${encodeURIComponent(result.order.id)}`;
   }
 
   return (
     <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
+      <Script src="https://secure.oceanpayment.com/gateway/js/card_ec.js" strategy="afterInteractive" />
+      <Script src="https://secure.oceanpayment.com/gateway/js/googlepay_ec.js" strategy="afterInteractive" />
+      <Script src="https://secure.oceanpayment.com/gateway/js/applepay_ec.js" strategy="afterInteractive" />
       <div className="checkout-left">
         <section className="checkout-block">
           <div className="checkout-block-title">
@@ -163,32 +225,60 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         </section>
 
         <section className="checkout-block">
-          <h2>Payment preference</h2>
-          <p className="checkout-help">Card fields are reserved for future Qianhai gateway tokenization. Full card numbers and CVV should be handled by the payment gateway, not stored by this site.</p>
-          <label className="checkout-method">
-            <input name="paymentMethod" type="radio" value="qianhai_card" defaultChecked />
-            <span>
-              <strong>Credit card via Qianhai gateway</strong>
-              <small>Visa, Mastercard, American Express, JCB, Discover and Diners Club ready.</small>
-            </span>
-          </label>
-          <div className="card-fields">
-            <input name="cardNumber" inputMode="numeric" autoComplete="cc-number" placeholder="Card number" />
-            <div className="checkout-two">
-              <input name="cardExpiry" inputMode="numeric" autoComplete="cc-exp" placeholder="Expiration date (MM / YY)" />
-              <input name="cardSecurityCode" inputMode="numeric" autoComplete="cc-csc" placeholder="Security code" />
-            </div>
-            <input name="cardholderName" autoComplete="cc-name" placeholder="Name on card" />
+          <h2>Oceanpayment secure payment</h2>
+          <p className="checkout-help">Card and wallet details are handled by Oceanpayment secure embedded checkout. ZAIHAI does not store full card numbers or CVV.</p>
+          <input name="paymentMethod" type="hidden" value={paymentMethod} />
+          <input name="paymentScene" type="hidden" value={paymentScene} />
+          <div className="oceanpayment-tabs" role="tablist" aria-label="Oceanpayment methods">
+            {oceanpaymentTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={paymentMethod === tab.id ? 'active' : ''}
+                onClick={() => setPaymentMethod(tab.id)}
+                role="tab"
+                aria-selected={paymentMethod === tab.id}
+              >
+                <strong>{tab.label}</strong>
+                <small>{tab.note}</small>
+              </button>
+            ))}
+          </div>
+          <div className="oceanpayment-scenes" aria-label="3D payment scene">
+            <button type="button" className={paymentScene === '3d' ? 'active' : ''} onClick={() => setPaymentScene('3d')}>3D Secure</button>
+            <button type="button" className={paymentScene === 'non-3d' ? 'active' : ''} onClick={() => setPaymentScene('non-3d')}>Non-3D</button>
+          </div>
+          <div className="oceanpayment-panel">
+            {paymentMethod === 'oceanpayment_card' ? (
+              <div>
+                <strong>Embedded credit card checkout</strong>
+                <p>After you place the order, Oceanpayment opens the secure card form or 3D verification page.</p>
+              </div>
+            ) : null}
+            {paymentMethod === 'oceanpayment_google_pay' ? (
+              <div>
+                <strong>Google Pay checkout</strong>
+                <p>Use a supported Chrome or Android wallet after the Oceanpayment request is generated.</p>
+                <div id="oceanpayment-google-pay-button" className="wallet-placeholder">Google Pay button area</div>
+              </div>
+            ) : null}
+            {paymentMethod === 'oceanpayment_apple_pay' ? (
+              <div>
+                <strong>Apple Pay checkout</strong>
+                <p>Use Safari with an Apple Pay enabled device after the Oceanpayment request is generated.</p>
+                <div id="oceanpayment-apple-pay-button" className="wallet-placeholder">Apple Pay button area</div>
+              </div>
+            ) : null}
           </div>
           <label className="checkout-method">
-            <input name="paymentMethod" type="radio" value="bank_transfer" />
+            <input type="radio" checked={paymentMethod === 'bank_transfer'} onChange={() => setPaymentMethod('bank_transfer')} />
             <span>
               <strong>Bank transfer / T/T</strong>
               <small>Receive proforma invoice and bank details from ZAIHAI sales.</small>
             </span>
           </label>
           <label className="checkout-method">
-            <input name="paymentMethod" type="radio" value="paypal" />
+            <input type="radio" checked={paymentMethod === 'paypal'} onChange={() => setPaymentMethod('paypal')} />
             <span>
               <strong>PayPal manual confirmation</strong>
               <small>Used for sample orders or sales-confirmed payments.</small>

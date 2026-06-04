@@ -8,6 +8,15 @@ const EVENTS_FILE = path.join(DATA_DIR, 'analytics-events.jsonl');
 
 export type OrderStatus = 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
+export type PaymentMethod =
+  | 'qianhai_card'
+  | 'bank_transfer'
+  | 'paypal'
+  | 'manual_quote'
+  | 'oceanpayment_card'
+  | 'oceanpayment_google_pay'
+  | 'oceanpayment_apple_pay';
+
 export type StoreOrder = {
   id: string;
   productSlug: ProductSlug;
@@ -19,7 +28,7 @@ export type StoreOrder = {
   shippingEstimate: number;
   total: number;
   status: OrderStatus;
-  paymentMethod: 'qianhai_card' | 'bank_transfer' | 'paypal' | 'manual_quote';
+  paymentMethod: PaymentMethod;
   paymentGateway: string;
   gatewayStatus: 'not_submitted' | 'pending' | 'success' | 'failed';
   trackingNumber: string;
@@ -131,7 +140,7 @@ export async function createStoreOrder(input: {
     total: subtotal + shippingEstimate,
     status: 'pending_payment',
     paymentMethod: input.paymentMethod || 'qianhai_card',
-    paymentGateway: 'qianhai',
+    paymentGateway: input.paymentMethod?.startsWith('oceanpayment') ? 'oceanpayment' : input.paymentMethod === 'qianhai_card' ? 'qianhai' : 'manual',
     gatewayStatus: 'not_submitted',
     trackingNumber: '',
     logisticsStatus: '已收到订单，等待付款确认',
@@ -162,6 +171,36 @@ export async function createStoreOrder(input: {
 
 export async function readStoreOrders() {
   return readJsonLines<StoreOrder>(ORDERS_FILE);
+}
+
+export async function findStoreOrder(orderId: string) {
+  const orders = await readStoreOrders();
+  return orders.find((order) => order.id === orderId) || null;
+}
+
+export async function updateStoreOrderPayment(
+  orderId: string,
+  patch: Partial<Pick<StoreOrder, 'status' | 'paymentMethod' | 'paymentGateway' | 'gatewayStatus' | 'logisticsStatus'>> & {
+    checkout?: Partial<StoreOrder['checkout']>;
+  }
+): Promise<StoreOrder | null> {
+  await fs.mkdir(DATA_DIR, {recursive: true});
+  const orders = await readStoreOrders();
+  let updated: StoreOrder | null = null;
+  const now = new Date().toISOString();
+  const next = orders.map((order) => {
+    if (order.id !== orderId) return order;
+    updated = {
+      ...order,
+      ...patch,
+      checkout: {...order.checkout, ...(patch.checkout || {})},
+      updatedAt: now
+    };
+    return updated;
+  });
+  if (!updated) return null;
+  await fs.writeFile(ORDERS_FILE, `${next.map((order) => JSON.stringify(order)).join('\n')}\n`, 'utf8');
+  return updated;
 }
 
 export async function appendAnalyticsEvent(event: AnalyticsEvent) {
@@ -200,10 +239,10 @@ export async function getCommerceSnapshot(filter?: CommerceSnapshotFilter) {
       to: filter?.to?.toISOString() || ''
     },
     paymentGateway: {
-      provider: 'Qianhai credit card gateway',
-      status: process.env.QIANHAI_MERCHANT_ID ? 'env_ready' : 'waiting_for_credentials',
-      createEndpoint: '/api/payments/qianhai/create',
-      notifyEndpoint: '/api/payments/qianhai/notify'
+      provider: 'Oceanpayment embedded gateway',
+      status: process.env.OCEANPAYMENT_ACCOUNT && process.env.OCEANPAYMENT_TERMINAL && process.env.OCEANPAYMENT_SECURE_CODE && process.env.OCEANPAYMENT_PUBLIC_KEY ? 'env_ready' : 'waiting_for_credentials',
+      createEndpoint: '/api/payments/oceanpayment/create',
+      notifyEndpoint: '/api/payments/oceanpayment/notice'
     },
     metrics: {
       orders: filteredOrders.length,

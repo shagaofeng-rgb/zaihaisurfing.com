@@ -2681,6 +2681,104 @@ a {
   border-radius: 8px;
 }
 
+.oceanpayment-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.oceanpayment-tabs button,
+.oceanpayment-scenes button {
+  cursor: pointer;
+  border: 1px solid rgba(17, 19, 24, 0.14);
+  border-radius: 8px;
+  font: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.oceanpayment-tabs button {
+  display: grid;
+  gap: 4px;
+  min-height: 94px;
+  padding: 15px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--white);
+}
+
+.oceanpayment-tabs button strong {
+  font-family: var(--font-display);
+  font-size: 17px;
+}
+
+.oceanpayment-tabs button small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.oceanpayment-tabs button:hover,
+.oceanpayment-scenes button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(17, 19, 24, 0.1);
+}
+
+.oceanpayment-tabs button.active,
+.oceanpayment-scenes button.active {
+  border-color: rgba(155, 220, 24, 0.85);
+  background:
+    linear-gradient(135deg, rgba(155, 220, 24, 0.18), rgba(0, 194, 255, 0.08)),
+    var(--white);
+  box-shadow: 0 16px 34px rgba(155, 220, 24, 0.16);
+}
+
+.oceanpayment-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.oceanpayment-scenes button {
+  min-height: 40px;
+  padding: 0 16px;
+  color: var(--ink);
+  background: #f6f8f5;
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+
+.oceanpayment-panel {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  color: var(--white);
+  background:
+    radial-gradient(circle at 92% 15%, rgba(155, 220, 24, 0.2), transparent 34%),
+    linear-gradient(135deg, #0d1118, #18212b);
+  border: 1px solid rgba(155, 220, 24, 0.32);
+  border-radius: 8px;
+}
+
+.oceanpayment-panel strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+.oceanpayment-panel p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.wallet-placeholder {
+  display: grid;
+  min-height: 46px;
+  place-items: center;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+}
+
 .shopline-summary {
   position: sticky;
   top: 96px;
@@ -3547,6 +3645,14 @@ html[dir="rtl"] .catalog-product-card dd {
 @media (max-width: 1100px) {
   .home-recommend-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .oceanpayment-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .oceanpayment-tabs button {
+    min-height: auto;
   }
 }
 
