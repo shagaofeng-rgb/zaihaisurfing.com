@@ -9,10 +9,7 @@ export default async function Header({locale}: {locale: Locale}) {
   const mobileNavItems = [
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
-    {href: '/applications', label: copy.nav.applications},
-    {href: '/products#fleet-packages', label: copy.nav.fleet},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
-    {href: '/factory', label: copy.nav.support},
     {href: '/about', label: copy.nav.about},
     {href: '/contact', label: copy.nav.contact}
   ];
@@ -73,10 +70,7 @@ export default async function Header({locale}: {locale: Locale}) {
             </div>
           </div>
         </div>
-        <Link href="/applications">{copy.nav.applications}</Link>
-        <Link href="/products#fleet-packages">{copy.nav.fleet}</Link>
         <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
-        <Link href="/factory">{copy.nav.support}</Link>
         <Link href="/about">{copy.nav.about}</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
       </nav>

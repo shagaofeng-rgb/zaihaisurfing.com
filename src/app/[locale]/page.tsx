@@ -2,7 +2,6 @@ import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import Hero from '@/components/Hero';
-import ProductGrid from '@/components/ProductGrid';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
 import {uiCopy} from '@/lib/uiCopy';
@@ -17,38 +16,11 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
   const {locale} = await params;
   setRequestLocale(locale);
   const t = await getTranslations({locale, namespace: 'home'});
-  const common = await getTranslations({locale, namespace: 'common'});
   const copy = uiCopy[locale];
 
   return (
     <main>
       <Hero locale={locale} />
-      <section className="collection-section" aria-labelledby="collection-title">
-        <div className="section-heading compact">
-          <p className="eyebrow">{copy.homeSections.collectionEyebrow}</p>
-          <h2 id="collection-title">{copy.homeSections.collectionTitle}</h2>
-          <p>{copy.homeSections.collectionText}</p>
-        </div>
-        <div className="collection-grid">
-          <Link className="collection-card" href="/products">
-            <span>{copy.mega.electricSurfboards}</span>
-            <img src="/assets/catalog/collection-electric-surfboard.png" alt="ZAIHAI X1 electric surfboard collection" />
-          </Link>
-          <Link className="collection-card" href="/products/rage-shark-x">
-            <span>{copy.mega.electricWaterKarts}</span>
-            <img src="/assets/catalog/collection-go-kart-boat.png" alt="Rage Shark X electric go-kart boat collection" />
-          </Link>
-          <Link className="collection-card" href="/products/p1-pro">
-            <span>{copy.mega.fuelSurfboards}</span>
-            <img src="/assets/catalog/collection-fuel-surfboard.png" alt="ZAIHAI fuel-powered surfboard collection" />
-          </Link>
-          <Link className="collection-card" href="/factory">
-            <span>{copy.mega.oem}</span>
-            <img src="/assets/catalog/collection-oem-support.png" alt="ZAIHAI OEM and distributor product package" />
-          </Link>
-        </div>
-      </section>
-
       <section className="video-showcase" id="riding-video" aria-labelledby="video-showcase-title">
         <div className="video-copy">
           <p className="eyebrow">{copy.homeSections.videoEyebrow}</p>
@@ -116,14 +88,6 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
             </article>
           ))}
         </div>
-      </section>
-      <section className="catalog-section">
-        <div className="section-heading">
-          <p className="eyebrow">{common('brand')}</p>
-          <h2>{t('productsTitle')}</h2>
-          <p>{t('productsText')}</p>
-        </div>
-        <ProductGrid locale={locale} />
       </section>
       <section className="section">
         <div className="section-heading">
