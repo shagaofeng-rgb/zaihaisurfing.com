@@ -2932,6 +2932,24 @@ a {
   border-top: 1px solid rgba(17, 19, 24, 0.12);
 }
 
+.oceanpayment-card-element {
+  min-height: 186px;
+  padding: 12px;
+  background: var(--white);
+  border: 1px solid rgba(17, 19, 24, 0.14);
+  border-radius: 7px;
+}
+
+.oceanpayment-card-element:empty::before {
+  content: "Oceanpayment secure card form is loading...";
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: #788290;
+  font-size: 13px;
+  font-weight: 750;
+}
+
 .payment-safe-note {
   margin: 0;
   color: #788290;
@@ -2940,7 +2958,7 @@ a {
 }
 
 .payment-safe-note::before {
-  content: "✓";
+  content: "";
   display: inline-grid;
   width: 15px;
   height: 15px;
@@ -4667,3 +4685,4 @@ html[dir="rtl"] .catalog-product-card dd {
     text-align: center;
   }
 }
+

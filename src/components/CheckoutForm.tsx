@@ -47,9 +47,25 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const [billingMode, setBillingMode] = useState('same');
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
   const [paymentScene, setPaymentScene] = useState<OceanpaymentScene>('3d');
+  const [cardScriptReady, setCardScriptReady] = useState(false);
   const total = unitPrice * quantity + shippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
+
+  useEffect(() => {
+    if (!cardScriptReady || paymentMethod !== 'oceanpayment_card') return;
+    const gatewayWindow = window as unknown as {
+      Oceanpayment?: {
+        init?: (testMode: boolean | '', secure3dUrl?: string, nonSecure3dUrl?: string) => void;
+      };
+    };
+    if (!gatewayWindow.Oceanpayment?.init || document.getElementById('oceanpayment-iframe-card')) return;
+    gatewayWindow.Oceanpayment.init('', '', '');
+    const iframe = document.getElementById('oceanpayment-iframe-card');
+    iframe?.addEventListener('load', () => {
+      iframe.dataset.ready = 'true';
+    }, {once: true});
+  }, [cardScriptReady, paymentMethod]);
 
   useEffect(() => {
     const win = window as unknown as {
@@ -80,7 +96,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   function submitOceanpayment(method: OceanpaymentTab, oceanpayment: OceanpaymentPayload) {
     const gatewayWindow = window as unknown as {
       Oceanpayment?: {
-        init?: (testMode: boolean, secure3dUrl?: string, nonSecure3dUrl?: string) => void;
+        init?: (testMode: boolean | '', secure3dUrl?: string, nonSecure3dUrl?: string) => void;
         checkout?: (fields: Record<string, string>) => void;
       };
       onePageGooglePay?: {checkout?: (fields: Record<string, string>) => void};
@@ -95,8 +111,31 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       return;
     }
     if (method === 'oceanpayment_card' && gatewayWindow.Oceanpayment?.init && gatewayWindow.Oceanpayment.checkout) {
-      gatewayWindow.Oceanpayment.init(Boolean(oceanpayment.testMode), '', '');
-      gatewayWindow.Oceanpayment.checkout(oceanpayment.fields);
+      const shouldUseSandbox = Boolean(oceanpayment.testMode);
+      let iframe = document.getElementById('oceanpayment-iframe-card') as HTMLIFrameElement | null;
+      const iframeUsesSandbox = iframe?.src.includes('test-secure.oceanpayment.com') || false;
+      if (iframe && shouldUseSandbox !== iframeUsesSandbox) {
+        document.getElementById('oceanpayment-element')?.replaceChildren();
+        iframe = null;
+      }
+      if (!iframe) {
+        gatewayWindow.Oceanpayment.init(oceanpayment.testMode ? true : '', '', '');
+        iframe = document.getElementById('oceanpayment-iframe-card') as HTMLIFrameElement | null;
+      }
+      let submitted = false;
+      const submitToIframe = () => {
+        if (submitted) return;
+        submitted = true;
+        gatewayWindow.Oceanpayment?.checkout?.(oceanpayment.fields);
+      };
+      if (iframe?.dataset.ready === 'true') {
+        submitToIframe();
+      } else if (iframe) {
+        iframe.addEventListener('load', () => window.setTimeout(submitToIframe, 250), {once: true});
+        window.setTimeout(submitToIframe, 1800);
+      } else {
+        window.setTimeout(submitToIframe, 600);
+      }
       return;
     }
     if (method === 'oceanpayment_card') {
@@ -188,7 +227,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   return (
     <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
       <Script src="https://secure.oceanpayment.com/pub/js/jquery/jq.js" strategy="afterInteractive" />
-      <Script src="https://secure.oceanpayment.com/pages/js/oceanpayment.js" strategy="afterInteractive" />
+      <Script src="https://secure.oceanpayment.com/pages/js/oceanpayment.js" strategy="afterInteractive" onLoad={() => setCardScriptReady(true)} />
       <Script src="https://secure.oceanpayment.com/gateway/js/googlepay_ec.js" strategy="afterInteractive" />
       <Script src="https://secure.oceanpayment.com/gateway/js/applepay_ec.js" strategy="afterInteractive" />
       <div className="checkout-left">
@@ -277,42 +316,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
             </button>
             {paymentMethod === 'oceanpayment_card' ? (
               <div className="shopline-card-fields">
-                <label className="card-input full">
-                  <span>Card number</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    placeholder="Card number"
-                    required
-                    aria-label="Card number"
-                  />
-                </label>
-                <div className="checkout-two">
-                  <label className="card-input">
-                    <span>Expiration date (MM / YY)</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      placeholder="MM / YY"
-                      required
-                      aria-label="Expiration date"
-                    />
-                  </label>
-                  <label className="card-input">
-                    <span>Security code</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      placeholder="CVV/CVC"
-                      required
-                      aria-label="Security code"
-                    />
-                  </label>
-                </div>
-                <p className="payment-safe-note">Card information is handled by Oceanpayment secure checkout. ZAIHAI does not store full card numbers or CVV.</p>
+                <div id="oceanpayment-element" className="oceanpayment-card-element" aria-label="Oceanpayment secure card form" />
+                <p className="payment-safe-note">Enter card details in the Oceanpayment secure card form. ZAIHAI does not store full card numbers or CVV.</p>
               </div>
             ) : null}
             <button
