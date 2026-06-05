@@ -2689,13 +2689,8 @@ a {
   white-space: nowrap;
 }
 
-.card-fields {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-  background: #f8faf7;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.payment-block {
+  gap: 10px;
 }
 
 .oceanpayment-tabs {
@@ -2714,13 +2709,29 @@ a {
 }
 
 .oceanpayment-tabs button {
+  position: relative;
   display: grid;
   gap: 4px;
-  min-height: 94px;
-  padding: 15px;
+  min-height: 92px;
+  padding: 15px 15px 15px 38px;
   text-align: left;
   color: var(--ink);
   background: var(--white);
+}
+
+.payment-radio-dot {
+  position: absolute;
+  top: 18px;
+  left: 15px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(17, 19, 24, 0.28);
+  border-radius: 999px;
+}
+
+.oceanpayment-tabs button.active .payment-radio-dot {
+  border: 4px solid #ffd100;
+  background: #111;
 }
 
 .oceanpayment-tabs button strong {
@@ -2742,11 +2753,32 @@ a {
 
 .oceanpayment-tabs button.active,
 .oceanpayment-scenes button.active {
-  border-color: rgba(155, 220, 24, 0.85);
+  border-color: #f3c400;
   background:
-    linear-gradient(135deg, rgba(155, 220, 24, 0.18), rgba(0, 194, 255, 0.08)),
+    linear-gradient(135deg, rgba(255, 209, 0, 0.14), rgba(255, 245, 196, 0.2)),
     var(--white);
-  box-shadow: 0 16px 34px rgba(155, 220, 24, 0.16);
+  box-shadow: 0 16px 34px rgba(243, 196, 0, 0.12);
+}
+
+.card-brand-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 2px 0;
+}
+
+.card-brand-row b {
+  display: inline-grid;
+  min-width: 34px;
+  min-height: 22px;
+  place-items: center;
+  padding: 2px 6px;
+  color: #101419;
+  background: #fff;
+  border: 1px solid rgba(17, 19, 24, 0.16);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1;
 }
 
 .oceanpayment-scenes {
@@ -2768,11 +2800,9 @@ a {
   display: grid;
   gap: 10px;
   padding: 16px;
-  color: var(--white);
-  background:
-    radial-gradient(circle at 92% 15%, rgba(155, 220, 24, 0.2), transparent 34%),
-    linear-gradient(135deg, #0d1118, #18212b);
-  border: 1px solid rgba(155, 220, 24, 0.32);
+  color: var(--ink);
+  background: #f4f4f4;
+  border: 1px solid rgba(17, 19, 24, 0.12);
   border-radius: 8px;
 }
 
@@ -2783,7 +2813,7 @@ a {
 
 .oceanpayment-panel p {
   margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
 }
 
 .wallet-placeholder {
@@ -2791,9 +2821,42 @@ a {
   min-height: 46px;
   place-items: center;
   margin-top: 12px;
-  color: rgba(255, 255, 255, 0.78);
-  border: 1px dashed rgba(255, 255, 255, 0.28);
+  color: var(--muted);
+  background: var(--white);
+  border: 1px dashed rgba(17, 19, 24, 0.24);
   border-radius: 8px;
+}
+
+.credit-card-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.card-input {
+  display: grid;
+  gap: 6px;
+}
+
+.card-input span {
+  color: #4d5967;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.card-input input {
+  width: 100%;
+  min-height: 56px;
+  padding: 13px 15px;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid rgba(17, 19, 24, 0.18);
+  border-radius: 7px;
+  font: inherit;
+}
+
+.card-input input:focus {
+  outline: 2px solid rgba(243, 196, 0, 0.28);
+  border-color: #f3c400;
 }
 
 .shopline-summary {

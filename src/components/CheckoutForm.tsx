@@ -96,7 +96,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         name: `${firstName} ${lastName}`.trim(),
         email: formData.get('contact'),
         phone: formData.get('phone'),
-        company: formData.get('company'),
+        company: '',
         country,
         address: fullAddress,
         message: formData.get('message')
@@ -116,7 +116,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         billingAddress: billingMode === 'same' ? fullAddress : formData.get('billingAddress'),
         cardBrand: '',
         cardLast4: '',
-        cardholderName: ''
+        cardholderName: formData.get('cardholderName') || ''
       }
     };
 
@@ -193,7 +193,6 @@ export default function CheckoutForm({locale, productSlug, productName, productI
             <input name="firstName" required placeholder="First name" />
             <input name="lastName" required placeholder="Last name" />
           </div>
-          <input name="company" placeholder="Company, resort, distributor or rental operator" />
           <input name="address" required placeholder="Address" />
           <input name="apartment" placeholder="Apartment, suite, warehouse, port, etc." />
           <div className="checkout-three">
@@ -224,12 +223,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           </label>
         </section>
 
-        <section className="checkout-block">
-          <h2>Oceanpayment secure payment</h2>
-          <p className="checkout-help">Card and wallet details are handled by Oceanpayment secure embedded checkout. ZAIHAI does not store full card numbers or CVV.</p>
+        <section className="checkout-block payment-block">
+          <h2>Payment</h2>
+          <p className="checkout-help">All transactions are secure and encrypted. Credit card and wallet payments are processed by Oceanpayment.</p>
           <input name="paymentMethod" type="hidden" value={paymentMethod} />
           <input name="paymentScene" type="hidden" value={paymentScene} />
-          <div className="oceanpayment-tabs" role="tablist" aria-label="Oceanpayment methods">
+          <div className="oceanpayment-tabs payment-option-tabs" role="tablist" aria-label="Oceanpayment methods">
             {oceanpaymentTabs.map((tab) => (
               <button
                 key={tab.id}
@@ -239,20 +238,66 @@ export default function CheckoutForm({locale, productSlug, productName, productI
                 role="tab"
                 aria-selected={paymentMethod === tab.id}
               >
+                <span className="payment-radio-dot" aria-hidden="true" />
                 <strong>{tab.label}</strong>
+                {tab.id === 'oceanpayment_card' ? (
+                  <span className="card-brand-row" aria-label="Supported card brands">
+                    <b>VISA</b>
+                    <b>MC</b>
+                    <b>AMEX</b>
+                    <b>JCB</b>
+                    <b>+6</b>
+                  </span>
+                ) : null}
                 <small>{tab.note}</small>
               </button>
             ))}
           </div>
-          <div className="oceanpayment-scenes" aria-label="3D payment scene">
-            <button type="button" className={paymentScene === '3d' ? 'active' : ''} onClick={() => setPaymentScene('3d')}>3D Secure</button>
-            <button type="button" className={paymentScene === 'non-3d' ? 'active' : ''} onClick={() => setPaymentScene('non-3d')}>Non-3D</button>
-          </div>
           <div className="oceanpayment-panel">
             {paymentMethod === 'oceanpayment_card' ? (
-              <div>
-                <strong>Embedded credit card checkout</strong>
-                <p>After you place the order, Oceanpayment opens the secure card form or 3D verification page.</p>
+              <div className="credit-card-fields">
+                <label className="card-input full">
+                  <span>Card number</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="cc-number"
+                    placeholder="Card number"
+                    required={paymentMethod === 'oceanpayment_card'}
+                    aria-label="Card number"
+                  />
+                </label>
+                <div className="checkout-two">
+                  <label className="card-input">
+                    <span>Expiration date (MM / YY)</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
+                      placeholder="MM / YY"
+                      required={paymentMethod === 'oceanpayment_card'}
+                      aria-label="Expiration date"
+                    />
+                  </label>
+                  <label className="card-input">
+                    <span>Security code</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      placeholder="CVV"
+                      required={paymentMethod === 'oceanpayment_card'}
+                      aria-label="Security code"
+                    />
+                  </label>
+                </div>
+                <label className="card-input full">
+                  <span>Name on card</span>
+                  <input name="cardholderName" type="text" autoComplete="cc-name" placeholder="Name on card" required={paymentMethod === 'oceanpayment_card'} />
+                </label>
+                <p>
+                  Card details are confirmed inside Oceanpayment secure checkout after you place the order. ZAIHAI does not store full card numbers or CVV.
+                </p>
               </div>
             ) : null}
             {paymentMethod === 'oceanpayment_google_pay' ? (
@@ -269,6 +314,10 @@ export default function CheckoutForm({locale, productSlug, productName, productI
                 <div id="oceanpayment-apple-pay-button" className="wallet-placeholder">Apple Pay button area</div>
               </div>
             ) : null}
+          </div>
+          <div className="oceanpayment-scenes" aria-label="3D payment scene">
+            <button type="button" className={paymentScene === '3d' ? 'active' : ''} onClick={() => setPaymentScene('3d')}>3D Secure</button>
+            <button type="button" className={paymentScene === 'non-3d' ? 'active' : ''} onClick={() => setPaymentScene('non-3d')}>Non-3D</button>
           </div>
           <label className="checkout-method">
             <input type="radio" checked={paymentMethod === 'bank_transfer'} onChange={() => setPaymentMethod('bank_transfer')} />
