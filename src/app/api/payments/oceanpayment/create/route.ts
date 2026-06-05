@@ -22,7 +22,12 @@ export async function POST(request: Request) {
       order,
       method,
       scene,
-      locale: String(payload.locale || 'en')
+      locale: String(payload.locale || 'en'),
+      checkoutUrl: typeof payload.checkoutUrl === 'string' ? payload.checkoutUrl : undefined,
+      billingIp:
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        undefined
     });
 
     const updated = await updateStoreOrderPayment(order.id, {

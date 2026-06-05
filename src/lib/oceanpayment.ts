@@ -6,7 +6,8 @@ export type OceanpaymentMethod = 'credit-card' | 'google-pay' | 'apple-pay';
 export type OceanpaymentScene = '3d' | 'non-3d';
 
 const scriptUrls = {
-  'credit-card': 'https://secure.oceanpayment.com/gateway/js/card_ec.js',
+  jquery: 'https://secure.oceanpayment.com/pub/js/jquery/jq.js',
+  'credit-card': 'https://secure.oceanpayment.com/pages/js/oceanpayment.js',
   'google-pay': 'https://secure.oceanpayment.com/gateway/js/googlepay_ec.js',
   'apple-pay': 'https://secure.oceanpayment.com/gateway/js/applepay_ec.js'
 } as const;
@@ -78,12 +79,16 @@ export function buildOceanpaymentPayload({
   order,
   method,
   scene,
-  locale
+  locale,
+  checkoutUrl,
+  billingIp
 }: {
   order: StoreOrder;
   method: OceanpaymentMethod;
   scene: OceanpaymentScene;
   locale: string;
+  checkoutUrl?: string;
+  billingIp?: string;
 }) {
   const config = oceanpaymentConfig();
   const {firstName, lastName} = splitName(order);
@@ -94,23 +99,28 @@ export function buildOceanpaymentPayload({
   const signValue = sha256(
     `${config.account}${config.terminal}${orderNumber}${orderCurrency}${orderAmount}${firstName}${lastName}${billingEmail}${config.secureCode}`
   );
-  const baseReturnUrl = `${config.baseUrl}/api/payments/oceanpayment/back`;
+  const checkoutReturnUrl = checkoutUrl && /^https?:\/\//i.test(checkoutUrl)
+    ? checkoutUrl
+    : `${config.baseUrl}/${locale}/checkout?product=${encodeURIComponent(order.productSlug)}&qty=${order.quantity}`;
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
+  const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
 
   return {
     gatewayUrl: config.endpoint,
     sdkUrl: scriptUrls[method],
+    sdkUrls: method === 'credit-card' ? [scriptUrls.jquery, scriptUrls['credit-card']] : [scriptUrls[method]],
     configured: config.configured,
+    testMode: !/^prod(uction)?$/i.test(config.environment),
     requiredEnv: ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_TERMINAL', 'OCEANPAYMENT_SECURE_CODE', 'OCEANPAYMENT_PUBLIC_KEY'],
     fields: {
       account: config.account,
       terminal: config.terminal,
-      public_key: config.publicKey,
+      key: config.publicKey,
       order_number: orderNumber,
       order_currency: orderCurrency,
       order_amount: orderAmount,
       order_notes: order.productName,
-      methods: method,
+      methods: methodName,
       payment_scenario: scene === '3d' ? '3D' : 'Non-3D',
       billing_firstName: firstName,
       billing_lastName: lastName,
@@ -130,7 +140,13 @@ export function buildOceanpaymentPayload({
       ship_city: clean(order.checkout.city || 'NA', 80),
       ship_addr: clean(order.customer.address, 240),
       ship_zip: clean(order.checkout.zip || '00000', 32),
-      backUrl: `${baseReturnUrl}?locale=${encodeURIComponent(locale)}`,
+      productName: clean(order.productName, 180),
+      productNum: String(order.quantity),
+      productSku: clean(order.productSlug, 80),
+      productPrice: amount(order.unitPrice),
+      cart_info: `${clean(order.productName, 120)} x ${order.quantity}`,
+      billing_ip: clean(billingIp || '127.0.0.1', 40),
+      backUrl: checkoutReturnUrl,
       noticeUrl,
       signValue
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Script from 'next/script';
 import type {CheckoutProductSlug} from '@/lib/site';
 
@@ -21,6 +21,26 @@ type OceanpaymentScene = '3d' | 'non-3d';
 const cardBadges = ['VISA', 'MC', 'DISCOVER', 'JCB', '+6'];
 const multiplePaymentBadges = ['Google Pay', 'Apple Pay', 'Local Pay', 'Bank', '+41'];
 
+type OceanpaymentPayload = {
+  gatewayUrl: string;
+  fields: Record<string, string>;
+  testMode?: boolean;
+};
+
+type OceanpaymentCallbackData = string | Record<string, unknown>;
+
+function readOceanpaymentValue(data: OceanpaymentCallbackData, key: string) {
+  if (typeof data !== 'string') {
+    const value = data[key];
+    return typeof value === 'string' ? value : '';
+  }
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const xmlMatch = data.match(new RegExp(`<${escapedKey}[^>]*>([^<]+)<\\/${escapedKey}>`, 'i'));
+  if (xmlMatch) return xmlMatch[1];
+  const params = new URLSearchParams(data);
+  return params.get(key) || '';
+}
+
 export default function CheckoutForm({locale, productSlug, productName, productImage, unitPrice, quantity, shippingEstimate}: CheckoutFormProps) {
   const [status, setStatus] = useState('');
   const [coupon, setCoupon] = useState('');
@@ -31,25 +51,38 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
 
-  function submitOceanpaymentFallback(gatewayUrl: string, fields: Record<string, string>) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = gatewayUrl;
-    form.style.display = 'none';
-    Object.entries(fields).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);
-      form.appendChild(input);
-    });
-    document.body.appendChild(form);
-    form.submit();
-  }
+  useEffect(() => {
+    const win = window as unknown as {
+      oceanpaymentCallBack?: (data: OceanpaymentCallbackData) => void;
+    };
+    win.oceanpaymentCallBack = (data) => {
+      const payUrl = readOceanpaymentValue(data, 'pay_url') || readOceanpaymentValue(data, 'payUrl') || readOceanpaymentValue(data, 'redirect_url');
+      const orderNumber = readOceanpaymentValue(data, 'order_number') || readOceanpaymentValue(data, 'orderNo');
+      const paymentStatus = readOceanpaymentValue(data, 'payment_status') || readOceanpaymentValue(data, 'status');
+      const message = readOceanpaymentValue(data, 'message') || readOceanpaymentValue(data, 'payment_details') || readOceanpaymentValue(data, 'error');
 
-  function submitOceanpayment(method: OceanpaymentTab, oceanpayment: {gatewayUrl: string; fields: Record<string, string>}) {
+      if (payUrl) {
+        setStatus('Oceanpayment 3D verification page opened. Please complete the payment there.');
+        window.location.href = payUrl;
+        return;
+      }
+      if (/^(1|success|paid|approved)$/i.test(paymentStatus) && orderNumber) {
+        window.location.href = `/${locale}/checkout/success?order=${encodeURIComponent(orderNumber)}&payment=oceanpayment`;
+        return;
+      }
+      setStatus(message || 'Oceanpayment returned a payment response. If payment did not continue, please try again or contact ZAIHAI sales.');
+    };
+    return () => {
+      delete win.oceanpaymentCallBack;
+    };
+  }, [locale]);
+
+  function submitOceanpayment(method: OceanpaymentTab, oceanpayment: OceanpaymentPayload) {
     const gatewayWindow = window as unknown as {
-      Oceanpayment?: {checkout?: (fields: Record<string, string>) => void; submit?: (fields: Record<string, string>) => void};
+      Oceanpayment?: {
+        init?: (testMode: boolean, secure3dUrl?: string, nonSecure3dUrl?: string) => void;
+        checkout?: (fields: Record<string, string>) => void;
+      };
       onePageGooglePay?: {checkout?: (fields: Record<string, string>) => void};
       onePageApplePay?: {checkout?: (fields: Record<string, string>) => void};
     };
@@ -61,15 +94,16 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       gatewayWindow.onePageApplePay.checkout(oceanpayment.fields);
       return;
     }
-    if (gatewayWindow.Oceanpayment?.checkout) {
+    if (method === 'oceanpayment_card' && gatewayWindow.Oceanpayment?.init && gatewayWindow.Oceanpayment.checkout) {
+      gatewayWindow.Oceanpayment.init(Boolean(oceanpayment.testMode), '', '');
       gatewayWindow.Oceanpayment.checkout(oceanpayment.fields);
       return;
     }
-    if (gatewayWindow.Oceanpayment?.submit) {
-      gatewayWindow.Oceanpayment.submit(oceanpayment.fields);
+    if (method === 'oceanpayment_card') {
+      setStatus('Oceanpayment secure card script is still loading. Please wait a few seconds and click Pay now again.');
       return;
     }
-    submitOceanpaymentFallback(oceanpayment.gatewayUrl, oceanpayment.fields);
+    setStatus('This wallet payment script is still loading or not available on this device. Please try Credit Card or Bank transfer.');
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -132,7 +166,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       const paymentResponse = await fetch('/api/payments/oceanpayment/create', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({orderId: result.order.id, paymentMethod, scene: paymentScene, locale})
+        body: JSON.stringify({orderId: result.order.id, paymentMethod, scene: paymentScene, locale, checkoutUrl: window.location.href})
       });
       const paymentResult = await paymentResponse.json();
       if (!paymentResponse.ok) {
@@ -153,7 +187,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   return (
     <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
-      <Script src="https://secure.oceanpayment.com/gateway/js/card_ec.js" strategy="afterInteractive" />
+      <Script src="https://secure.oceanpayment.com/pub/js/jquery/jq.js" strategy="afterInteractive" />
+      <Script src="https://secure.oceanpayment.com/pages/js/oceanpayment.js" strategy="afterInteractive" />
       <Script src="https://secure.oceanpayment.com/gateway/js/googlepay_ec.js" strategy="afterInteractive" />
       <Script src="https://secure.oceanpayment.com/gateway/js/applepay_ec.js" strategy="afterInteractive" />
       <div className="checkout-left">
