@@ -1,4 +1,5 @@
 import {requireAdminSession} from '@/lib/adminAuth';
+import AdminRealtimeSync from '@/components/AdminRealtimeSync';
 
 const navItems = [
   {key: 'dashboard', label: '数据总览', href: '/admin'},
@@ -39,7 +40,10 @@ export default async function AdminShell({active, children}: {active: string; ch
           </form>
         </div>
       </aside>
-      <section className="admin-main">{children}</section>
+      <section className="admin-main">
+        <AdminRealtimeSync />
+        {children}
+      </section>
     </main>
   );
 }
