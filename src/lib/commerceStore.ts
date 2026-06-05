@@ -11,7 +11,6 @@ export type OrderStatus = 'pending_payment' | 'paid' | 'processing' | 'shipped' 
 export type PaymentMethod =
   | 'qianhai_card'
   | 'bank_transfer'
-  | 'paypal'
   | 'manual_quote'
   | 'oceanpayment_card'
   | 'oceanpayment_google_pay'

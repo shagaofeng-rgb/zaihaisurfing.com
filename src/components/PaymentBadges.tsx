@@ -60,15 +60,6 @@ const paymentBadges = [
         <path d="M27 10a7 7 0 0 0 0 12 7 7 0 0 1 0-12Zm3 0a7 7 0 0 1 0 12 7 7 0 0 0 0-12Z" fill="#0b65a3" />
       </>
     )
-  },
-  {
-    id: 'paypal',
-    label: 'PayPal',
-    svg: (
-      <>
-        <text x="8" y="20" className="payment-wordmark payment-paypal-text">PayPal</text>
-      </>
-    )
   }
 ];
 

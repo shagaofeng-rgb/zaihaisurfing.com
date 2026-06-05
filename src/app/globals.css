@@ -2205,6 +2205,7 @@ a {
   width: 44px;
   height: 25px;
   display: block;
+  overflow: hidden;
 }
 
 .payment-wordmark {
@@ -2233,12 +2234,6 @@ a {
 .payment-discover-text {
   fill: #1f2937;
   font-size: 7px;
-  letter-spacing: 0;
-}
-
-.payment-paypal-text {
-  fill: #003087;
-  font-size: 12px;
   letter-spacing: 0;
 }
 
@@ -2857,6 +2852,155 @@ a {
 .card-input input:focus {
   outline: 2px solid rgba(243, 196, 0, 0.28);
   border-color: #f3c400;
+}
+
+.shopline-payment-box {
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid rgba(17, 19, 24, 0.16);
+  border-radius: 8px;
+}
+
+.shopline-payment-row {
+  display: flex;
+  width: 100%;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  color: var(--ink);
+  background: var(--white);
+  border: 0;
+  border-top: 1px solid rgba(17, 19, 24, 0.12);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.shopline-payment-row:first-child {
+  border-top: 0;
+}
+
+.shopline-payment-row.active {
+  background: linear-gradient(180deg, rgba(255, 209, 0, 0.13), rgba(255, 250, 231, 0.64));
+  box-shadow: inset 0 0 0 1px rgba(243, 196, 0, 0.55);
+}
+
+.shopline-payment-row:hover {
+  background: #fffdf5;
+}
+
+.payment-row-left {
+  display: inline-flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 11px;
+}
+
+.payment-row-left strong {
+  font-family: var(--font-display);
+  font-size: 17px;
+}
+
+.shopline-payment-row .payment-radio-dot {
+  position: static;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(17, 19, 24, 0.28);
+  border-radius: 999px;
+  background: var(--white);
+}
+
+.shopline-payment-row.active .payment-radio-dot,
+.checkout-method input:checked {
+  accent-color: #2f7ec8;
+}
+
+.shopline-payment-row.active .payment-radio-dot {
+  border: 5px solid #2f7ec8;
+  background: var(--white);
+}
+
+.shopline-card-fields {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #f6f6f6;
+  border-top: 1px solid rgba(17, 19, 24, 0.12);
+}
+
+.payment-safe-note {
+  margin: 0;
+  color: #788290;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.payment-safe-note::before {
+  content: "✓";
+  display: inline-grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  margin-right: 6px;
+  color: #19a974;
+  border: 1px solid rgba(25, 169, 116, 0.55);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.payment-icon-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.payment-icon-strip b {
+  display: inline-grid;
+  min-width: 38px;
+  min-height: 22px;
+  place-items: center;
+  padding: 2px 7px;
+  color: #101419;
+  background: #fff;
+  border: 1px solid rgba(17, 19, 24, 0.16);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(17, 19, 24, 0.04);
+}
+
+.wallet-panel {
+  border-color: rgba(47, 126, 200, 0.2);
+}
+
+.wallet-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.wallet-choice-row button {
+  min-height: 38px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid rgba(17, 19, 24, 0.14);
+  border-radius: 7px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.wallet-choice-row button.active {
+  border-color: #2f7ec8;
+  background: rgba(47, 126, 200, 0.08);
 }
 
 .shopline-summary {
@@ -4366,6 +4510,29 @@ html[dir="rtl"] .catalog-product-card dd {
     grid-template-columns: 1fr;
   }
 
+  .shopline-payment-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .payment-row-left {
+    width: 100%;
+  }
+
+  .card-brand-row,
+  .payment-icon-strip {
+    justify-content: flex-start;
+  }
+
+  .shopline-card-fields {
+    padding: 14px;
+  }
+
+  .wallet-choice-row button {
+    flex: 1 1 128px;
+  }
+
   .news-detail-hero h1 {
     font-size: clamp(34px, 9.4vw, 46px);
   }
@@ -4475,6 +4642,13 @@ html[dir="rtl"] .catalog-product-card dd {
   .back-to-top svg {
     width: 22px;
     height: 22px;
+  }
+
+  iframe[src*="salesmartly" i],
+  div[id*="salesmartly" i],
+  div[class*="salesmartly" i] {
+    right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .mobile-bottom-cta {

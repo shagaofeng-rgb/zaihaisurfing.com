@@ -95,7 +95,7 @@ export default async function AdminDashboardPage({
 
       <div className="admin-metrics">
         <article><span>订单数</span><strong>{snapshot.metrics.orders}</strong><small>客户提交结账后生成</small></article>
-        <article><span>待付款</span><strong>{snapshot.metrics.pendingPayment}</strong><small>等待信用卡/T/T/PayPal 确认</small></article>
+        <article><span>待付款</span><strong>{snapshot.metrics.pendingPayment}</strong><small>等待信用卡或 T/T 确认</small></article>
         <article><span>已确认销售额</span><strong>{money(snapshot.metrics.revenue)}</strong><small>已付款/处理中/已发货订单</small></article>
         <article><span>真实访客</span><strong>{snapshot.metrics.visitors}</strong><small>前台匿名访客 ID</small></article>
         <article><span>产品数据</span><strong>{backend.metrics.publishedProducts}/{backend.metrics.products}</strong><small>已发布 / 总数</small></article>

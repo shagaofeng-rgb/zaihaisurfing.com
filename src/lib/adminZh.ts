@@ -35,7 +35,6 @@ export function zhPaymentMethod(method: string) {
   const map: Record<string, string> = {
     qianhai_card: '前海信用卡',
     bank_transfer: '银行转账/T/T',
-    paypal: 'PayPal',
     manual_quote: '人工报价'
   };
   return map[method] || method || '未知';

@@ -11,6 +11,7 @@ import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
 import MobileBottomCta from '@/components/MobileBottomCta';
 import BackToTopButton from '@/components/BackToTopButton';
+import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -47,6 +48,7 @@ export default async function LocaleLayout({
           <WhatsAppFloatingButton />
           <BackToTopButton />
           <MobileBottomCta locale={locale as Locale} />
+          <FloatingWidgetGuard />
         </NextIntlClientProvider>
         <Script
           src="https://plugin-code.salesmartly.com/js/project_653905_759291_1780551668.js"
