@@ -116,7 +116,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         billingAddress: billingMode === 'same' ? fullAddress : formData.get('billingAddress'),
         cardBrand: '',
         cardLast4: '',
-        cardholderName: formData.get('cardholderName') || ''
+        cardholderName: ''
       }
     };
 
@@ -291,10 +291,6 @@ export default function CheckoutForm({locale, productSlug, productName, productI
                     />
                   </label>
                 </div>
-                <label className="card-input full">
-                  <span>Name on card</span>
-                  <input name="cardholderName" type="text" autoComplete="cc-name" placeholder="Name on card" required={paymentMethod === 'oceanpayment_card'} />
-                </label>
                 <p>
                   Card details are confirmed inside Oceanpayment secure checkout after you place the order. ZAIHAI does not store full card numbers or CVV.
                 </p>
