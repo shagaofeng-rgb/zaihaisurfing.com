@@ -2,11 +2,11 @@
 
 import {useMemo, useState} from 'react';
 import Script from 'next/script';
-import type {ProductSlug} from '@/lib/site';
+import type {CheckoutProductSlug} from '@/lib/site';
 
 type CheckoutFormProps = {
   locale: string;
-  productSlug: ProductSlug;
+  productSlug: CheckoutProductSlug;
   productName: string;
   productImage: string;
   unitPrice: number;

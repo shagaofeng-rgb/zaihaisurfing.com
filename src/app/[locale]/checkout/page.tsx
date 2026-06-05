@@ -4,7 +4,7 @@ import {setRequestLocale} from 'next-intl/server';
 import CheckoutForm from '@/components/CheckoutForm';
 import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
-import {productSlugs, products, type ProductSlug} from '@/lib/site';
+import {checkoutProductSlugs, products, type CheckoutProductSlug} from '@/lib/site';
 import {shippingEstimateFor} from '@/lib/commerceStore';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
@@ -22,11 +22,11 @@ export default async function CheckoutPage({
   const {locale} = await params;
   const query = await searchParams;
   setRequestLocale(locale);
-  const productSlug = (query.product || 'x1-pro') as ProductSlug;
-  if (!productSlugs.includes(productSlug)) notFound();
+  const productSlug = (query.product || 'x1-pro') as CheckoutProductSlug;
+  if (!checkoutProductSlugs.includes(productSlug)) notFound();
   const product = products[productSlug];
   const quantity = Math.max(1, Math.min(99, Number(query.qty || 1)));
-  const shippingEstimate = shippingEstimateFor(query.country || '');
+  const shippingEstimate = productSlug === 'payment-test' ? 0 : shippingEstimateFor(query.country || '');
 
   return (
     <main>

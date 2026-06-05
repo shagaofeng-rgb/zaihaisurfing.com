@@ -1,4 +1,4 @@
-import {productSlugs, type ProductSlug} from '@/lib/site';
+import {checkoutProductSlugs, type CheckoutProductSlug} from '@/lib/site';
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
 
 export const runtime = 'nodejs';
@@ -11,8 +11,8 @@ function clean(value: unknown, limit = 240) {
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const productSlug = payload.productSlug as ProductSlug;
-    if (!productSlugs.includes(productSlug)) {
+    const productSlug = payload.productSlug as CheckoutProductSlug;
+    if (!checkoutProductSlugs.includes(productSlug)) {
       return Response.json({message: 'Invalid product'}, {status: 400});
     }
     const customer = {

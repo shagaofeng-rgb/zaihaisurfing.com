@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {products, type ProductSlug} from '@/lib/site';
+import {products, type CheckoutProductSlug} from '@/lib/site';
 
 const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.jsonl');
@@ -18,7 +18,7 @@ export type PaymentMethod =
 
 export type StoreOrder = {
   id: string;
-  productSlug: ProductSlug;
+  productSlug: CheckoutProductSlug;
   productName: string;
   quantity: number;
   unitPrice: number;
@@ -116,7 +116,7 @@ export function shippingEstimateFor(country: string) {
 }
 
 export async function createStoreOrder(input: {
-  productSlug: ProductSlug;
+  productSlug: CheckoutProductSlug;
   quantity: number;
   paymentMethod?: StoreOrder['paymentMethod'];
   customer: StoreOrder['customer'];
@@ -125,7 +125,7 @@ export async function createStoreOrder(input: {
   const product = products[input.productSlug];
   const quantity = Math.max(1, Math.min(99, Number(input.quantity || 1)));
   const subtotal = product.priceAmount * quantity;
-  const shippingEstimate = shippingEstimateFor(input.customer.country);
+  const shippingEstimate = input.productSlug === 'payment-test' ? 0 : shippingEstimateFor(input.customer.country);
   const now = new Date().toISOString();
   const order: StoreOrder = {
     id: `ZH-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
