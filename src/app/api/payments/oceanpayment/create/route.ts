@@ -18,12 +18,17 @@ export async function POST(request: Request) {
 
     const method = paymentMethodToOceanpayment(payload.paymentMethod || order.paymentMethod);
     const scene: OceanpaymentScene = payload.scene === 'non-3d' ? 'non-3d' : '3d';
+    const checkoutUrl = typeof payload.checkoutUrl === 'string' ? payload.checkoutUrl : undefined;
+    const forceTestMode =
+      order.productSlug === 'payment-test' ||
+      Boolean(checkoutUrl && /[?&](gateway|opEnv|sandbox)=?(test|sandbox|1)?(?:&|$)/i.test(checkoutUrl));
     const oceanpayment = buildOceanpaymentPayload({
       order,
       method,
       scene,
       locale: String(payload.locale || 'en'),
-      checkoutUrl: typeof payload.checkoutUrl === 'string' ? payload.checkoutUrl : undefined,
+      checkoutUrl,
+      forceTestMode,
       billingIp:
         request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
         request.headers.get('x-real-ip') ||

@@ -48,9 +48,20 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
   const [paymentScene, setPaymentScene] = useState<OceanpaymentScene>('3d');
   const [cardScriptReady, setCardScriptReady] = useState(false);
+  const [forceSandboxPayment, setForceSandboxPayment] = useState(productSlug === 'payment-test');
   const total = unitPrice * quantity + shippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setForceSandboxPayment(
+      productSlug === 'payment-test' ||
+      params.get('gateway') === 'sandbox' ||
+      params.get('opEnv') === 'test' ||
+      params.get('sandbox') === '1'
+    );
+  }, [productSlug]);
 
   useEffect(() => {
     if (!cardScriptReady || paymentMethod !== 'oceanpayment_card') return;
@@ -59,13 +70,17 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         init?: (testMode: boolean | '', secure3dUrl?: string, nonSecure3dUrl?: string) => void;
       };
     };
-    if (!gatewayWindow.Oceanpayment?.init || document.getElementById('oceanpayment-iframe-card')) return;
-    gatewayWindow.Oceanpayment.init('', '', '');
+    if (!gatewayWindow.Oceanpayment?.init) return;
+    const existingIframe = document.getElementById('oceanpayment-iframe-card') as HTMLIFrameElement | null;
+    const iframeUsesSandbox = existingIframe?.src.includes('test-secure.oceanpayment.com') || false;
+    if (existingIframe && iframeUsesSandbox === forceSandboxPayment) return;
+    document.getElementById('oceanpayment-element')?.replaceChildren();
+    gatewayWindow.Oceanpayment.init(forceSandboxPayment ? true : '', '', '');
     const iframe = document.getElementById('oceanpayment-iframe-card');
     iframe?.addEventListener('load', () => {
       iframe.dataset.ready = 'true';
     }, {once: true});
-  }, [cardScriptReady, paymentMethod]);
+  }, [cardScriptReady, forceSandboxPayment, paymentMethod]);
 
   useEffect(() => {
     const win = window as unknown as {

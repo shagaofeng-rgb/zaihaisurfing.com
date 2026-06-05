@@ -81,7 +81,8 @@ export function buildOceanpaymentPayload({
   scene,
   locale,
   checkoutUrl,
-  billingIp
+  billingIp,
+  forceTestMode
 }: {
   order: StoreOrder;
   method: OceanpaymentMethod;
@@ -89,6 +90,7 @@ export function buildOceanpaymentPayload({
   locale: string;
   checkoutUrl?: string;
   billingIp?: string;
+  forceTestMode?: boolean;
 }) {
   const config = oceanpaymentConfig();
   const {firstName, lastName} = splitName(order);
@@ -104,13 +106,14 @@ export function buildOceanpaymentPayload({
     : `${config.baseUrl}/${locale}/checkout?product=${encodeURIComponent(order.productSlug)}&qty=${order.quantity}`;
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
   const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
+  const testMode = forceTestMode || !/^prod(uction)?$/i.test(config.environment);
 
   return {
     gatewayUrl: config.endpoint,
     sdkUrl: scriptUrls[method],
     sdkUrls: method === 'credit-card' ? [scriptUrls.jquery, scriptUrls['credit-card']] : [scriptUrls[method]],
     configured: config.configured,
-    testMode: !/^prod(uction)?$/i.test(config.environment),
+    testMode,
     requiredEnv: ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_TERMINAL', 'OCEANPAYMENT_SECURE_CODE', 'OCEANPAYMENT_PUBLIC_KEY'],
     fields: {
       account: config.account,
