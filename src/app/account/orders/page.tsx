@@ -49,6 +49,7 @@ export default async function AccountOrdersPage() {
           </article>
         )) : (
           <article className="account-order-card empty">
+            <span className="account-empty-mark">0</span>
             <h2>No orders yet</h2>
             <p>Orders placed with this email will appear here after checkout.</p>
             <Link className="button primary" href="/en/products">Browse products</Link>

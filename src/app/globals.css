@@ -3401,14 +3401,32 @@ a {
 .account-page {
   min-height: 100vh;
   padding: 120px 22px 80px;
-  background: #f6f8f5;
+  background:
+    linear-gradient(135deg, rgba(247, 249, 247, 0.94), rgba(238, 246, 249, 0.86)),
+    url("/assets/banners/market-north-america.png") center / cover fixed;
+}
+
+.account-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.92)),
+    radial-gradient(circle at 18% 10%, rgba(0, 168, 216, 0.16), transparent 34%),
+    radial-gradient(circle at 84% 12%, rgba(238, 47, 47, 0.1), transparent 30%);
+}
+
+.account-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .account-register-page {
   display: grid;
   align-items: center;
   padding-block: clamp(92px, 10vw, 128px) clamp(44px, 7vw, 78px);
-  background: #f7f7f7;
 }
 
 .account-page.wide {
@@ -3437,9 +3455,10 @@ a {
 }
 
 .account-email-card {
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 28px 82px rgba(17, 19, 24, 0.16);
+  backdrop-filter: blur(18px);
 }
 
 .account-card h1,
@@ -3597,6 +3616,18 @@ a {
   gap: 18px;
   width: min(1160px, 100%);
   padding: clamp(22px, 4vw, 36px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(250, 253, 252, 0.88)),
+    rgba(255, 255, 255, 0.86);
+  border-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(18px);
+}
+
+.account-header p:not(.eyebrow) {
+  margin: 0;
+  color: #5e6470;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .account-order-list {
@@ -3645,6 +3676,17 @@ a {
   align-items: center;
   width: 100%;
   padding: clamp(18px, 3vw, 28px);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.account-order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 30px 86px rgba(17, 19, 24, 0.12);
 }
 
 .account-detail-grid .account-order-card,
@@ -3675,6 +3717,26 @@ a {
 
 .account-order-card.empty {
   grid-template-columns: 1fr;
+  justify-items: start;
+  min-height: 260px;
+  align-content: center;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 252, 0.9)),
+    rgba(255, 255, 255, 0.9);
+}
+
+.account-empty-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: #0077c8;
+  background: rgba(0, 168, 216, 0.1);
+  border: 1px solid rgba(0, 168, 216, 0.18);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 950;
 }
 
 .account-order-card h2 {

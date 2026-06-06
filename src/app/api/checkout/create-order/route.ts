@@ -1,6 +1,8 @@
+import {cookies} from 'next/headers';
 import {checkoutProductSlugs, type CheckoutProductSlug} from '@/lib/site';
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
-import {getCustomerSession} from '@/lib/customerAuth';
+import {bindOrdersToCustomer, createCustomerSession, createOrUpdateCustomerUser, customerCookieOptions, findCustomerUserByEmail, getCustomerSession} from '@/lib/customerAuth';
+import {sendRegistrationWelcomeEmail} from '@/lib/emailService';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,12 +32,20 @@ export async function POST(request: Request) {
     }
 
     const session = await getCustomerSession();
+    const normalizedEmail = customer.email.toLowerCase();
+    const existingUser = await findCustomerUserByEmail(normalizedEmail);
+    const accountUser = existingUser || await createOrUpdateCustomerUser({
+      email: normalizedEmail,
+      name: customer.name || normalizedEmail,
+      country: customer.country,
+      activate: true
+    });
     const order = await createStoreOrder({
       productSlug,
       quantity: Number(payload.quantity || 1),
       paymentMethod: payload.paymentMethod || 'qianhai_card',
       idempotencyKey: clean(payload.idempotencyKey || payload.clientRequestId, 120),
-      userId: session?.email?.toLowerCase() === customer.email.toLowerCase() ? session.userId || undefined : undefined,
+      userId: session?.email?.toLowerCase() === normalizedEmail ? session.userId || accountUser.id : accountUser.id,
       customer,
       checkout: {
         contact: clean(payload.checkout?.contact, 160),
@@ -55,6 +65,12 @@ export async function POST(request: Request) {
         cardholderName: clean(payload.checkout?.cardholderName, 120)
       }
     });
+    await bindOrdersToCustomer(normalizedEmail, accountUser.id);
+    if (!existingUser) await sendRegistrationWelcomeEmail(accountUser.email, accountUser.name);
+    if (!session || session.email?.toLowerCase() !== normalizedEmail) {
+      const cookieStore = await cookies();
+      cookieStore.set('zaihai_customer_session', createCustomerSession(accountUser), customerCookieOptions());
+    }
     await appendAnalyticsEvent({
       id: `${Date.now()}-checkout-submit`,
       type: 'checkout_submit',
