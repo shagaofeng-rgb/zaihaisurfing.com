@@ -46,21 +46,32 @@ async function sendSmtpMail(message: MailPayload) {
 
   function readLine() {
     return new Promise<string>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('SMTP timeout')), 15000);
+      const cleanup = () => {
+        clearTimeout(timeout);
+        socket.off('data', onData);
+        socket.off('error', onError);
+      };
+      const onError = (error: Error) => {
+        cleanup();
+        reject(error);
+      };
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('SMTP timeout'));
+      }, 15000);
       const onData = (chunk: Buffer) => {
         buffer += chunk.toString('utf8');
         const lines = buffer.split(/\r?\n/).filter(Boolean);
         const last = lines[lines.length - 1] || '';
         if (/^\d{3} /.test(last)) {
-          socket.off('data', onData);
-          clearTimeout(timeout);
+          cleanup();
           const response = buffer;
           buffer = '';
           resolve(response);
         }
       };
       socket.on('data', onData);
-      socket.once('error', reject);
+      socket.on('error', onError);
     });
   }
 
