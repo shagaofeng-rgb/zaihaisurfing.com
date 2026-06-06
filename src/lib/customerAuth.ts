@@ -1,12 +1,10 @@
 import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import {cookies} from 'next/headers';
 import {readStoreOrders, updateStoreOrderPayment, type StoreOrder} from '@/lib/commerceStore';
+import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
 
-const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
-const USERS_FILE = path.join(DATA_DIR, 'customer-users.jsonl');
-const TOKENS_FILE = path.join(DATA_DIR, 'customer-tokens.jsonl');
+const USERS_FILE = 'customer-users.jsonl';
+const TOKENS_FILE = 'customer-tokens.jsonl';
 export const CUSTOMER_COOKIE_NAME = 'zaihai_customer_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
@@ -34,33 +32,6 @@ type CustomerToken = {
   usedAt: string;
   createdAt: string;
 };
-
-function safeJson<T>(line: string): T | null {
-  try {
-    return JSON.parse(line) as T;
-  } catch {
-    return null;
-  }
-}
-
-async function appendJsonLine(file: string, value: unknown) {
-  await fs.mkdir(DATA_DIR, {recursive: true});
-  await fs.appendFile(file, `${JSON.stringify(value)}\n`, 'utf8');
-}
-
-async function writeJsonLines(file: string, values: unknown[]) {
-  await fs.mkdir(DATA_DIR, {recursive: true});
-  await fs.writeFile(file, `${values.map((value) => JSON.stringify(value)).join('\n')}${values.length ? '\n' : ''}`, 'utf8');
-}
-
-async function readJsonLines<T>(file: string) {
-  try {
-    const text = await fs.readFile(file, 'utf8');
-    return text.split(/\r?\n/).map((line) => safeJson<T>(line)).filter(Boolean) as T[];
-  } catch {
-    return [];
-  }
-}
 
 function authSecret() {
   return process.env.AUTH_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET || process.env.ADMIN_JWT_SECRET || 'zaihai-local-customer-secret';
@@ -92,7 +63,7 @@ function verifyPassword(password: string, storedHash: string) {
 }
 
 export async function readCustomerUsers() {
-  return (await readJsonLines<CustomerUser>(USERS_FILE)).map((user) => ({
+  return (await readStoreLines<CustomerUser>(USERS_FILE)).map((user) => ({
     ...user,
     firstName: user.firstName || user.name.split(/\s+/)[0] || '',
     lastName: user.lastName || user.name.split(/\s+/).slice(1).join(' ') || '',
@@ -135,7 +106,7 @@ export async function createOrUpdateCustomerUser(input: {
       emailVerifiedAt: input.activate || input.password ? (user.emailVerifiedAt || now) : user.emailVerifiedAt,
       updatedAt: now
     };
-    await writeJsonLines(USERS_FILE, users.map((item) => item.id === user?.id ? user : item));
+    await writeStoreLines(USERS_FILE, users.map((item) => item.id === user?.id ? user : item));
     return user;
   }
   user = {
@@ -151,7 +122,7 @@ export async function createOrUpdateCustomerUser(input: {
     createdAt: now,
     updatedAt: now
   };
-  await appendJsonLine(USERS_FILE, user);
+  await appendStoreLine(USERS_FILE, user);
   return user;
 }
 
@@ -191,7 +162,7 @@ export async function updateCustomerProfile(userId: string, patch: {name?: strin
     return nextUser;
   });
   if (!updated) return null;
-  await writeJsonLines(USERS_FILE, next);
+  await writeStoreLines(USERS_FILE, next);
   return updated;
 }
 
@@ -215,13 +186,13 @@ export async function createCustomerToken(user: CustomerUser, type: CustomerToke
     usedAt: '',
     createdAt: now.toISOString()
   };
-  await appendJsonLine(TOKENS_FILE, record);
+  await appendStoreLine(TOKENS_FILE, record);
   return rawToken;
 }
 
 export async function consumeCustomerToken(rawToken: string, password: string) {
   const tokenHash = sha256(rawToken);
-  const tokens = await readJsonLines<CustomerToken>(TOKENS_FILE);
+  const tokens = await readStoreLines<CustomerToken>(TOKENS_FILE);
   const now = new Date().toISOString();
   const token = tokens.find((item) => item.tokenHash === tokenHash && !item.usedAt && item.expiresAt > now);
   if (!token) return null;
@@ -229,8 +200,8 @@ export async function consumeCustomerToken(rawToken: string, password: string) {
   const user = users.find((item) => item.id === token.userId);
   if (!user) return null;
   const updatedUser = {...user, passwordHash: hashCustomerPassword(password), status: 'active' as const, updatedAt: now};
-  await writeJsonLines(USERS_FILE, users.map((item) => item.id === user.id ? updatedUser : item));
-  await writeJsonLines(TOKENS_FILE, tokens.map((item) => item.id === token.id ? {...item, usedAt: now} : item));
+  await writeStoreLines(USERS_FILE, users.map((item) => item.id === user.id ? updatedUser : item));
+  await writeStoreLines(TOKENS_FILE, tokens.map((item) => item.id === token.id ? {...item, usedAt: now} : item));
   await bindOrdersToCustomer(updatedUser.email, updatedUser.id);
   return updatedUser;
 }

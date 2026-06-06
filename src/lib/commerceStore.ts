@@ -1,16 +1,14 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
 import {products, type CheckoutProductSlug} from '@/lib/site';
 
-const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
-const ORDERS_FILE = path.join(DATA_DIR, 'orders.jsonl');
-const EVENTS_FILE = path.join(DATA_DIR, 'analytics-events.jsonl');
-const IDEMPOTENCY_FILE = path.join(DATA_DIR, 'idempotency-keys.jsonl');
-const EMAIL_LOGS_FILE = path.join(DATA_DIR, 'email-logs.jsonl');
-const REFUNDS_FILE = path.join(DATA_DIR, 'refunds.jsonl');
-const SHIPMENTS_FILE = path.join(DATA_DIR, 'shipments.jsonl');
-const AUTHORIZATIONS_FILE = path.join(DATA_DIR, 'payment-authorizations.jsonl');
-const PAYMENT_NOTIFICATIONS_FILE = path.join(DATA_DIR, 'payment-notifications.jsonl');
+const ORDERS_FILE = 'orders.jsonl';
+const EVENTS_FILE = 'analytics-events.jsonl';
+const IDEMPOTENCY_FILE = 'idempotency-keys.jsonl';
+const EMAIL_LOGS_FILE = 'email-logs.jsonl';
+const REFUNDS_FILE = 'refunds.jsonl';
+const SHIPMENTS_FILE = 'shipments.jsonl';
+const AUTHORIZATIONS_FILE = 'payment-authorizations.jsonl';
+const PAYMENT_NOTIFICATIONS_FILE = 'payment-notifications.jsonl';
 
 export type OrderStatus =
   | 'pending_payment'
@@ -195,33 +193,6 @@ export type CommerceSnapshotFilter = {
   to?: Date;
 };
 
-function safeJson<T>(line: string): T | null {
-  try {
-    return JSON.parse(line) as T;
-  } catch {
-    return null;
-  }
-}
-
-async function appendJsonLine(file: string, value: unknown) {
-  await fs.mkdir(DATA_DIR, {recursive: true});
-  await fs.appendFile(file, `${JSON.stringify(value)}\n`, 'utf8');
-}
-
-async function writeJsonLines(file: string, values: unknown[]) {
-  await fs.mkdir(DATA_DIR, {recursive: true});
-  await fs.writeFile(file, `${values.map((value) => JSON.stringify(value)).join('\n')}${values.length ? '\n' : ''}`, 'utf8');
-}
-
-async function readJsonLines<T>(file: string) {
-  try {
-    const text = await fs.readFile(file, 'utf8');
-    return text.split(/\r?\n/).map((line) => safeJson<T>(line)).filter(Boolean) as T[];
-  } catch {
-    return [];
-  }
-}
-
 function withOrderDefaults(order: StoreOrder): StoreOrder {
   return {
     ...order,
@@ -368,9 +339,9 @@ export async function createStoreOrder(input: {
     createdAt: now,
     updatedAt: now
   };
-  await appendJsonLine(ORDERS_FILE, order);
+  await appendStoreLine(ORDERS_FILE, order);
   if (idempotencyKey) {
-    await appendJsonLine(IDEMPOTENCY_FILE, {
+    await appendStoreLine(IDEMPOTENCY_FILE, {
       id: `idem-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
       key: idempotencyKey,
       orderId: order.id,
@@ -383,7 +354,7 @@ export async function createStoreOrder(input: {
 }
 
 export async function readStoreOrders() {
-  return (await readJsonLines<StoreOrder>(ORDERS_FILE)).map(withOrderDefaults);
+  return (await readStoreLines<StoreOrder>(ORDERS_FILE)).map(withOrderDefaults);
 }
 
 export async function findStoreOrder(orderId: string) {
@@ -392,7 +363,7 @@ export async function findStoreOrder(orderId: string) {
 }
 
 export async function readIdempotencyRecords() {
-  return readJsonLines<IdempotencyRecord>(IDEMPOTENCY_FILE);
+  return readStoreLines<IdempotencyRecord>(IDEMPOTENCY_FILE);
 }
 
 export async function updateStoreOrderPayment(
@@ -415,16 +386,16 @@ export async function updateStoreOrderPayment(
     return updated;
   });
   if (!updated) return null;
-  await writeJsonLines(ORDERS_FILE, next);
+  await writeStoreLines(ORDERS_FILE, next);
   return updated;
 }
 
 export async function appendAnalyticsEvent(event: AnalyticsEvent) {
-  await appendJsonLine(EVENTS_FILE, event);
+  await appendStoreLine(EVENTS_FILE, event);
 }
 
 export async function readAnalyticsEvents() {
-  return readJsonLines<AnalyticsEvent>(EVENTS_FILE);
+  return readStoreLines<AnalyticsEvent>(EVENTS_FILE);
 }
 
 export async function appendEmailLog(log: Omit<EmailLog, 'id' | 'createdAt'> & {id?: string; createdAt?: string}) {
@@ -434,12 +405,12 @@ export async function appendEmailLog(log: Omit<EmailLog, 'id' | 'createdAt'> & {
     createdAt: log.createdAt || now,
     ...log
   };
-  await appendJsonLine(EMAIL_LOGS_FILE, next);
+  await appendStoreLine(EMAIL_LOGS_FILE, next);
   return next;
 }
 
 export async function readEmailLogs() {
-  return readJsonLines<EmailLog>(EMAIL_LOGS_FILE);
+  return readStoreLines<EmailLog>(EMAIL_LOGS_FILE);
 }
 
 export async function hasSentEmail(orderId: string, templateType: EmailLog['templateType']) {
@@ -453,12 +424,12 @@ export async function appendPaymentNotification(notification: Omit<PaymentNotifi
     createdAt: new Date().toISOString(),
     ...notification
   };
-  await appendJsonLine(PAYMENT_NOTIFICATIONS_FILE, next);
+  await appendStoreLine(PAYMENT_NOTIFICATIONS_FILE, next);
   return next;
 }
 
 export async function readPaymentNotifications() {
-  return readJsonLines<PaymentNotification>(PAYMENT_NOTIFICATIONS_FILE);
+  return readStoreLines<PaymentNotification>(PAYMENT_NOTIFICATIONS_FILE);
 }
 
 export async function appendRefundRecord(input: Omit<RefundRecord, 'id' | 'refundNo' | 'createdAt' | 'updatedAt'> & {id?: string; refundNo?: string}) {
@@ -470,12 +441,12 @@ export async function appendRefundRecord(input: Omit<RefundRecord, 'id' | 'refun
     updatedAt: now,
     ...input
   };
-  await appendJsonLine(REFUNDS_FILE, next);
+  await appendStoreLine(REFUNDS_FILE, next);
   return next;
 }
 
 export async function readRefundRecords() {
-  return readJsonLines<RefundRecord>(REFUNDS_FILE);
+  return readStoreLines<RefundRecord>(REFUNDS_FILE);
 }
 
 export async function upsertShipmentRecord(input: Omit<ShipmentRecord, 'id' | 'createdAt' | 'updatedAt'>) {
@@ -496,12 +467,12 @@ export async function upsertShipmentRecord(input: Omit<ShipmentRecord, 'id' | 'c
     };
     next.push(nextRecord);
   }
-  await writeJsonLines(SHIPMENTS_FILE, next);
+  await writeStoreLines(SHIPMENTS_FILE, next);
   return nextRecord;
 }
 
 export async function readShipmentRecords() {
-  return (await readJsonLines<ShipmentRecord>(SHIPMENTS_FILE)).map((shipment) => ({
+  return (await readStoreLines<ShipmentRecord>(SHIPMENTS_FILE)).map((shipment) => ({
     ...shipment,
     trackingUrl: shipment.trackingUrl || '',
     estimatedDeliveryAt: shipment.estimatedDeliveryAt || '',
@@ -519,12 +490,12 @@ export async function appendAuthorizationRecord(input: Omit<AuthorizationRecord,
     updatedAt: now,
     ...input
   };
-  await appendJsonLine(AUTHORIZATIONS_FILE, next);
+  await appendStoreLine(AUTHORIZATIONS_FILE, next);
   return next;
 }
 
 export async function readAuthorizationRecords() {
-  return readJsonLines<AuthorizationRecord>(AUTHORIZATIONS_FILE);
+  return readStoreLines<AuthorizationRecord>(AUTHORIZATIONS_FILE);
 }
 
 function isInsideRange(value: string, filter?: CommerceSnapshotFilter) {
