@@ -62,7 +62,7 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
       {!isEmailEntry && mode !== 'forgot' && (
         <label>
           Password
-          <input name="password" type="password" placeholder="At least 8 characters" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={8} required />
+          <input name="password" type="password" placeholder="At least 8 characters" autoComplete="new-password" minLength={8} required />
         </label>
       )}
       {mode === 'reset' && (
