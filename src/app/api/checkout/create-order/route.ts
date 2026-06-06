@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       quantity: Number(payload.quantity || 1),
       paymentMethod: payload.paymentMethod || 'qianhai_card',
       idempotencyKey: clean(payload.idempotencyKey || payload.clientRequestId, 120),
-      userId: session?.email?.toLowerCase() === customer.email.toLowerCase() ? session.userId : undefined,
+      userId: session?.email?.toLowerCase() === customer.email.toLowerCase() ? session.userId || undefined : undefined,
       customer,
       checkout: {
         contact: clean(payload.checkout?.contact, 160),

@@ -10,7 +10,9 @@ function clean(value: unknown, limit = 160) {
 export async function PATCH(request: Request) {
   const session = await getCustomerSession();
   if (!session) return Response.json({message: 'Login required'}, {status: 401, headers: {'Cache-Control': 'private, no-store'}});
-  const current = await findCustomerUserById(session.userId);
+  const userId = session.userId || '';
+  if (!userId) return Response.json({message: 'Login required'}, {status: 401, headers: {'Cache-Control': 'private, no-store'}});
+  const current = await findCustomerUserById(userId);
   if (!current) return Response.json({message: 'Login required'}, {status: 401, headers: {'Cache-Control': 'private, no-store'}});
   const payload = await request.json().catch(() => ({}));
   const firstName = clean(payload.firstName, 80);

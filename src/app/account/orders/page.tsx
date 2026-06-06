@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
-import {getCustomerSession} from '@/lib/customerAuth';
+import {customerOwnsOrder, getCustomerSession} from '@/lib/customerAuth';
 import {readStoreOrders} from '@/lib/commerceStore';
 import {products} from '@/lib/site';
 
@@ -15,7 +15,7 @@ export default async function AccountOrdersPage() {
   if (!session) redirect('/account/login');
   const email = session.email || '';
   const orders = (await readStoreOrders())
-    .filter((order) => order.userId === session.userId || order.customer.email.toLowerCase() === email.toLowerCase())
+    .filter((order) => customerOwnsOrder(order, session))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return (

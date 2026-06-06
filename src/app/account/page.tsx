@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic';
 export default async function AccountPage() {
   const session = await getCustomerSession();
   if (!session) redirect('/account/login');
-  const user = await findCustomerUserById(session.userId);
+  const userId = session.userId || '';
+  if (!userId) redirect('/account/login');
+  const user = await findCustomerUserById(userId);
   if (!user) redirect('/account/login');
   const orders = (await readStoreOrders()).filter((order) => customerOwnsOrder(order, session));
   const recentOrders = orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3);

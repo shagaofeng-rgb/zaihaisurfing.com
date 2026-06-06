@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic';
 export default async function AccountProfilePage() {
   const session = await getCustomerSession();
   if (!session) redirect('/account/login');
-  const user = await findCustomerUserById(session.userId);
+  const userId = session.userId || '';
+  if (!userId) redirect('/account/login');
+  const user = await findCustomerUserById(userId);
   if (!user) redirect('/account/login');
 
   return (
