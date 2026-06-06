@@ -84,7 +84,8 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
               image: '/assets/banners/market-asia-optimized.jpg'
             }
           ].map((item) => (
-            <article key={item.market} style={{'--market-bg': `url(${item.image})`} as React.CSSProperties}>
+            <article key={item.market}>
+              <img src={item.image} alt="" loading="lazy" decoding="async" className="market-card-image" />
               <span>{item.market}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>

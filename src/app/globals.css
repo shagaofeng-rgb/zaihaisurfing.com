@@ -891,15 +891,39 @@ a {
 }
 
 .market-grid article {
+  position: relative;
+  overflow: hidden;
   min-height: 250px;
   padding: 26px;
   color: var(--white);
-  background:
-    linear-gradient(180deg, rgba(5, 8, 12, 0.22), rgba(5, 8, 12, 0.44) 36%, rgba(5, 8, 12, 0.92)),
-    var(--market-bg) center / cover;
+  background: #111820;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
   box-shadow: var(--shadow);
+}
+
+.market-grid article::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 8, 12, 0.22), rgba(5, 8, 12, 0.44) 36%, rgba(5, 8, 12, 0.92));
+}
+
+.market-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.market-grid span,
+.market-grid h3,
+.market-grid p {
+  position: relative;
+  z-index: 2;
 }
 
 .market-grid h3 {

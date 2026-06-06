@@ -11,8 +11,6 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-mobile.jpg" media="(max-width: 720px)" />
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-desktop.jpg" media="(min-width: 721px)" />
       <picture className="hero-media">
         <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile.jpg" />
         <img
