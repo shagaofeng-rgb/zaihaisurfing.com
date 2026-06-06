@@ -2,6 +2,7 @@
 
 import {useEffect, useMemo, useState} from 'react';
 import Script from 'next/script';
+import {shippingEstimateFor} from '@/lib/shipping';
 import type {CheckoutProductSlug} from '@/lib/site';
 
 type CheckoutFormProps = {
@@ -46,12 +47,14 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientRequestId, setClientRequestId] = useState('');
   const [coupon, setCoupon] = useState('');
+  const [country, setCountry] = useState('');
   const [billingMode, setBillingMode] = useState('same');
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
   const [paymentScene, setPaymentScene] = useState<OceanpaymentScene>('3d');
   const [cardScriptReady, setCardScriptReady] = useState(false);
   const [forceSandboxPayment, setForceSandboxPayment] = useState(productSlug === 'payment-test');
-  const total = unitPrice * quantity + shippingEstimate;
+  const activeShippingEstimate = country ? shippingEstimateFor(productSlug, country) : shippingEstimate;
+  const total = unitPrice * quantity + activeShippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
 
@@ -283,24 +286,17 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           <h2>Delivery</h2>
           <label className="field-shell full">
             <span>Country / region</span>
-            <select name="country" required defaultValue="">
+            <select name="country" required value={country} onChange={(event) => setCountry(event.target.value)}>
               <option value="" disabled>Choose destination country</option>
+              <option>South Africa</option>
+              <option>Brazil</option>
+              <option>Indonesia</option>
               <option>United States</option>
+              <option>Saudi Arabia</option>
               <option>United Kingdom</option>
               <option>Canada</option>
-              <option>United Arab Emirates</option>
-              <option>Saudi Arabia</option>
-              <option>Australia</option>
-              <option>China</option>
-              <option>Singapore</option>
-              <option>Japan</option>
-              <option>South Korea</option>
-              <option>Germany</option>
+              <option>Portugal</option>
               <option>Spain</option>
-              <option>France</option>
-              <option>Italy</option>
-              <option>Maldives</option>
-              <option>Thailand</option>
               <option>Other</option>
             </select>
           </label>
@@ -326,7 +322,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
               <strong>Standard sea / air freight quotation</strong>
               <small>Sales team confirms final logistics cost by destination, quantity and packaging.</small>
             </span>
-            <b>USD {shippingEstimate.toLocaleString()}</b>
+            <b>USD {activeShippingEstimate.toLocaleString()}</b>
           </label>
           <label className="checkout-method">
             <input name="shippingMethod" type="radio" value="factory_pickup_forwarder" />
@@ -437,7 +433,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         </div>
         <dl className="summary-totals">
           <div><dt>Subtotal</dt><dd>USD {(unitPrice * quantity).toLocaleString()}</dd></div>
-          <div><dt>Shipping</dt><dd>USD {shippingEstimate.toLocaleString()}</dd></div>
+          <div><dt>Shipping</dt><dd>USD {activeShippingEstimate.toLocaleString()}</dd></div>
           {discount ? <div><dt>Discount</dt><dd>- USD {discount.toLocaleString()}</dd></div> : null}
           <div className="summary-total"><dt>Estimated total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
         </dl>

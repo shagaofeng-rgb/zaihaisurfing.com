@@ -1,4 +1,5 @@
 import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
+import {shippingEstimateFor} from '@/lib/shipping';
 import {products, type CheckoutProductSlug} from '@/lib/site';
 
 const ORDERS_FILE = 'orders.jsonl';
@@ -211,15 +212,6 @@ function withOrderDefaults(order: StoreOrder): StoreOrder {
   };
 }
 
-export function shippingEstimateFor(country: string) {
-  const normalized = country.toLowerCase();
-  if (/usa|united states|canada/.test(normalized)) return 680;
-  if (/uae|saudi|qatar|oman|kuwait|middle east/.test(normalized)) return 620;
-  if (/spain|france|italy|greece|germany|europe/.test(normalized)) return 720;
-  if (/maldives|thailand|indonesia|singapore|australia/.test(normalized)) return 560;
-  return 650;
-}
-
 function compactTimestamp(date: Date) {
   const pad = (value: number) => String(value).padStart(2, '0');
   return [
@@ -288,7 +280,7 @@ export async function createStoreOrder(input: {
 
   const product = products[input.productSlug];
   const subtotal = product.priceAmount * quantity;
-  const shippingEstimate = input.productSlug === 'payment-test' ? 0 : shippingEstimateFor(input.customer.country);
+  const shippingEstimate = shippingEstimateFor(input.productSlug, input.customer.country);
   const now = new Date().toISOString();
   const order: StoreOrder = {
     id: await generateStoreOrderId(),

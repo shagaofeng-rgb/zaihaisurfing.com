@@ -5,7 +5,7 @@ import CheckoutForm from '@/components/CheckoutForm';
 import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
 import {checkoutProductSlugs, products, type CheckoutProductSlug} from '@/lib/site';
-import {shippingEstimateFor} from '@/lib/commerceStore';
+import {shippingEstimateFor} from '@/lib/shipping';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
@@ -26,7 +26,7 @@ export default async function CheckoutPage({
   if (!checkoutProductSlugs.includes(productSlug)) notFound();
   const product = products[productSlug];
   const quantity = Math.max(1, Math.min(99, Number(query.qty || 1)));
-  const shippingEstimate = productSlug === 'payment-test' ? 0 : shippingEstimateFor(query.country || '');
+  const shippingEstimate = shippingEstimateFor(productSlug, query.country || '');
 
   return (
     <main>
