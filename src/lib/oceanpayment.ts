@@ -75,6 +75,172 @@ function countryCode(value: string) {
   return value.length === 2 ? value.toUpperCase() : 'US';
 }
 
+const usSubdivisionCodes: Record<string, string> = {
+  alabama: 'US-AL',
+  al: 'US-AL',
+  alaska: 'US-AK',
+  ak: 'US-AK',
+  arizona: 'US-AZ',
+  az: 'US-AZ',
+  arkansas: 'US-AR',
+  ar: 'US-AR',
+  california: 'US-CA',
+  ca: 'US-CA',
+  colorado: 'US-CO',
+  co: 'US-CO',
+  connecticut: 'US-CT',
+  ct: 'US-CT',
+  delaware: 'US-DE',
+  de: 'US-DE',
+  florida: 'US-FL',
+  fl: 'US-FL',
+  georgia: 'US-GA',
+  ga: 'US-GA',
+  hawaii: 'US-HI',
+  hi: 'US-HI',
+  idaho: 'US-ID',
+  id: 'US-ID',
+  illinois: 'US-IL',
+  il: 'US-IL',
+  indiana: 'US-IN',
+  in: 'US-IN',
+  iowa: 'US-IA',
+  ia: 'US-IA',
+  kansas: 'US-KS',
+  ks: 'US-KS',
+  kentucky: 'US-KY',
+  ky: 'US-KY',
+  louisiana: 'US-LA',
+  la: 'US-LA',
+  maine: 'US-ME',
+  me: 'US-ME',
+  maryland: 'US-MD',
+  md: 'US-MD',
+  massachusetts: 'US-MA',
+  ma: 'US-MA',
+  michigan: 'US-MI',
+  mi: 'US-MI',
+  minnesota: 'US-MN',
+  mn: 'US-MN',
+  mississippi: 'US-MS',
+  ms: 'US-MS',
+  missouri: 'US-MO',
+  mo: 'US-MO',
+  montana: 'US-MT',
+  mt: 'US-MT',
+  nebraska: 'US-NE',
+  ne: 'US-NE',
+  nevada: 'US-NV',
+  nv: 'US-NV',
+  'new hampshire': 'US-NH',
+  nh: 'US-NH',
+  'new jersey': 'US-NJ',
+  nj: 'US-NJ',
+  'new mexico': 'US-NM',
+  nm: 'US-NM',
+  'new york': 'US-NY',
+  ny: 'US-NY',
+  'north carolina': 'US-NC',
+  nc: 'US-NC',
+  'north dakota': 'US-ND',
+  nd: 'US-ND',
+  ohio: 'US-OH',
+  oh: 'US-OH',
+  oklahoma: 'US-OK',
+  ok: 'US-OK',
+  oregon: 'US-OR',
+  or: 'US-OR',
+  pennsylvania: 'US-PA',
+  pa: 'US-PA',
+  'rhode island': 'US-RI',
+  ri: 'US-RI',
+  'south carolina': 'US-SC',
+  sc: 'US-SC',
+  'south dakota': 'US-SD',
+  sd: 'US-SD',
+  tennessee: 'US-TN',
+  tn: 'US-TN',
+  texas: 'US-TX',
+  tx: 'US-TX',
+  utah: 'US-UT',
+  ut: 'US-UT',
+  vermont: 'US-VT',
+  vt: 'US-VT',
+  virginia: 'US-VA',
+  va: 'US-VA',
+  washington: 'US-WA',
+  wa: 'US-WA',
+  'west virginia': 'US-WV',
+  wv: 'US-WV',
+  wisconsin: 'US-WI',
+  wi: 'US-WI',
+  wyoming: 'US-WY',
+  wy: 'US-WY'
+};
+
+const caSubdivisionCodes: Record<string, string> = {
+  alberta: 'CA-AB',
+  ab: 'CA-AB',
+  'british columbia': 'CA-BC',
+  bc: 'CA-BC',
+  manitoba: 'CA-MB',
+  mb: 'CA-MB',
+  'new brunswick': 'CA-NB',
+  nb: 'CA-NB',
+  'newfoundland and labrador': 'CA-NL',
+  nl: 'CA-NL',
+  'nova scotia': 'CA-NS',
+  ns: 'CA-NS',
+  ontario: 'CA-ON',
+  on: 'CA-ON',
+  'prince edward island': 'CA-PE',
+  pe: 'CA-PE',
+  quebec: 'CA-QC',
+  qc: 'CA-QC',
+  saskatchewan: 'CA-SK',
+  sk: 'CA-SK'
+};
+
+const auSubdivisionCodes: Record<string, string> = {
+  'new south wales': 'AU-NSW',
+  nsw: 'AU-NSW',
+  queensland: 'AU-QLD',
+  qld: 'AU-QLD',
+  'south australia': 'AU-SA',
+  sa: 'AU-SA',
+  tasmania: 'AU-TAS',
+  tas: 'AU-TAS',
+  victoria: 'AU-VIC',
+  vic: 'AU-VIC',
+  'western australia': 'AU-WA',
+  wa: 'AU-WA'
+};
+
+const cnSubdivisionCodes: Record<string, string> = {
+  zhejiang: 'CN-ZJ',
+  zj: 'CN-ZJ',
+  guangdong: 'CN-GD',
+  gd: 'CN-GD',
+  shanghai: 'CN-SH',
+  beijing: 'CN-BJ',
+  jiangsu: 'CN-JS',
+  js: 'CN-JS'
+};
+
+function subdivisionCode(country: string, state: string) {
+  const countryIso = countryCode(country);
+  const raw = clean(state, 80);
+  if (!raw) return countryIso === 'US' ? 'US-NA' : countryIso;
+  const normalizedCode = raw.toUpperCase().replace(/_/g, '-');
+  if (/^[A-Z]{2}-[A-Z0-9]{1,3}$/.test(normalizedCode)) return normalizedCode;
+  const key = raw.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  if (countryIso === 'US') return usSubdivisionCodes[key] || (key.length === 2 ? `US-${key.toUpperCase()}` : 'US-NA');
+  if (countryIso === 'CA') return caSubdivisionCodes[key] || (key.length === 2 ? `CA-${key.toUpperCase()}` : countryIso);
+  if (countryIso === 'AU') return auSubdivisionCodes[key] || countryIso;
+  if (countryIso === 'CN') return cnSubdivisionCodes[key] || countryIso;
+  return key.length <= 3 ? `${countryIso}-${key.toUpperCase()}` : countryIso;
+}
+
 export function buildOceanpaymentPayload({
   order,
   method,
@@ -107,6 +273,8 @@ export function buildOceanpaymentPayload({
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
   const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
   const testMode = forceTestMode || !/^prod(uction)?$/i.test(config.environment);
+  const billingCountry = countryCode(order.customer.country);
+  const billingState = subdivisionCode(order.customer.country, order.checkout.state);
 
   return {
     gatewayUrl: config.endpoint,
@@ -129,8 +297,8 @@ export function buildOceanpaymentPayload({
       billing_lastName: lastName,
       billing_email: billingEmail,
       billing_phone: clean(order.customer.phone, 40),
-      billing_country: countryCode(order.customer.country),
-      billing_state: clean(order.checkout.state || 'NA', 80),
+      billing_country: billingCountry,
+      billing_state: billingState,
       billing_city: clean(order.checkout.city || 'NA', 80),
       billing_address: clean(order.customer.address, 240),
       billing_zip: clean(order.checkout.zip || '00000', 32),
@@ -138,8 +306,8 @@ export function buildOceanpaymentPayload({
       ship_lastName: lastName,
       ship_email: billingEmail,
       ship_phone: clean(order.customer.phone, 40),
-      ship_country: countryCode(order.customer.country),
-      ship_state: clean(order.checkout.state || 'NA', 80),
+      ship_country: billingCountry,
+      ship_state: billingState,
       ship_city: clean(order.checkout.city || 'NA', 80),
       ship_addr: clean(order.customer.address, 240),
       ship_zip: clean(order.checkout.zip || '00000', 32),
