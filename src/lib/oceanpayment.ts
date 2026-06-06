@@ -153,6 +153,11 @@ function countryCode(value: string) {
   return countryNameToAlpha2[normalized] || countryNameToAlpha2[raw] || '';
 }
 
+function gatewayStateCode(countryIso: string, value: string) {
+  const normalized = clean(value, 40).toUpperCase().replace(/_/g, '-');
+  return normalized.startsWith(`${countryIso}-`) ? normalized.slice(countryIso.length + 1) : normalized;
+}
+
 const usSubdivisionCodes: Record<string, string> = {
   alabama: 'US-AL',
   al: 'US-AL',
@@ -370,7 +375,7 @@ export function normalizeBillingState({
   }
   const normalizedCode = raw.toUpperCase().replace(/_/g, '-');
   if (/^[A-Z]{2}-[A-Z0-9]{1,3}$/.test(normalizedCode)) {
-    return {billingCountry: countryIso, billingState: normalizedCode, valid: true, warnings};
+    return {billingCountry: countryIso, billingState: gatewayStateCode(countryIso, normalizedCode), valid: true, warnings};
   }
   const rawAsCountry = countryCode(raw);
   if (rawAsCountry) {
@@ -383,9 +388,9 @@ export function normalizeBillingState({
     return {billingCountry: countryIso, billingState: countryIso, valid: true, warnings};
   }
   const mapped = subdivisionMaps[countryIso]?.[key];
-  if (mapped) return {billingCountry: countryIso, billingState: mapped, valid: true, warnings};
+  if (mapped) return {billingCountry: countryIso, billingState: gatewayStateCode(countryIso, mapped), valid: true, warnings};
   if (/^[A-Z]{2,3}$/.test(normalizedCode) && subdivisionMaps[countryIso]) {
-    return {billingCountry: countryIso, billingState: `${countryIso}-${normalizedCode}`, valid: true, warnings};
+    return {billingCountry: countryIso, billingState: normalizedCode, valid: true, warnings};
   }
   warnings.push('State/province was not recognized; using billing_country as ISO fallback.');
   return {billingCountry: countryIso, billingState: countryIso, valid: true, warnings};
@@ -396,7 +401,7 @@ export function validateOceanpaymentBillingState(billingState: string) {
   if (!value) return false;
   if (/[\u4e00-\u9fff]/.test(value)) return false;
   if (/undefined|null|nan|\[object object\]/i.test(value)) return false;
-  return /^[A-Z]{2}(?:-[A-Z0-9]{1,3})?$/.test(value);
+  return /^[A-Z0-9]{1,3}$/.test(value);
 }
 
 export function buildOceanpaymentPayload({
