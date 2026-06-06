@@ -123,7 +123,7 @@ export type EmailLog = {
   id: string;
   orderId: string;
   customerEmail: string;
-  templateType: 'order_success' | 'account_activation' | 'password_reset';
+  templateType: 'order_success' | 'account_activation' | 'password_reset' | 'account_registration';
   status: 'pending' | 'sent' | 'failed' | 'skipped';
   providerMessageId: string;
   errorMessage: string;

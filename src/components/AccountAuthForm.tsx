@@ -47,38 +47,42 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
     <form className="account-form" onSubmit={handleSubmit}>
       {mode === 'register' && (
         <>
+          <div className="account-form-intro">
+            <span>Secure customer access</span>
+            <p>Use the same email as checkout so previous and future orders can be matched automatically.</p>
+          </div>
           <div className="account-form-grid">
             <label>
               First name
-              <input name="firstName" placeholder="First name" required />
+              <input name="firstName" placeholder="David" autoComplete="given-name" required />
             </label>
             <label>
               Last name
-              <input name="lastName" placeholder="Last name" />
+              <input name="lastName" placeholder="Sha" autoComplete="family-name" />
             </label>
           </div>
           <label>
             Country / region
-            <input name="country" placeholder="Country / region" />
+            <input name="country" placeholder="United States" autoComplete="country-name" />
           </label>
         </>
       )}
       {mode !== 'reset' && (
         <label>
           Email
-          <input name="email" type="email" placeholder="name@company.com" required />
+          <input name="email" type="email" placeholder="name@company.com" autoComplete="email" required />
         </label>
       )}
       {mode !== 'forgot' && (
         <label>
           Password
-          <input name={mode === 'reset' ? 'password' : 'password'} type="password" placeholder="At least 8 characters" minLength={8} required />
+          <input name="password" type="password" placeholder="At least 8 characters" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={8} required />
         </label>
       )}
       {(mode === 'register' || mode === 'reset') && (
         <label>
           Confirm password
-          <input name="confirmPassword" type="password" placeholder="Repeat password" minLength={8} required />
+          <input name="confirmPassword" type="password" placeholder="Repeat password" autoComplete="new-password" minLength={8} required />
         </label>
       )}
       {mode === 'register' && (
@@ -87,7 +91,7 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
           <span>I agree to the privacy policy and website terms.</span>
         </label>
       )}
-      <button className="button primary" disabled={busy} type="submit">
+      <button className="button primary account-submit" disabled={busy} type="submit">
         {busy ? 'Processing...' : mode === 'login' ? 'Log in' : mode === 'register' ? 'Create account' : mode === 'forgot' ? 'Send reset link' : 'Set password'}
       </button>
       {status && <p className="account-status">{status}</p>}

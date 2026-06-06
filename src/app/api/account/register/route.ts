@@ -1,5 +1,6 @@
 import {cookies} from 'next/headers';
 import {bindOrdersToCustomer, createCustomerSession, createOrUpdateCustomerUser, customerCookieOptions, findCustomerUserByEmail} from '@/lib/customerAuth';
+import {sendRegistrationWelcomeEmail} from '@/lib/emailService';
 import {checkRateLimit, clientIp} from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
   }
   const user = await createOrUpdateCustomerUser({email, name, firstName, lastName, country, password, activate: true});
   await bindOrdersToCustomer(email, user.id);
+  await sendRegistrationWelcomeEmail(user.email, user.name);
   const cookieStore = await cookies();
   cookieStore.set('zaihai_customer_session', createCustomerSession(user), customerCookieOptions());
   return Response.json({ok: true, user: {id: user.id, email: user.email, name: user.name}});

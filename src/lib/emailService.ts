@@ -8,13 +8,16 @@ type MailPayload = {
   html: string;
 };
 
+const DEFAULT_SMTP_HOST = 'smtp.exmail.qq.com';
+const DEFAULT_SENDER_EMAIL = 'davidsha@zaihaisurfing.com';
+
 function smtpConfig() {
   return {
-    host: process.env.SMTP_HOST || '',
+    host: process.env.SMTP_HOST || DEFAULT_SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 465),
-    user: process.env.SMTP_USER || '',
+    user: process.env.SMTP_USER || DEFAULT_SENDER_EMAIL,
     pass: process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '',
-    from: process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.SMTP_USER || 'davidsha@zaihaisurfing.com'
+    from: process.env.SMTP_FROM || process.env.EMAIL_FROM || DEFAULT_SENDER_EMAIL
   };
 }
 
@@ -232,6 +235,54 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
       orderId: 'account',
       customerEmail: email,
       templateType: 'password_reset',
+      status: 'failed',
+      providerMessageId: '',
+      errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
+      sentAt: ''
+    });
+  }
+}
+
+export async function sendRegistrationWelcomeEmail(email: string, name: string) {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.zaihaisurfing.com').replace(/\/$/, '');
+  const customerName = name || 'Customer';
+  const subject = 'Welcome to your ZAIHAI customer account';
+  const text = [
+    `Hello ${customerName},`,
+    '',
+    'Your ZAIHAI SURFING customer account has been created.',
+    'You can now view your orders, payment status and shipment updates from the account center.',
+    '',
+    `Account center: ${siteUrl}/account/orders`,
+    'Support: davidsha@zaihaisurfing.com'
+  ].join('\n');
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111318;line-height:1.6;background:#f6f8f5;padding:24px">
+      <div style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #d8ddd9;border-radius:8px;padding:28px">
+        <p style="margin:0 0 10px;color:#0077c8;font-size:12px;font-weight:700;text-transform:uppercase">ZAIHAI SURFING customer account</p>
+        <h2 style="margin:0 0 14px;color:#111318">Welcome, ${escapeHtml(customerName)}</h2>
+        <p>Your customer account has been created. You can now view order history, payment status and shipment updates in one place.</p>
+        <p><a href="${siteUrl}/account/orders" style="display:inline-block;background:#ee2f2f;color:#ffffff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:700">Open account center</a></p>
+        <p style="margin-top:24px;color:#5e6470;font-size:14px">If this was not you, please contact davidsha@zaihaisurfing.com.</p>
+      </div>
+    </div>
+  `;
+  try {
+    const result = await sendSmtpMail({to: email, subject, text, html});
+    await appendEmailLog({
+      orderId: 'account',
+      customerEmail: email,
+      templateType: 'account_registration',
+      status: result.skipped ? 'skipped' : 'sent',
+      providerMessageId: result.message,
+      errorMessage: '',
+      sentAt: result.skipped ? '' : new Date().toISOString()
+    });
+  } catch (error) {
+    await appendEmailLog({
+      orderId: 'account',
+      customerEmail: email,
+      templateType: 'account_registration',
       status: 'failed',
       providerMessageId: '',
       errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
