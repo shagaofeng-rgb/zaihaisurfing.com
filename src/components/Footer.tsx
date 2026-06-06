@@ -31,7 +31,10 @@ export default async function Footer({locale}: {locale: Locale}) {
         <h3>{copy.footer.buyerSupport}</h3>
         <Link href="/applications">{copy.footer.applications}</Link>
         <Link href="/factory">{copy.footer.oem}</Link>
-        <Link href="/factory">{copy.footer.shipping}</Link>
+        <Link href="/shipping">{copy.footer.shipping}</Link>
+        <Link href="/warranty">Warranty</Link>
+        <Link href="/returns">Returns & After-Sales</Link>
+        <Link href="/faq">{copy.footer.faq}</Link>
         <Link href="/contact">{copy.footer.distributor}</Link>
         <Link href="/blog">{copy.nav.news}</Link>
       </div>
@@ -48,6 +51,8 @@ export default async function Footer({locale}: {locale: Locale}) {
       </div>
       <div className="footer-bottom">
         <span>© {copy.footer.copyright}</span>
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/terms">Terms</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
       </div>
     </footer>

@@ -21,6 +21,12 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       images: ['/assets/banners/zaihai-main-banner.png'],
       type: 'website',
       locale
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/assets/banners/zaihai-main-banner.png']
     }
   };
 }

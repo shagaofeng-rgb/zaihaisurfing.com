@@ -290,3 +290,71 @@ export async function sendRegistrationWelcomeEmail(email: string, name: string) 
     });
   }
 }
+
+export async function sendContactInquiryEmail(input: {
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  company: string;
+  buyerType: string;
+  product: string;
+  quantity: string;
+  targetMarket: string;
+  waterArea: string;
+  oem: string;
+  destinationPort: string;
+  message: string;
+}) {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.CONTACT_NOTIFICATION_EMAIL || DEFAULT_SENDER_EMAIL;
+  const subject = `New ZAIHAI inquiry from ${input.email}`;
+  const rows = [
+    ['Name', input.name],
+    ['Email', input.email],
+    ['Phone / WhatsApp', input.phone],
+    ['Country / Region', input.country],
+    ['Company', input.company],
+    ['Buyer type', input.buyerType],
+    ['Interested product', input.product],
+    ['Expected quantity', input.quantity],
+    ['Target market', input.targetMarket],
+    ['Water area', input.waterArea],
+    ['OEM/ODM', input.oem],
+    ['Destination port', input.destinationPort],
+    ['Message', input.message]
+  ];
+  const text = rows.map(([label, value]) => `${label}: ${value || '-'}`).join('\n');
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111318;line-height:1.6">
+      <h2>New ZAIHAI website inquiry</h2>
+      <table style="border-collapse:collapse;width:100%;max-width:720px">
+        ${rows.map(([label, value]) => `<tr><td style="padding:7px 10px;border:1px solid #d8ddd9"><b>${escapeHtml(label)}</b></td><td style="padding:7px 10px;border:1px solid #d8ddd9">${escapeHtml(value || '-')}</td></tr>`).join('')}
+      </table>
+    </div>
+  `;
+
+  try {
+    const result = await sendSmtpMail({to: adminEmail, subject, text, html});
+    await appendEmailLog({
+      orderId: 'contact',
+      customerEmail: input.email,
+      templateType: 'contact_inquiry',
+      status: result.skipped ? 'skipped' : 'sent',
+      providerMessageId: result.message,
+      errorMessage: '',
+      sentAt: result.skipped ? '' : new Date().toISOString()
+    });
+    return result;
+  } catch (error) {
+    await appendEmailLog({
+      orderId: 'contact',
+      customerEmail: input.email,
+      templateType: 'contact_inquiry',
+      status: 'failed',
+      providerMessageId: '',
+      errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
+      sentAt: ''
+    });
+    throw error;
+  }
+}

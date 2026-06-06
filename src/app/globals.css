@@ -2027,6 +2027,25 @@ a {
   width: max-content;
 }
 
+.form-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form-status {
+  margin: 0;
+  padding: 12px 14px;
+  color: #0d4428;
+  background: #eef9ef;
+  border: 1px solid rgba(30, 126, 74, 0.24);
+  border-radius: 8px;
+  font-weight: 800;
+}
+
 .form-more {
   padding: 16px;
   background: #f8faf7;
@@ -2195,12 +2214,23 @@ a {
 .footer-bottom {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
   padding-top: 22px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.52);
   font-size: 13px;
+}
+
+.support-page-section {
+  padding-top: clamp(42px, 6vw, 78px);
+}
+
+.support-page-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .payment-badges {
@@ -5020,6 +5050,10 @@ html[dir="rtl"] .catalog-product-card dd {
   .inquiry-form {
     grid-template-columns: 1fr;
     padding: 18px;
+  }
+
+  .support-page-grid {
+    grid-template-columns: 1fr;
   }
 
   .catalog-product-card img {

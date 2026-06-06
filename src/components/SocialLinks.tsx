@@ -1,6 +1,8 @@
 import {socialLinks} from '@/config/socialLinks';
 
 export default function SocialLinks() {
+  if (!socialLinks.length) return null;
+
   return (
     <div className="social-links" aria-label="Social media links">
       {socialLinks.map((item) => (

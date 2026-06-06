@@ -4,6 +4,7 @@ import esMessages from '../../messages/es.json';
 import ruMessages from '../../messages/ru.json';
 import arMessages from '../../messages/ar.json';
 import frMessages from '../../messages/fr.json';
+import deMessages from '../../messages/de.json';
 import ptMessages from '../../messages/pt.json';
 
 type ScenarioCopy = {
@@ -357,6 +358,7 @@ const en: UiCopy = {
 const messageByLocale: Record<Locale, Messages> = {
   en: enMessages,
   es: esMessages,
+  de: deMessages,
   ru: ruMessages,
   ar: arMessages,
   fr: frMessages,
@@ -366,6 +368,7 @@ const messageByLocale: Record<Locale, Messages> = {
 const homeLabels: Record<Locale, string> = {
   en: 'Home',
   es: 'Inicio',
+  de: 'Startseite',
   ru: '\u0413\u043b\u0430\u0432\u043d\u0430\u044f',
   ar: '\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629',
   fr: 'Accueil',
@@ -557,6 +560,7 @@ function localizedCopy(locale: Locale): UiCopy {
 export const uiCopy: Record<Locale, UiCopy> = {
   en,
   es: localizedCopy('es'),
+  de: localizedCopy('de'),
   ru: localizedCopy('ru'),
   ar: localizedCopy('ar'),
   fr: localizedCopy('fr'),

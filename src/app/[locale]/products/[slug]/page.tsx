@@ -7,7 +7,7 @@ import ProductGallery from '@/components/ProductGallery';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
-import {productDetailedSpecs, productSlugs, products, type ProductSlug} from '@/lib/site';
+import {productDetailedSpecs, productSlugs, products, siteUrl, type ProductSlug} from '@/lib/site';
 import {uiCopy} from '@/lib/uiCopy';
 
 const productGalleries: Record<ProductSlug, string[]> = {
@@ -118,9 +118,51 @@ export default async function ProductDetailPage({
     ...productDetailedSpecs[productSlug].map((spec) => [spec.label, spec.value] as const),
     ['Recommended use', content.useCases.join(' / ')] as const
   ];
+  const productUrl = `${siteUrl}/${locale}/products/${productSlug}`;
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: content.intro,
+    image: gallery.map((image) => `${siteUrl}${image}`),
+    sku: `ZH-${productSlug.toUpperCase()}`,
+    model: productDetailedSpecs[productSlug].find((spec) => spec.label.toLowerCase() === 'model')?.value || product.name,
+    brand: {
+      '@type': 'Brand',
+      name: 'ZAIHAI SURFING'
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product.priceAmount,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: productUrl
+    },
+    url: productUrl
+  };
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Products',
+        item: `${siteUrl}/${locale}/products`
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: product.name,
+        item: productUrl
+      }
+    ]
+  };
 
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(productSchema)}} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbSchema)}} />
       <section className="product-hero">
         <ProductGallery images={gallery} mainAlt={alt(productSlug)} productName={product.name} />
         <aside className="product-summary">

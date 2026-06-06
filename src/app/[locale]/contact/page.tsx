@@ -3,6 +3,7 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
 import {uiCopy} from '@/lib/uiCopy';
+import ContactInquiryForm from '@/components/ContactInquiryForm';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
@@ -74,74 +75,7 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
           <h2>{copy.formTitle}</h2>
           <p>{copy.formText}</p>
         </div>
-        <form className="inquiry-form" action="mailto:davidsha@zaihaisurfing.com" method="post" encType="text/plain">
-          <label>
-            <span>{copy.fields.name}</span>
-            <input name="name" required placeholder="Your name" autoComplete="name" />
-          </label>
-          <label>
-            <span>{copy.fields.email}</span>
-            <input name="email" required type="email" placeholder="name@company.com" autoComplete="email" />
-          </label>
-          <label>
-            <span>{copy.fields.phone}</span>
-            <input name="phone" required type="tel" placeholder="+1 555 000 0000" autoComplete="tel" />
-          </label>
-          <label>
-            <span>{copy.fields.country}</span>
-            <input name="country" required placeholder="UAE, United States, Spain..." autoComplete="country-name" />
-          </label>
-          <label>
-            <span>{copy.fields.buyerType}</span>
-            <select name="buyerType" required defaultValue="">
-              <option value="" disabled>Select buyer type</option>
-              {copy.buyerTypes.map((item) => <option value={item} key={item}>{item}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>{copy.fields.product}</span>
-            <select name="product" required defaultValue="">
-              <option value="" disabled>Select product</option>
-              {copy.productOptions.map((item) => <option value={item} key={item}>{item}</option>)}
-            </select>
-          </label>
-          <label className="full">
-            <span>{copy.fields.message}</span>
-            <textarea name="message" required rows={5} placeholder="Quantity, application scenario, shipment plan, branding needs..." />
-          </label>
-          <details className="form-more full">
-            <summary>More Project Details</summary>
-            <div className="advanced-fields">
-              <label>
-                <span>{copy.fields.company}</span>
-                <input name="company" placeholder="Company name" autoComplete="organization" />
-              </label>
-              <label>
-                <span>{copy.fields.quantity}</span>
-                <input name="quantity" placeholder="1 sample / 5 units / 20 units..." />
-              </label>
-              <label>
-                <span>{copy.fields.market}</span>
-                <input name="targetMarket" placeholder="GCC, USA, Europe, island resort..." />
-              </label>
-              <label>
-                <span>Water area type</span>
-                <input name="waterArea" placeholder="Beach / lake / lagoon / water park..." />
-              </label>
-              <label>
-                <span>OEM/ODM requirement</span>
-                <input name="oem" placeholder="Logo, color, packaging..." />
-              </label>
-              <label>
-                <span>Shipping destination port</span>
-                <input name="destinationPort" placeholder="Los Angeles / Jebel Ali / Barcelona..." />
-              </label>
-            </div>
-          </details>
-          <button className="button primary" type="submit">
-            {copy.fields.submit}
-          </button>
-        </form>
+        <ContactInquiryForm copy={copy} />
       </section>
     </main>
   );

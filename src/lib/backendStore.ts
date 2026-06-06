@@ -227,21 +227,27 @@ export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[
   }));
   const visitorIdsWithOrder = new Set(orders.map((order) => order.id));
   const checkoutEvents = events.filter((event) => /checkout|commerce_click|contact/i.test(event.type) && !visitorIdsWithOrder.has(event.sessionId));
-  const eventLeads = checkoutEvents.slice(-30).reverse().map((event) => ({
-    id: event.id,
-    name: '匿名访客',
-    email: '',
-    phone: '',
-    country: event.country,
-    company: '',
-    source: event.type,
-    status: event.type.includes('checkout') ? 'Abandoned' as const : 'New Lead' as const,
-    interestedProducts: [String(event.payload?.productSlug || event.page)].filter(Boolean),
-    cartItems: [],
-    lastActiveTime: event.timestamp,
-    trafficSource: event.referrer || '直接访问',
-    notes: `最后访问页面：${event.page}`
-  }));
+  const eventLeads = checkoutEvents.slice(-30).reverse().map((event) => {
+    const payload = event.payload || {};
+    const isInquiry = event.type === 'contact_inquiry';
+    const product = String(payload.product || payload.productSlug || event.page || '').trim();
+    const message = String(payload.message || '').trim();
+    return {
+      id: event.id,
+      name: String(payload.name || (isInquiry ? 'Contact Inquiry' : '匿名访客')),
+      email: String(payload.email || ''),
+      phone: String(payload.phone || ''),
+      country: String(payload.country || event.country || ''),
+      company: String(payload.company || ''),
+      source: event.type,
+      status: event.type.includes('checkout') ? 'Abandoned' as const : isInquiry ? 'Contact Captured' as const : 'New Lead' as const,
+      interestedProducts: [product].filter(Boolean),
+      cartItems: [],
+      lastActiveTime: event.timestamp,
+      trafficSource: event.referrer || '直接访问',
+      notes: message || `最后访问页面：${event.page}`
+    };
+  });
   return [...orderLeads, ...eventLeads].sort((a, b) => b.lastActiveTime.localeCompare(a.lastActiveTime));
 }
 

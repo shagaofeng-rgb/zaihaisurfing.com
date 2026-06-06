@@ -1,15 +1,16 @@
 import {defineRouting} from 'next-intl/routing';
 
-export const locales = ['en', 'es', 'ru', 'ar', 'fr', 'pt'] as const;
+export const locales = ['en', 'es', 'fr', 'de', 'ar', 'pt', 'ru'] as const;
 export type Locale = (typeof locales)[number];
 
 export const localeNames: Record<Locale, string> = {
   en: 'English',
   es: 'Español',
-  ru: 'Russian',
-  ar: 'Arabic',
   fr: 'Français',
-  pt: 'Português'
+  de: 'Deutsch',
+  ar: 'Arabic',
+  pt: 'Português',
+  ru: 'Russian'
 };
 
 export const routing = defineRouting({
@@ -31,7 +32,13 @@ export const pathnames = [
   '/factory',
   '/projects',
   '/blog',
-  '/contact'
+  '/contact',
+  '/faq',
+  '/shipping',
+  '/warranty',
+  '/returns',
+  '/privacy',
+  '/terms'
 ] as const;
 
 export function isLocale(value: string): value is Locale {
