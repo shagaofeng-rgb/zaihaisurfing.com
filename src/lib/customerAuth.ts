@@ -171,15 +171,15 @@ export function customerOwnsOrder(order: StoreOrder, session: {userId?: string; 
   return Boolean((session.userId && order.userId === session.userId) || (sessionEmail && orderEmail === sessionEmail));
 }
 
-export async function updateCustomerProfile(userId: string, patch: {name?: string; firstName?: string; lastName?: string; country?: string}) {
+export async function updateCustomerProfile(userId: string, patch: {name?: string; firstName?: string; lastName?: string; country?: string}): Promise<CustomerUser | null> {
   const users = await readCustomerUsers();
   const now = new Date().toISOString();
   let updated: CustomerUser | null = null;
-  const next = users.map((user) => {
+  const next: CustomerUser[] = users.map((user) => {
     if (user.id !== userId) return user;
     const firstName = patch.firstName ?? user.firstName;
     const lastName = patch.lastName ?? user.lastName;
-    updated = {
+    const nextUser: CustomerUser = {
       ...user,
       name: patch.name || `${firstName} ${lastName}`.trim() || user.name,
       firstName,
@@ -187,7 +187,8 @@ export async function updateCustomerProfile(userId: string, patch: {name?: strin
       country: patch.country ?? user.country,
       updatedAt: now
     };
-    return updated;
+    updated = nextUser;
+    return nextUser;
   });
   if (!updated) return null;
   await writeJsonLines(USERS_FILE, next);

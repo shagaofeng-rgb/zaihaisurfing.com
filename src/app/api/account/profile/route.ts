@@ -20,8 +20,9 @@ export async function PATCH(request: Request) {
   const country = clean(payload.country, 120);
   const name = clean(payload.name || `${firstName} ${lastName}`.trim() || current.name, 160);
   const user = await updateCustomerProfile(current.id, {name, firstName, lastName, country});
+  if (!user) return Response.json({message: 'Login required'}, {status: 401, headers: {'Cache-Control': 'private, no-store'}});
   return Response.json(
-    {ok: true, user: user && {id: user.id, email: user.email, name: user.name, firstName: user.firstName, lastName: user.lastName, country: user.country}},
+    {ok: true, user: {id: user.id, email: user.email, name: user.name, firstName: user.firstName, lastName: user.lastName, country: user.country}},
     {headers: {'Cache-Control': 'private, no-store'}}
   );
 }
