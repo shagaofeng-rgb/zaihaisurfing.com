@@ -118,6 +118,10 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         window.location.href = `/${locale}/checkout/success?order=${encodeURIComponent(orderNumber)}&payment=oceanpayment`;
         return;
       }
+      if (/^(2|3|-1|failed|fail|declined|cancelled|canceled|error|rejected)$/i.test(paymentStatus) && orderNumber) {
+        window.location.href = `/${locale}/checkout/failed?order=${encodeURIComponent(orderNumber)}&payment=failed`;
+        return;
+      }
       setStatus(message || 'Oceanpayment returned a payment response. If payment did not continue, please try again or contact ZAIHAI sales.');
       setIsSubmitting(false);
     };

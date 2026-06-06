@@ -61,7 +61,7 @@ Oceanpayment field documentation should still be confirmed with the merchant bac
   Receives asynchronous Oceanpayment notifications, verifies `signValue`, updates order status and returns `receive-ok`.
 
 - `GET|POST /api/payments/oceanpayment/back`
-  Receives browser return data, verifies `signValue`, records the payment return as `processing` and redirects the buyer to the checkout success page. This route does not mark an order as finally paid.
+  Receives browser return data, verifies `signValue`, records the payment return, and redirects successful or processing results to `/checkout/success` while failed, unmatched, or unverified returns go to `/checkout/failed`. This route does not mark an order as finally paid.
 
 - `POST /api/payments/oceanpayment/simulate-notice`
   Optional local testing endpoint. Disabled unless `OCEANPAYMENT_ALLOW_NOTICE_SIMULATION=true`.
@@ -103,6 +103,10 @@ Then open `/admin/orders` to confirm the order payment status changed to paid.
 ## Final Payment Confirmation
 
 Do not treat the browser success page as final payment proof. The final `paid` state is set by the asynchronous Oceanpayment `notice` callback after signature verification. The notice handler records `payment_id`, `transaction_id` or `trade_no`, blocks duplicate payment IDs across different orders, and sends order confirmation email only once.
+
+`backUrl` is generated as `/api/payments/oceanpayment/back?locale=...`, not the normal checkout page. The back handler checks the verified payment result before choosing the success or failed page.
+
+`billing_firstName` and `billing_lastName` are generated from the buyer checkout name, customer name, email local part, or order-specific fallback. The values are forced not to be identical and are not fixed constants.
 
 ## Official Oceanpayment Notes
 

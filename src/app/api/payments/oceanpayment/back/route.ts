@@ -10,10 +10,10 @@ async function handleBack(request: Request) {
   const fields = request.method === 'GET' ? Object.fromEntries(url.searchParams.entries()) : await parseGatewayPayload(request);
   const orderId = fields.order_number || fields.orderNo || fields.order_id || '';
   const verified = verifyOceanpaymentReturn(fields);
+  const paymentPatch = oceanpaymentStatusToOrder(fields);
+  const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
   if (orderId && verified) {
     const existingOrder = await findStoreOrder(orderId);
-    const paymentPatch = oceanpaymentStatusToOrder(fields);
-    const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
     if (existingOrder?.status !== 'paid') {
       await updateStoreOrderPayment(orderId, {
         paymentGateway: 'oceanpayment',
@@ -28,6 +28,9 @@ async function handleBack(request: Request) {
           : paymentPatch)
       });
     }
+  }
+
+  if (orderId) {
     await appendAnalyticsEvent({
       id: `${Date.now()}-oceanpayment-back`,
       type: 'payment_return',
@@ -42,13 +45,15 @@ async function handleBack(request: Request) {
       browser: 'Gateway',
       os: 'Gateway',
       timestamp: new Date().toISOString(),
-      payload: {orderId, verified, paymentStatus: fields.payment_status, paymentId}
+      payload: {orderId, verified, paymentStatus: fields.payment_status || fields.status, paymentId}
     });
   }
 
-  const destination = orderId
-    ? `/${locale}/checkout/success?order=${encodeURIComponent(orderId)}&payment=${verified ? 'verified' : 'unverified'}`
-    : `/${locale}/checkout?payment=unmatched`;
+  const destination = !orderId
+    ? `/${locale}/checkout/failed?payment=unmatched`
+    : !verified || paymentPatch.status === 'failed'
+      ? `/${locale}/checkout/failed?order=${encodeURIComponent(orderId)}&payment=${verified ? 'failed' : 'unverified'}`
+      : `/${locale}/checkout/success?order=${encodeURIComponent(orderId)}&payment=${paymentPatch.status === 'paid' ? 'verified' : 'processing'}`;
   return Response.redirect(new URL(destination, request.url), 303);
 }
 

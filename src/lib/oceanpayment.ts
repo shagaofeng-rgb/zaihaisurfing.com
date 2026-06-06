@@ -55,9 +55,29 @@ function clean(value: unknown, limit = 120) {
   return String(value || '').trim().slice(0, limit);
 }
 
+function nameParts(value: string) {
+  return clean(value, 160)
+    .replace(/[._-]+/g, ' ')
+    .split(/\s+/)
+    .map((part) => clean(part, 80))
+    .filter(Boolean);
+}
+
 function splitName(order: StoreOrder) {
-  const firstName = clean(order.checkout.firstName || order.customer.name.split(/\s+/)[0] || 'Buyer', 80);
-  const lastName = clean(order.checkout.lastName || order.customer.name.split(/\s+/).slice(1).join(' ') || 'Customer', 80);
+  const customerParts = nameParts(order.customer.name);
+  const emailParts = nameParts(order.customer.email.split('@')[0] || '');
+  const orderFallback = `Order${order.id.slice(-6) || Date.now().toString().slice(-6)}`;
+  const firstName = clean(order.checkout.firstName || customerParts[0] || emailParts[0] || orderFallback, 80);
+  let lastName = clean(
+    order.checkout.lastName ||
+      customerParts.slice(1).join(' ') ||
+      emailParts.find((part) => part.toLowerCase() !== firstName.toLowerCase()) ||
+      orderFallback,
+    80
+  );
+  if (lastName.toLowerCase() === firstName.toLowerCase()) {
+    lastName = clean(emailParts.find((part) => part.toLowerCase() !== firstName.toLowerCase()) || orderFallback, 80);
+  }
   return {firstName, lastName};
 }
 
@@ -430,10 +450,8 @@ export function buildOceanpaymentPayload({
   const signValue = sha256(
     `${config.account}${config.terminal}${orderNumber}${orderCurrency}${orderAmount}${firstName}${lastName}${billingEmail}${config.secureCode}`
   );
-  const checkoutReturnUrl = checkoutUrl && /^https?:\/\//i.test(checkoutUrl)
-    ? checkoutUrl
-    : `${config.baseUrl}/${locale}/checkout?product=${encodeURIComponent(order.productSlug)}&qty=${order.quantity}`;
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
+  const backUrl = `${config.baseUrl}/api/payments/oceanpayment/back?locale=${encodeURIComponent(locale)}`;
   const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
   const testMode = forceTestMode || !/^prod(uction)?$/i.test(config.environment);
   const billing = normalizeBillingState({
@@ -488,7 +506,7 @@ export function buildOceanpaymentPayload({
       productPrice: amount(order.unitPrice),
       cart_info: `${clean(order.productName, 120)} x ${order.quantity}`,
       billing_ip: clean(billingIp || '127.0.0.1', 40),
-      backUrl: checkoutReturnUrl,
+      backUrl,
       noticeUrl,
       signValue
     },
