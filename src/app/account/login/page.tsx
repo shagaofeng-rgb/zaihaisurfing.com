@@ -1,20 +1,14 @@
-import Link from 'next/link';
 import AccountAuthForm from '@/components/AccountAuthForm';
 
 export const dynamic = 'force-dynamic';
 
 export default function AccountLoginPage() {
   return (
-    <main className="account-page">
-      <section className="account-card">
-        <p className="eyebrow">Customer account</p>
-        <h1>Log in to your ZAIHAI account</h1>
-        <p>View orders, payment status and shipment updates using the email from checkout.</p>
+    <main className="account-page account-register-page">
+      <section className="account-card account-register-card account-email-card">
+        <h1>Sign in to ZAIHAI</h1>
+        <p className="account-card-copy">To continue to your member center</p>
         <AccountAuthForm mode="login" />
-        <div className="account-links">
-          <Link href="/account/register">Create account</Link>
-          <Link href="/account/forgot-password">Forgot password?</Link>
-        </div>
       </section>
     </main>
   );

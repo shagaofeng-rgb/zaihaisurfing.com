@@ -7,6 +7,7 @@ type Mode = 'login' | 'register' | 'forgot' | 'reset';
 export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?: string}) {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const isEmailEntry = mode === 'login' || mode === 'register';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,52 +45,38 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
   }
 
   return (
-    <form className="account-form" onSubmit={handleSubmit}>
-      {mode === 'register' && (
-        <>
-          <div className="account-form-grid">
-            <label>
-              First name
-              <input name="firstName" placeholder="David" autoComplete="given-name" required />
-            </label>
-            <label>
-              Last name
-              <input name="lastName" placeholder="Sha" autoComplete="family-name" />
-            </label>
-          </div>
-          <label>
-            Country / region
-            <input name="country" placeholder="United States" autoComplete="country-name" />
-          </label>
-        </>
-      )}
-      {mode !== 'reset' && (
-        <label>
-          Email
-          <input name="email" type="email" placeholder="name@company.com" autoComplete="email" required />
+    <form className={isEmailEntry ? 'account-form account-email-form' : 'account-form'} onSubmit={handleSubmit}>
+      {isEmailEntry ? (
+        <label className="account-email-field">
+          <span className="sr-only">Email</span>
+          <input name="email" type="email" placeholder="Enter your email" autoComplete="email" required />
         </label>
+      ) : (
+        mode !== 'reset' && (
+          <label>
+            Email
+            <input name="email" type="email" placeholder="name@company.com" autoComplete="email" required />
+          </label>
+        )
       )}
-      {mode !== 'forgot' && (
+      {!isEmailEntry && mode !== 'forgot' && (
         <label>
           Password
           <input name="password" type="password" placeholder="At least 8 characters" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={8} required />
         </label>
       )}
-      {(mode === 'register' || mode === 'reset') && (
+      {mode === 'reset' && (
         <label>
           Confirm password
           <input name="confirmPassword" type="password" placeholder="Repeat password" autoComplete="new-password" minLength={8} required />
         </label>
       )}
-      {mode === 'register' && (
-        <label className="account-checkbox">
-          <input name="acceptedTerms" type="checkbox" value="true" required />
-          <span>I agree to the privacy policy and website terms.</span>
-        </label>
-      )}
-      <button className="button primary account-submit" disabled={busy} type="submit">
-        {busy ? 'Processing...' : mode === 'login' ? 'Log in' : mode === 'register' ? 'Create account' : mode === 'forgot' ? 'Send reset link' : 'Set password'}
+      <button className={isEmailEntry ? 'account-email-submit' : 'button primary account-submit'} disabled={busy} type="submit">
+        {busy ? 'Processing...' : isEmailEntry ? 'Continue' : mode === 'forgot' ? 'Send reset link' : 'Set password'}
       </button>
+      {isEmailEntry && (
+        <p className="account-legal">By continuing, you agree to receive account emails from ZAIHAI SURFING and use this email to access your customer order center.</p>
+      )}
       {status && <p className="account-status">{status}</p>}
     </form>
   );
