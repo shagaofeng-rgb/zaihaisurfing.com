@@ -47,10 +47,6 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
     <form className="account-form" onSubmit={handleSubmit}>
       {mode === 'register' && (
         <>
-          <div className="account-form-intro">
-            <span>Secure customer access</span>
-            <p>Use the same email as checkout so previous and future orders can be matched automatically.</p>
-          </div>
           <div className="account-form-grid">
             <label>
               First name

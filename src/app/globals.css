@@ -3407,92 +3407,8 @@ a {
 .account-register-page {
   display: grid;
   align-items: center;
-  padding-block: clamp(96px, 10vw, 132px) clamp(44px, 7vw, 88px);
-  background:
-    linear-gradient(115deg, rgba(246, 248, 245, 0.98) 0%, rgba(246, 248, 245, 0.92) 52%, rgba(230, 244, 248, 0.9) 100%),
-    url("/assets/banners/market-north-america.png") center / cover;
-}
-
-.account-register-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(380px, 0.78fr);
-  gap: clamp(24px, 5vw, 62px);
-  align-items: center;
-  width: min(1180px, calc(100% - 36px));
-  margin: 0 auto;
-}
-
-.account-register-hero {
-  position: relative;
-  overflow: hidden;
-  min-height: 620px;
-  display: grid;
-  align-content: end;
-  padding: clamp(28px, 5vw, 52px);
-  color: var(--white);
-  background:
-    linear-gradient(180deg, rgba(11, 15, 20, 0.24), rgba(11, 15, 20, 0.88)),
-    linear-gradient(135deg, #111318, #113848 64%, #0f191d);
-  border-radius: 8px;
-  box-shadow: 0 34px 96px rgba(17, 19, 24, 0.24);
-}
-
-.account-register-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 24%),
-    linear-gradient(180deg, transparent 48%, rgba(238, 47, 47, 0.18));
-  pointer-events: none;
-}
-
-.account-register-hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-.account-register-hero h1 {
-  max-width: 620px;
-  margin: 0;
-  font-size: clamp(44px, 7vw, 82px);
-  line-height: 0.93;
-}
-
-.account-register-hero p:not(.eyebrow) {
-  max-width: 560px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: clamp(16px, 1.5vw, 19px);
-}
-
-.account-register-hero img {
-  position: absolute;
-  right: clamp(-92px, -7vw, -28px);
-  top: clamp(28px, 6vw, 72px);
-  z-index: 0;
-  width: min(560px, 76%);
-  filter: drop-shadow(0 34px 58px rgba(0, 0, 0, 0.38));
-  transform: rotate(-7deg);
-}
-
-.account-trust-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 26px;
-}
-
-.account-trust-list span {
-  min-height: 76px;
-  display: grid;
-  align-items: center;
-  padding: 13px;
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 850;
+  padding-block: clamp(92px, 10vw, 128px) clamp(44px, 7vw, 78px);
+  background: #f6f8f5;
 }
 
 .account-page.wide {
@@ -3515,30 +3431,8 @@ a {
 }
 
 .account-register-card {
-  position: relative;
-  width: 100%;
-  padding: clamp(24px, 4vw, 38px);
-}
-
-.account-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(17, 19, 24, 0.1);
-}
-
-.account-card-top span {
-  color: #0077c8;
-  font-size: 12px;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.account-card-top strong {
-  color: #111318;
-  font-size: 16px;
+  width: min(560px, 100%);
+  padding: clamp(24px, 5vw, 40px);
 }
 
 .account-card h1,
@@ -3548,34 +3442,20 @@ a {
   line-height: 0.95;
 }
 
+.account-register-card h1 {
+  font-size: clamp(34px, 6vw, 48px);
+  line-height: 1;
+}
+
+.account-card-copy {
+  margin: 0;
+  color: #5e6470;
+}
+
 .account-form {
   display: grid;
   gap: 16px;
   margin-top: 26px;
-}
-
-.account-form-intro {
-  display: grid;
-  gap: 6px;
-  padding: 14px 16px;
-  background: #f1f8f6;
-  border: 1px solid rgba(0, 119, 200, 0.14);
-  border-left: 4px solid #00a8d8;
-  border-radius: 7px;
-}
-
-.account-form-intro span {
-  color: #111318;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.account-form-intro p {
-  margin: 0;
-  color: #5e6470;
-  font-size: 13px;
 }
 
 .account-form-grid {
@@ -3813,7 +3693,6 @@ a {
 
 @media (max-width: 900px) {
   .account-header,
-  .account-register-shell,
   .account-order-card,
   .account-summary-grid,
   .account-actions,
@@ -3833,20 +3712,6 @@ a {
   }
 
   .account-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .account-register-hero {
-    min-height: 520px;
-  }
-
-  .account-register-hero img {
-    width: min(420px, 78%);
-    right: -72px;
-    top: 34px;
-  }
-
-  .account-trust-list {
     grid-template-columns: 1fr;
   }
 }
