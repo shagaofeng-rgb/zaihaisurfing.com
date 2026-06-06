@@ -77,8 +77,12 @@ const alpha3ToAlpha2: Record<string, string> = {
   MDV: 'MV',
   NLD: 'NL',
   NZL: 'NZ',
+  PRT: 'PT',
   SGP: 'SG',
   SAU: 'SA',
+  BRA: 'BR',
+  IDN: 'ID',
+  ZAF: 'ZA',
   THA: 'TH',
   USA: 'US'
 };
@@ -86,18 +90,23 @@ const alpha3ToAlpha2: Record<string, string> = {
 const countryNameToAlpha2: Record<string, string> = {
   america: 'US',
   australia: 'AU',
+  brazil: 'BR',
+  brasil: 'BR',
   britain: 'GB',
   canada: 'CA',
   china: 'CN',
   deutschland: 'DE',
   france: 'FR',
   germany: 'DE',
+  indonesia: 'ID',
   italy: 'IT',
   japan: 'JP',
   maldives: 'MV',
   netherlands: 'NL',
   'new zealand': 'NZ',
+  portugal: 'PT',
   singapore: 'SG',
+  'south africa': 'ZA',
   'south korea': 'KR',
   korea: 'KR',
   spain: 'ES',
@@ -112,7 +121,17 @@ const countryNameToAlpha2: Record<string, string> = {
   usa: 'US',
   'united states of america': 'US',
   'saudi arabia': 'SA',
-  saudi: 'SA'
+  saudi: 'SA',
+  南非: 'ZA',
+  巴西: 'BR',
+  印尼: 'ID',
+  印度尼西亚: 'ID',
+  美国: 'US',
+  沙特: 'SA',
+  英国: 'GB',
+  加拿大: 'CA',
+  葡萄牙: 'PT',
+  西班牙: 'ES'
 };
 
 function normalizeLookupKey(value: string) {
@@ -131,7 +150,7 @@ function countryCode(value: string) {
   if (/^[A-Z]{2}$/.test(upper)) return upper;
   if (/^[A-Z]{3}$/.test(upper) && alpha3ToAlpha2[upper]) return alpha3ToAlpha2[upper];
   const normalized = normalizeLookupKey(raw);
-  return countryNameToAlpha2[normalized] || '';
+  return countryNameToAlpha2[normalized] || countryNameToAlpha2[raw] || '';
 }
 
 const usSubdivisionCodes: Record<string, string> = {
