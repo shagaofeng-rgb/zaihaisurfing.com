@@ -33,13 +33,17 @@ export default function AdminOrderActions({orderId, total}: {orderId: string; to
         <h3>Logistics upload</h3>
         <input name="logisticsProvider" placeholder="Carrier, e.g. DHL / FedEx / Sea freight" required />
         <input name="trackingNumber" placeholder="Tracking number / bill of lading" required />
+        <input name="trackingUrl" type="url" placeholder="Tracking URL, optional" />
         <select name="shipmentStatus" defaultValue="shipped">
           <option value="shipped">Shipped</option>
           <option value="in_transit">In transit</option>
           <option value="delivered">Delivered</option>
           <option value="returned">Returned</option>
         </select>
-        <textarea name="note" placeholder="Shipment note" />
+        <input name="shippedAt" type="datetime-local" />
+        <input name="estimatedDeliveryAt" type="datetime-local" />
+        <textarea name="customerVisibleNote" placeholder="Customer-visible shipment note" />
+        <textarea name="internalNote" placeholder="Internal note, not shown to customer" />
         <button className="button primary small" type="submit">Save logistics</button>
       </form>
 

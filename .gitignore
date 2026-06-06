@@ -1,4 +1,5 @@
 node_modules/
+.venv/
 .next/
 .vercel/
 .tools/
@@ -6,6 +7,8 @@ node_modules/
 
 # Local build and preview artifacts
 *.log
+news_monitor_logs/
+news_monitor.db*
 /.env
 /.env.local
 /.env.*.local

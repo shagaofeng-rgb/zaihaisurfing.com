@@ -89,6 +89,27 @@ a {
   align-items: center;
 }
 
+.header-account {
+  max-width: 92px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(17, 19, 24, 0.12);
+  border-radius: 6px;
+  color: #111318;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.header-account:hover,
+.header-account:focus-visible {
+  border-color: #0077c8;
+  color: #0077c8;
+}
+
 .brand {
   gap: 12px;
   font-size: 14px;
@@ -2566,6 +2587,23 @@ a {
   font-size: 18px;
 }
 
+.checkout-success-summary {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0;
+}
+
+.checkout-success-summary p {
+  margin: 0;
+}
+
+.checkout-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
 .checkout-section {
   padding: clamp(48px, 7vw, 86px) 0;
 }
@@ -3398,6 +3436,12 @@ a {
   margin-top: 26px;
 }
 
+.account-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .account-form label {
   display: grid;
   gap: 8px;
@@ -3412,6 +3456,17 @@ a {
   padding: 15px 16px;
   font: inherit;
   background: #fff;
+}
+
+.account-checkbox {
+  display: flex !important;
+  grid-template-columns: auto 1fr;
+  align-items: flex-start;
+}
+
+.account-checkbox input {
+  width: auto;
+  margin-top: 3px;
 }
 
 .account-status {
@@ -3448,13 +3503,71 @@ a {
   margin: 24px auto 0;
 }
 
+.account-summary-grid,
+.account-actions,
+.account-detail-grid {
+  display: grid;
+  gap: 18px;
+  width: min(1160px, 100%);
+  margin: 24px auto 0;
+}
+
+.account-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.account-actions {
+  grid-template-columns: repeat(2, max-content);
+}
+
+.account-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.account-section-title h2 {
+  margin: 0;
+}
+
+.account-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .account-order-card {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 2fr auto;
+  grid-template-columns: 96px minmax(220px, 1fr) 2fr auto;
   gap: 20px;
   align-items: center;
   width: 100%;
   padding: clamp(18px, 3vw, 28px);
+}
+
+.account-detail-grid .account-order-card,
+.account-summary-grid .account-order-card {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.account-order-thumb {
+  width: 96px;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f6f8f5;
+}
+
+.account-detail-image {
+  width: min(280px, 100%);
+  aspect-ratio: 1.25;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f6f8f5;
+}
+
+.breakable {
+  overflow-wrap: anywhere;
 }
 
 .account-order-card.empty {
@@ -3547,6 +3660,9 @@ a {
 @media (max-width: 900px) {
   .account-header,
   .account-order-card,
+  .account-summary-grid,
+  .account-actions,
+  .account-detail-grid,
   .admin-detail-grid,
   .admin-action-grid {
     grid-template-columns: 1fr;
@@ -3558,6 +3674,10 @@ a {
 
   .account-order-card dl,
   .admin-detail-list {
+    grid-template-columns: 1fr;
+  }
+
+  .account-form-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -4949,4 +5069,3 @@ html[dir="rtl"] .catalog-product-card dd {
     text-align: center;
   }
 }
-

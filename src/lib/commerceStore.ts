@@ -57,8 +57,11 @@ export type StoreOrder = {
   logisticsStatus: string;
   shipmentStatus: ShipmentStatus;
   logisticsProvider: string;
+  trackingUrl: string;
   shippedAt: string;
+  estimatedDeliveryAt: string;
   deliveredAt: string;
+  customerVisibleNote: string;
   userId: string;
   customer: {
     name: string;
@@ -160,10 +163,13 @@ export type ShipmentRecord = {
   orderId: string;
   logisticsProvider: string;
   trackingNumber: string;
+  trackingUrl: string;
   shipmentStatus: ShipmentStatus;
   shippedAt: string;
+  estimatedDeliveryAt: string;
   deliveredAt: string;
-  note: string;
+  customerVisibleNote: string;
+  internalNote: string;
   uploadStatus: 'not_required' | 'pending' | 'submitted' | 'success' | 'failed';
   uploadResponse: Record<string, unknown>;
   createdAt: string;
@@ -225,8 +231,11 @@ function withOrderDefaults(order: StoreOrder): StoreOrder {
     refundStatus: order.refundStatus || '',
     shipmentStatus: order.shipmentStatus || (order.status === 'shipped' || order.status === 'delivered' ? order.status : 'unshipped'),
     logisticsProvider: order.logisticsProvider || '',
+    trackingUrl: order.trackingUrl || '',
     shippedAt: order.shippedAt || '',
+    estimatedDeliveryAt: order.estimatedDeliveryAt || '',
     deliveredAt: order.deliveredAt || '',
+    customerVisibleNote: order.customerVisibleNote || '',
     userId: order.userId || ''
   };
 }
@@ -240,6 +249,28 @@ export function shippingEstimateFor(country: string) {
   return 650;
 }
 
+function compactTimestamp(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return [
+    date.getUTCFullYear(),
+    pad(date.getUTCMonth() + 1),
+    pad(date.getUTCDate()),
+    pad(date.getUTCHours()),
+    pad(date.getUTCMinutes()),
+    pad(date.getUTCSeconds())
+  ].join('');
+}
+
+async function generateStoreOrderId() {
+  const existing = new Set((await readStoreOrders()).map((order) => order.id));
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const random = Math.floor(100000 + Math.random() * 900000);
+    const candidate = `ZH${compactTimestamp(new Date())}${random}`;
+    if (!existing.has(candidate)) return candidate;
+  }
+  return `ZH${compactTimestamp(new Date())}${Date.now().toString().slice(-6)}`;
+}
+
 export async function createStoreOrder(input: {
   productSlug: CheckoutProductSlug;
   quantity: number;
@@ -247,6 +278,7 @@ export async function createStoreOrder(input: {
   customer: StoreOrder['customer'];
   checkout?: Partial<StoreOrder['checkout']>;
   idempotencyKey?: string;
+  userId?: string;
 }) {
   const quantity = Math.max(1, Math.min(99, Number(input.quantity || 1)));
   const idempotencyKey = String(input.idempotencyKey || '').trim().slice(0, 120);
@@ -288,7 +320,7 @@ export async function createStoreOrder(input: {
   const shippingEstimate = input.productSlug === 'payment-test' ? 0 : shippingEstimateFor(input.customer.country);
   const now = new Date().toISOString();
   const order: StoreOrder = {
-    id: `ZH-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`,
+    id: await generateStoreOrderId(),
     productSlug: input.productSlug,
     productName: product.name,
     quantity,
@@ -309,9 +341,12 @@ export async function createStoreOrder(input: {
     logisticsStatus: 'Order received. Waiting for payment confirmation.',
     shipmentStatus: 'unshipped',
     logisticsProvider: '',
+    trackingUrl: '',
     shippedAt: '',
+    estimatedDeliveryAt: '',
     deliveredAt: '',
-    userId: '',
+    customerVisibleNote: '',
+    userId: input.userId || '',
     customer: input.customer,
     checkout: {
       contact: input.checkout?.contact || input.customer.email,
@@ -362,7 +397,7 @@ export async function readIdempotencyRecords() {
 
 export async function updateStoreOrderPayment(
   orderId: string,
-  patch: Partial<Pick<StoreOrder, 'status' | 'paymentMethod' | 'paymentGateway' | 'gatewayStatus' | 'logisticsStatus' | 'paymentId' | 'transactionId' | 'refundStatus' | 'trackingNumber' | 'shipmentStatus' | 'logisticsProvider' | 'shippedAt' | 'deliveredAt' | 'userId'>> & {
+  patch: Partial<Pick<StoreOrder, 'status' | 'paymentMethod' | 'paymentGateway' | 'gatewayStatus' | 'logisticsStatus' | 'paymentId' | 'transactionId' | 'refundStatus' | 'trackingNumber' | 'trackingUrl' | 'shipmentStatus' | 'logisticsProvider' | 'shippedAt' | 'estimatedDeliveryAt' | 'deliveredAt' | 'customerVisibleNote' | 'userId'>> & {
     checkout?: Partial<StoreOrder['checkout']>;
   }
 ): Promise<StoreOrder | null> {
@@ -466,7 +501,13 @@ export async function upsertShipmentRecord(input: Omit<ShipmentRecord, 'id' | 'c
 }
 
 export async function readShipmentRecords() {
-  return readJsonLines<ShipmentRecord>(SHIPMENTS_FILE);
+  return (await readJsonLines<ShipmentRecord>(SHIPMENTS_FILE)).map((shipment) => ({
+    ...shipment,
+    trackingUrl: shipment.trackingUrl || '',
+    estimatedDeliveryAt: shipment.estimatedDeliveryAt || '',
+    customerVisibleNote: shipment.customerVisibleNote || (shipment as ShipmentRecord & {note?: string}).note || '',
+    internalNote: shipment.internalNote || ''
+  }));
 }
 
 export async function appendAuthorizationRecord(input: Omit<AuthorizationRecord, 'id' | 'authorizationNo' | 'createdAt' | 'updatedAt'> & {authorizationNo?: string}) {

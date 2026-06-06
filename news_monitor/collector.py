@@ -8,6 +8,7 @@ from email.utils import parsedate_to_datetime
 from urllib.parse import quote_plus, urlparse
 
 import feedparser
+import requests
 
 from .config import settings
 
@@ -75,12 +76,21 @@ def google_news_url(query: str) -> str:
     )
 
 
-def collect_google_news(limit_per_keyword: int = 5) -> list[CollectedNews]:
+def collect_google_news(limit_per_keyword: int = 5, keywords: list[str] | None = None) -> list[CollectedNews]:
     items: dict[str, CollectedNews] = {}
     retrieved = datetime.utcnow()
 
-    for keyword in settings.all_keywords:
-        feed = feedparser.parse(google_news_url(keyword))
+    for keyword in keywords or settings.all_keywords:
+        try:
+            response = requests.get(
+                google_news_url(keyword),
+                timeout=settings.request_timeout_seconds,
+                headers={"User-Agent": "Mozilla/5.0 ZAIHAI-NewsMonitor/1.0 (+https://www.zaihaisurfing.com)"},
+            )
+            response.raise_for_status()
+        except Exception:
+            continue
+        feed = feedparser.parse(response.content)
         for entry in feed.entries[:limit_per_keyword]:
             url = entry.get("link")
             title = clean_html(entry.get("title"))
@@ -105,4 +115,3 @@ def collect_google_news(limit_per_keyword: int = 5) -> list[CollectedNews]:
             )
 
     return list(items.values())
-

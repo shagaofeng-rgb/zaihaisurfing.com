@@ -61,18 +61,77 @@ function splitName(order: StoreOrder) {
   return {firstName, lastName};
 }
 
+const alpha3ToAlpha2: Record<string, string> = {
+  ARE: 'AE',
+  AUS: 'AU',
+  CAN: 'CA',
+  CHE: 'CH',
+  CHN: 'CN',
+  DEU: 'DE',
+  ESP: 'ES',
+  FRA: 'FR',
+  GBR: 'GB',
+  ITA: 'IT',
+  JPN: 'JP',
+  KOR: 'KR',
+  MDV: 'MV',
+  NLD: 'NL',
+  NZL: 'NZ',
+  SGP: 'SG',
+  SAU: 'SA',
+  THA: 'TH',
+  USA: 'US'
+};
+
+const countryNameToAlpha2: Record<string, string> = {
+  america: 'US',
+  australia: 'AU',
+  britain: 'GB',
+  canada: 'CA',
+  china: 'CN',
+  deutschland: 'DE',
+  france: 'FR',
+  germany: 'DE',
+  italy: 'IT',
+  japan: 'JP',
+  maldives: 'MV',
+  netherlands: 'NL',
+  'new zealand': 'NZ',
+  singapore: 'SG',
+  'south korea': 'KR',
+  korea: 'KR',
+  spain: 'ES',
+  thailand: 'TH',
+  'united arab emirates': 'AE',
+  uae: 'AE',
+  dubai: 'AE',
+  'united kingdom': 'GB',
+  uk: 'GB',
+  'great britain': 'GB',
+  'united states': 'US',
+  usa: 'US',
+  'united states of america': 'US',
+  'saudi arabia': 'SA',
+  saudi: 'SA'
+};
+
+function normalizeLookupKey(value: string) {
+  return clean(value, 120)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[._]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 function countryCode(value: string) {
-  const normalized = value.toLowerCase();
-  if (/united states|usa|america/.test(normalized)) return 'US';
-  if (/united arab emirates|uae|dubai/.test(normalized)) return 'AE';
-  if (/saudi/.test(normalized)) return 'SA';
-  if (/australia/.test(normalized)) return 'AU';
-  if (/spain/.test(normalized)) return 'ES';
-  if (/france/.test(normalized)) return 'FR';
-  if (/maldives/.test(normalized)) return 'MV';
-  if (/thailand/.test(normalized)) return 'TH';
-  if (/china/.test(normalized)) return 'CN';
-  return value.length === 2 ? value.toUpperCase() : 'US';
+  const raw = clean(value, 80);
+  const upper = raw.toUpperCase();
+  if (/^[A-Z]{2}$/.test(upper)) return upper;
+  if (/^[A-Z]{3}$/.test(upper) && alpha3ToAlpha2[upper]) return alpha3ToAlpha2[upper];
+  const normalized = normalizeLookupKey(raw);
+  return countryNameToAlpha2[normalized] || '';
 }
 
 const usSubdivisionCodes: Record<string, string> = {
@@ -219,26 +278,106 @@ const auSubdivisionCodes: Record<string, string> = {
 const cnSubdivisionCodes: Record<string, string> = {
   zhejiang: 'CN-ZJ',
   zj: 'CN-ZJ',
+  '浙江': 'CN-ZJ',
+  '浙江省': 'CN-ZJ',
   guangdong: 'CN-GD',
   gd: 'CN-GD',
+  '广东': 'CN-GD',
+  '广东省': 'CN-GD',
   shanghai: 'CN-SH',
+  '上海': 'CN-SH',
+  '上海市': 'CN-SH',
   beijing: 'CN-BJ',
+  '北京': 'CN-BJ',
+  '北京市': 'CN-BJ',
   jiangsu: 'CN-JS',
-  js: 'CN-JS'
+  js: 'CN-JS',
+  '江苏': 'CN-JS',
+  '江苏省': 'CN-JS'
 };
 
-function subdivisionCode(country: string, state: string) {
+const gbSubdivisionCodes: Record<string, string> = {
+  england: 'GB-ENG',
+  eng: 'GB-ENG',
+  scotland: 'GB-SCT',
+  sct: 'GB-SCT',
+  wales: 'GB-WLS',
+  wls: 'GB-WLS',
+  'northern ireland': 'GB-NIR',
+  nir: 'GB-NIR'
+};
+
+const subdivisionMaps: Record<string, Record<string, string>> = {
+  AU: auSubdivisionCodes,
+  CA: caSubdivisionCodes,
+  CN: cnSubdivisionCodes,
+  GB: gbSubdivisionCodes,
+  US: usSubdivisionCodes
+};
+
+type BillingStateResult = {
+  billingCountry: string;
+  billingState: string;
+  valid: boolean;
+  warnings: string[];
+  message?: string;
+};
+
+export function normalizeBillingState({
+  country,
+  state,
+  city
+}: {
+  country: string;
+  state?: string;
+  city?: string;
+}): BillingStateResult {
   const countryIso = countryCode(country);
+  const warnings: string[] = [];
+  if (!countryIso) {
+    return {
+      billingCountry: '',
+      billingState: '',
+      valid: false,
+      warnings: ['Billing country could not be normalized to ISO 3166-1 alpha-2.'],
+      message: 'Please complete your billing address country and state/province information.'
+    };
+  }
   const raw = clean(state, 80);
-  if (!raw) return countryIso === 'US' ? 'US-NA' : countryIso;
+  const cityKey = normalizeLookupKey(city || '');
+  if (!raw) {
+    warnings.push('Missing state/province; using billing_country as ISO fallback until Oceanpayment confirms whether ISO 3166-1 or ISO 3166-2 is required.');
+    return {billingCountry: countryIso, billingState: countryIso, valid: true, warnings};
+  }
   const normalizedCode = raw.toUpperCase().replace(/_/g, '-');
-  if (/^[A-Z]{2}-[A-Z0-9]{1,3}$/.test(normalizedCode)) return normalizedCode;
-  const key = raw.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
-  if (countryIso === 'US') return usSubdivisionCodes[key] || (key.length === 2 ? `US-${key.toUpperCase()}` : 'US-NA');
-  if (countryIso === 'CA') return caSubdivisionCodes[key] || (key.length === 2 ? `CA-${key.toUpperCase()}` : countryIso);
-  if (countryIso === 'AU') return auSubdivisionCodes[key] || countryIso;
-  if (countryIso === 'CN') return cnSubdivisionCodes[key] || countryIso;
-  return key.length <= 3 ? `${countryIso}-${key.toUpperCase()}` : countryIso;
+  if (/^[A-Z]{2}-[A-Z0-9]{1,3}$/.test(normalizedCode)) {
+    return {billingCountry: countryIso, billingState: normalizedCode, valid: true, warnings};
+  }
+  const rawAsCountry = countryCode(raw);
+  if (rawAsCountry) {
+    warnings.push('State/province looked like a country value; using ISO country fallback for billing_state.');
+    return {billingCountry: countryIso, billingState: rawAsCountry, valid: true, warnings};
+  }
+  const key = normalizeLookupKey(raw);
+  if (key && key === cityKey) {
+    warnings.push('State/province matched city; using billing_country as ISO fallback.');
+    return {billingCountry: countryIso, billingState: countryIso, valid: true, warnings};
+  }
+  const mapped = subdivisionMaps[countryIso]?.[key];
+  if (mapped) return {billingCountry: countryIso, billingState: mapped, valid: true, warnings};
+  if (/^[A-Z]{2,3}$/.test(normalizedCode) && subdivisionMaps[countryIso]) {
+    return {billingCountry: countryIso, billingState: `${countryIso}-${normalizedCode}`, valid: true, warnings};
+  }
+  warnings.push('State/province was not recognized; using billing_country as ISO fallback.');
+  return {billingCountry: countryIso, billingState: countryIso, valid: true, warnings};
+}
+
+export function validateOceanpaymentBillingState(billingState: string) {
+  const value = clean(billingState, 40);
+  if (!value) return false;
+  if (/[\u4e00-\u9fff]/.test(value)) return false;
+  if (/undefined|null|nan|\[object object\]/i.test(value)) return false;
+  return /^[A-Z]{2}(?:-[A-Z0-9]{1,3})?$/.test(value);
 }
 
 export function buildOceanpaymentPayload({
@@ -273,8 +412,16 @@ export function buildOceanpaymentPayload({
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
   const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
   const testMode = forceTestMode || !/^prod(uction)?$/i.test(config.environment);
-  const billingCountry = countryCode(order.customer.country);
-  const billingState = subdivisionCode(order.customer.country, order.checkout.state);
+  const billing = normalizeBillingState({
+    country: order.customer.country,
+    state: order.checkout.state,
+    city: order.checkout.city
+  });
+  if (!billing.valid || !validateOceanpaymentBillingState(billing.billingState)) {
+    throw new Error(billing.message || 'Please complete your billing address state/province information.');
+  }
+  const billingCountry = billing.billingCountry;
+  const billingState = billing.billingState;
 
   return {
     gatewayUrl: config.endpoint,
@@ -320,7 +467,8 @@ export function buildOceanpaymentPayload({
       backUrl: checkoutReturnUrl,
       noticeUrl,
       signValue
-    }
+    },
+    billing
   };
 }
 
@@ -340,7 +488,7 @@ export function oceanpaymentStatusToOrder(fields: Record<string, string>) {
   if (/^(0|pending|processing)$/i.test(status)) {
     return {status: 'pending_payment' as const, gatewayStatus: 'pending' as const, logisticsStatus: 'Oceanpayment transaction is pending final confirmation.'};
   }
-  return {status: 'pending_payment' as const, gatewayStatus: 'failed' as const, logisticsStatus: 'Oceanpayment transaction failed or was declined. Buyer may retry or contact sales.'};
+  return {status: 'failed' as const, gatewayStatus: 'failed' as const, logisticsStatus: 'Oceanpayment transaction failed or was declined. Buyer may retry or contact sales.'};
 }
 
 export async function parseGatewayPayload(request: Request) {

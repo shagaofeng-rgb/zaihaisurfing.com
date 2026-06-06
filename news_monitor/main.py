@@ -5,9 +5,9 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from .database import get_session, init_db
-from .models import NewsItem
+from .models import NewsItem, NewsRunLog
 from .scheduler import create_scheduler
-from .schemas import ArticleUpdate, NewsOut, StatusUpdate
+from .schemas import ArticleUpdate, NewsOut, NewsRunLogOut, StatusUpdate
 from .service import export_markdown, generate_for_item, run_pipeline
 
 
@@ -34,8 +34,8 @@ def health() -> dict:
 
 
 @app.post("/run")
-def run_now(limit_per_keyword: int = 3, max_articles: int = 8, session: Session = Depends(get_session)) -> dict:
-    return run_pipeline(session, limit_per_keyword=limit_per_keyword, max_articles=max_articles)
+def run_now(limit_per_keyword: int = 3, max_articles: int = 8, max_keywords: int | None = None, session: Session = Depends(get_session)) -> dict:
+    return run_pipeline(session, limit_per_keyword=limit_per_keyword, max_articles=max_articles, max_keywords=max_keywords)
 
 
 @app.get("/news", response_model=list[NewsOut])
@@ -44,6 +44,11 @@ def list_news(status: str | None = None, limit: int = 50, session: Session = Dep
     if status:
         query = query.filter(NewsItem.status == status)
     return query.limit(limit).all()
+
+
+@app.get("/runs", response_model=list[NewsRunLogOut])
+def list_runs(limit: int = 50, session: Session = Depends(get_session)):
+    return session.query(NewsRunLog).order_by(NewsRunLog.started_at.desc()).limit(limit).all()
 
 
 @app.get("/news/{item_id}", response_model=NewsOut)
@@ -97,4 +102,3 @@ def export_item(item_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="News item not found")
     path = export_markdown(item)
     return path.read_text(encoding="utf-8")
-

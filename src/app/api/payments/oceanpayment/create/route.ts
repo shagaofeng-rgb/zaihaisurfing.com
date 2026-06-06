@@ -62,7 +62,15 @@ export async function POST(request: Request) {
       browser: 'Unknown',
       os: 'Unknown',
       timestamp: new Date().toISOString(),
-      payload: {orderId: order.id, method, scene, configured: oceanpayment.configured}
+      payload: {
+        orderId: order.id,
+        method,
+        scene,
+        configured: oceanpayment.configured,
+        billingCountry: oceanpayment.billing.billingCountry,
+        billingState: oceanpayment.billing.billingState,
+        billingWarnings: oceanpayment.billing.warnings
+      }
     });
 
     return Response.json({
@@ -73,6 +81,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Oceanpayment create failed', error);
+    if (error instanceof Error && /billing address|billing_state|state\/province/i.test(error.message)) {
+      return Response.json({message: error.message}, {status: 422});
+    }
     return Response.json({message: 'Oceanpayment request failed'}, {status: 500});
   }
 }

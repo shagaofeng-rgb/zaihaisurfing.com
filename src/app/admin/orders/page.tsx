@@ -40,7 +40,11 @@ export default async function AdminOrdersPage() {
                   <td>{order.customer.name}<br /><small>{order.customer.email} | {order.customer.country}</small></td>
                   <td>{order.productName} x {order.quantity}</td>
                   <td>{money(order.total)}</td>
-                  <td>{zhPaymentMethod(order.paymentMethod)}<br /><small>{zhPaymentStatus(order.gatewayStatus)}</small></td>
+                  <td>
+                    {zhPaymentMethod(order.paymentMethod)}<br />
+                    <small>{zhPaymentStatus(order.gatewayStatus)}</small><br />
+                    <small>{order.paymentId || order.transactionId || 'Payment ID waiting'}</small>
+                  </td>
                   <td>{order.logisticsStatus}<br /><small>{order.trackingNumber || '暂无物流单号'}</small></td>
                   <td>{order.createdAt.slice(0, 10)}</td>
                   <td><Link className="button secondary small" href={`/admin/orders/${order.id}`}>查看详情</Link></td>

@@ -1,10 +1,14 @@
 import {createCustomerToken, findCustomerUserByEmail} from '@/lib/customerAuth';
 import {sendPasswordResetEmail} from '@/lib/emailService';
+import {checkRateLimit, clientIp} from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  if (!checkRateLimit(`account-forgot:${clientIp(request)}`, 5, 10 * 60_000)) {
+    return Response.json({message: 'Too many reset requests. Please try again later.'}, {status: 429});
+  }
   const payload = await request.json().catch(() => ({}));
   const email = String(payload.email || '').trim().toLowerCase();
   if (email) {

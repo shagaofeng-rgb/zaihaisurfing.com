@@ -13,7 +13,7 @@ export default function AccountLoginPage() {
         <AccountAuthForm mode="login" />
         <div className="account-links">
           <Link href="/account/register">Create account</Link>
-          <Link href="/account/reset-password">Forgot password?</Link>
+          <Link href="/account/forgot-password">Forgot password?</Link>
         </div>
       </section>
     </main>

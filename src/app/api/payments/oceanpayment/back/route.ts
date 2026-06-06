@@ -1,4 +1,4 @@
-import {appendAnalyticsEvent, updateStoreOrderPayment} from '@/lib/commerceStore';
+import {appendAnalyticsEvent, findStoreOrder, updateStoreOrderPayment} from '@/lib/commerceStore';
 import {oceanpaymentStatusToOrder, parseGatewayPayload, verifyOceanpaymentReturn} from '@/lib/oceanpayment';
 
 export const runtime = 'nodejs';
@@ -11,11 +11,23 @@ async function handleBack(request: Request) {
   const orderId = fields.order_number || fields.orderNo || fields.order_id || '';
   const verified = verifyOceanpaymentReturn(fields);
   if (orderId && verified) {
+    const existingOrder = await findStoreOrder(orderId);
     const paymentPatch = oceanpaymentStatusToOrder(fields);
-    await updateStoreOrderPayment(orderId, {
-      paymentGateway: 'oceanpayment',
-      ...paymentPatch
-    });
+    const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
+    if (existingOrder?.status !== 'paid') {
+      await updateStoreOrderPayment(orderId, {
+        paymentGateway: 'oceanpayment',
+        paymentId,
+        transactionId: paymentId,
+        ...(paymentPatch.status === 'paid'
+          ? {
+              status: 'processing' as const,
+              gatewayStatus: 'processing' as const,
+              logisticsStatus: 'Payment return verified. Waiting for Oceanpayment async notice before marking the order as paid.'
+            }
+          : paymentPatch)
+      });
+    }
     await appendAnalyticsEvent({
       id: `${Date.now()}-oceanpayment-back`,
       type: 'payment_return',
@@ -30,7 +42,7 @@ async function handleBack(request: Request) {
       browser: 'Gateway',
       os: 'Gateway',
       timestamp: new Date().toISOString(),
-      payload: {orderId, verified, paymentStatus: fields.payment_status, paymentId: fields.payment_id}
+      payload: {orderId, verified, paymentStatus: fields.payment_status, paymentId}
     });
   }
 

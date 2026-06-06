@@ -1,4 +1,4 @@
-import {appendAnalyticsEvent, appendPaymentNotification, findStoreOrder, updateStoreOrderPayment} from '@/lib/commerceStore';
+import {appendAnalyticsEvent, appendPaymentNotification, findStoreOrder, readStoreOrders, updateStoreOrderPayment} from '@/lib/commerceStore';
 import {createCustomerToken, ensureCustomerAccountForOrder} from '@/lib/customerAuth';
 import {sendAccountActivationEmail, sendOrderSuccessEmailOnce} from '@/lib/emailService';
 import {oceanpaymentStatusToOrder, parseGatewayPayload, verifyOceanpaymentReturn} from '@/lib/oceanpayment';
@@ -15,6 +15,17 @@ export async function POST(request: Request) {
       console.error('[oceanpayment-notice] invalid callback', {orderId, verified, keys: Object.keys(fields)});
       return new Response('verify-fail', {status: 400});
     }
+    const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
+    if (paymentId) {
+      const duplicatePaymentOrder = (await readStoreOrders()).find((order) => {
+        if (order.id === orderId) return false;
+        return order.paymentId === paymentId || order.transactionId === paymentId;
+      });
+      if (duplicatePaymentOrder) {
+        console.error('[oceanpayment-notice] duplicate payment id binding blocked', {orderId, paymentId, existingOrderId: duplicatePaymentOrder.id});
+        return new Response('duplicate-payment-id', {status: 409});
+      }
+    }
 
     const previousOrder = await findStoreOrder(orderId);
     await appendPaymentNotification({
@@ -22,14 +33,14 @@ export async function POST(request: Request) {
       provider: 'oceanpayment',
       verified,
       paymentStatus: fields.payment_status || fields.status || '',
-      paymentId: fields.payment_id || fields.transaction_id || '',
+      paymentId,
       raw: fields
     });
     const paymentPatch = oceanpaymentStatusToOrder(fields);
     const order = await updateStoreOrderPayment(orderId, {
       paymentGateway: 'oceanpayment',
-      paymentId: fields.payment_id || fields.transaction_id || '',
-      transactionId: fields.payment_id || fields.transaction_id || '',
+      paymentId,
+      transactionId: paymentId,
       ...paymentPatch
     });
     if (order && paymentPatch.status === 'paid' && previousOrder?.status !== 'paid') {
@@ -55,7 +66,7 @@ export async function POST(request: Request) {
       browser: 'Gateway',
       os: 'Gateway',
       timestamp: new Date().toISOString(),
-      payload: {orderId, verified, paymentStatus: fields.payment_status, paymentId: fields.payment_id}
+      payload: {orderId, verified, paymentStatus: fields.payment_status, paymentId}
     });
 
     return new Response('receive-ok', {status: 200});

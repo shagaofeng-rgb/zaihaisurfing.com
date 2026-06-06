@@ -1,5 +1,6 @@
 import {checkoutProductSlugs, type CheckoutProductSlug} from '@/lib/site';
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
+import {getCustomerSession} from '@/lib/customerAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,11 +29,13 @@ export async function POST(request: Request) {
       return Response.json({message: 'Please complete required fields'}, {status: 400});
     }
 
+    const session = await getCustomerSession();
     const order = await createStoreOrder({
       productSlug,
       quantity: Number(payload.quantity || 1),
       paymentMethod: payload.paymentMethod || 'qianhai_card',
       idempotencyKey: clean(payload.idempotencyKey || payload.clientRequestId, 120),
+      userId: session?.email?.toLowerCase() === customer.email.toLowerCase() ? session.userId : undefined,
       customer,
       checkout: {
         contact: clean(payload.checkout?.contact, 160),

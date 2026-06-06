@@ -28,6 +28,9 @@ class NewsOut(BaseModel):
     summary: str | None
     image_url: str | None
     image_source: str | None
+    image_source_url: str | None = None
+    image_usage_type: str | None = None
+    image_copyright_note: str | None = None
     license_status: str | None
     relevance_score: float
     popularity_score: float
@@ -42,7 +45,32 @@ class NewsOut(BaseModel):
     meta_title: str | None
     meta_description: str | None
     slug: str | None
+    category: str | None = None
+    tags: str | None = None
+    is_auto_generated: str | None = None
+    batch_id: str | None = None
     status: str
+
+
+class NewsRunLogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    batch_id: str
+    started_at: datetime
+    ended_at: datetime | None
+    status: str
+    searched_keywords: str | None
+    collected_count: int
+    new_count: int
+    duplicate_count: int
+    reviewed_count: int
+    rejected_count: int
+    generated_count: int
+    published_count: int
+    failed_count: int
+    failure_reason: str | None
+    detail_json: str | None
 
 
 class StatusUpdate(BaseModel):
@@ -54,4 +82,3 @@ class ArticleUpdate(BaseModel):
     meta_title: str | None = None
     meta_description: str | None = None
     slug: str | None = None
-

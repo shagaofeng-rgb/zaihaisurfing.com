@@ -42,8 +42,9 @@ The system must not copy full articles, invent facts, download unauthorized news
    - Status flow: `collected -> reviewed / needs_review / rejected -> approved -> published`.
 
 8. Automation
-   - APScheduler runs daily at UTC 01:00 by default.
+   - APScheduler runs every 4 hours by default, equivalent to cron `0 */4 * * *`.
    - Manual run is available through `POST /run`.
+   - Each run writes a database log row and a JSONL log entry under `NEWS_MONITOR_LOG_DIR`.
 
 ## Database Table
 
@@ -63,6 +64,9 @@ Table: `news_items`
 | extracted_keywords | Matching keywords as JSON |
 | image_url | Image URL only |
 | image_source | Image source |
+| image_source_url | Original page URL for source image attribution |
+| image_usage_type | `external_reference`, `own_image`, `ai_generated` or `default_placeholder` |
+| image_copyright_note | Copyright and usage note |
 | license_status | `unknown`, `open`, `owned`, etc. |
 | relevance_score | Product/topic relevance |
 | popularity_score | Source authority and popularity proxy |
@@ -77,7 +81,29 @@ Table: `news_items`
 | meta_title | SEO meta title |
 | meta_description | SEO meta description |
 | slug | SEO URL path |
+| category | SEO category |
+| tags | JSON tag list |
+| is_auto_generated | Marks automated content |
+| batch_id | News run batch ID |
 | status | Review workflow status |
+
+Table: `news_run_logs`
+
+| Column | Purpose |
+|---|---|
+| batch_id | Stable run batch ID |
+| started_at / ended_at | Run timing |
+| status | `running`, `success`, `partial_success`, `failed` |
+| searched_keywords | Keyword list as JSON |
+| collected_count | Feed items found |
+| new_count | New articles inserted |
+| duplicate_count | URL/title duplicate count |
+| reviewed_count | Items passing review threshold or needing review |
+| rejected_count | Low-quality or weak-fit items |
+| generated_count | Articles generated as reviewed drafts |
+| published_count | Published count, currently 0 in review-first mode |
+| failed_count | Failed item count |
+| failure_reason | Pipeline failure reason |
 
 ## File Structure
 
@@ -92,7 +118,7 @@ news_monitor/
   models.py        SQLAlchemy table
   schemas.py       Pydantic API schemas
   service.py       Pipeline orchestration and export
-  scheduler.py     Daily scheduled job
+  scheduler.py     Every-4-hours scheduled job
   main.py          FastAPI app
   run_once.py      Manual CLI run
 ```
@@ -117,6 +143,7 @@ API:
 - `GET /health`
 - `POST /run`
 - `GET /news`
+- `GET /runs`
 - `GET /news?status=reviewed`
 - `GET /news/{id}`
 - `POST /news/{id}/generate`
@@ -132,4 +159,3 @@ API:
 - Always include source media and original URL.
 - Clearly separate source facts from ZAIHAI perspective.
 - Reject weak-fit news instead of forcing product promotion.
-

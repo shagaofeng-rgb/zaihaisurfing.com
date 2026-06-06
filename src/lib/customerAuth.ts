@@ -14,8 +14,12 @@ export type CustomerUser = {
   id: string;
   email: string;
   name: string;
+  firstName: string;
+  lastName: string;
+  country: string;
   passwordHash: string;
   status: 'pending_setup' | 'active';
+  emailVerifiedAt: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -88,7 +92,13 @@ function verifyPassword(password: string, storedHash: string) {
 }
 
 export async function readCustomerUsers() {
-  return readJsonLines<CustomerUser>(USERS_FILE);
+  return (await readJsonLines<CustomerUser>(USERS_FILE)).map((user) => ({
+    ...user,
+    firstName: user.firstName || user.name.split(/\s+/)[0] || '',
+    lastName: user.lastName || user.name.split(/\s+/).slice(1).join(' ') || '',
+    country: user.country || '',
+    emailVerifiedAt: user.emailVerifiedAt || (user.status === 'active' ? user.createdAt : '')
+  }));
 }
 
 export async function findCustomerUserByEmail(email: string) {
@@ -100,7 +110,15 @@ export async function findCustomerUserById(userId: string) {
   return (await readCustomerUsers()).find((user) => user.id === userId) || null;
 }
 
-export async function createOrUpdateCustomerUser(input: {email: string; name: string; password?: string; activate?: boolean}) {
+export async function createOrUpdateCustomerUser(input: {
+  email: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+  password?: string;
+  activate?: boolean;
+}) {
   const normalized = input.email.trim().toLowerCase();
   const users = await readCustomerUsers();
   const now = new Date().toISOString();
@@ -109,8 +127,12 @@ export async function createOrUpdateCustomerUser(input: {email: string; name: st
     user = {
       ...user,
       name: input.name || user.name,
+      firstName: input.firstName ?? user.firstName ?? '',
+      lastName: input.lastName ?? user.lastName ?? '',
+      country: input.country ?? user.country ?? '',
       passwordHash: input.password ? hashCustomerPassword(input.password) : user.passwordHash,
       status: input.activate || input.password ? 'active' : user.status,
+      emailVerifiedAt: input.activate || input.password ? (user.emailVerifiedAt || now) : user.emailVerifiedAt,
       updatedAt: now
     };
     await writeJsonLines(USERS_FILE, users.map((item) => item.id === user?.id ? user : item));
@@ -120,8 +142,12 @@ export async function createOrUpdateCustomerUser(input: {email: string; name: st
     id: `cus-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
     email: normalized,
     name: input.name,
+    firstName: input.firstName || input.name.split(/\s+/)[0] || '',
+    lastName: input.lastName || input.name.split(/\s+/).slice(1).join(' ') || '',
+    country: input.country || '',
     passwordHash: input.password ? hashCustomerPassword(input.password) : '',
     status: input.activate || input.password ? 'active' : 'pending_setup',
+    emailVerifiedAt: input.activate || input.password ? now : '',
     createdAt: now,
     updatedAt: now
   };
@@ -137,6 +163,35 @@ export async function bindOrdersToCustomer(email: string, userId: string) {
     await updateStoreOrderPayment(order.id, {userId});
   }
   return matching.length;
+}
+
+export function customerOwnsOrder(order: StoreOrder, session: {userId?: string; email?: string}) {
+  const sessionEmail = String(session.email || '').trim().toLowerCase();
+  const orderEmail = String(order.customer.email || '').trim().toLowerCase();
+  return Boolean((session.userId && order.userId === session.userId) || (sessionEmail && orderEmail === sessionEmail));
+}
+
+export async function updateCustomerProfile(userId: string, patch: {name?: string; firstName?: string; lastName?: string; country?: string}) {
+  const users = await readCustomerUsers();
+  const now = new Date().toISOString();
+  let updated: CustomerUser | null = null;
+  const next = users.map((user) => {
+    if (user.id !== userId) return user;
+    const firstName = patch.firstName ?? user.firstName;
+    const lastName = patch.lastName ?? user.lastName;
+    updated = {
+      ...user,
+      name: patch.name || `${firstName} ${lastName}`.trim() || user.name,
+      firstName,
+      lastName,
+      country: patch.country ?? user.country,
+      updatedAt: now
+    };
+    return updated;
+  });
+  if (!updated) return null;
+  await writeJsonLines(USERS_FILE, next);
+  return updated;
 }
 
 export async function ensureCustomerAccountForOrder(order: StoreOrder) {
@@ -155,7 +210,7 @@ export async function createCustomerToken(user: CustomerUser, type: CustomerToke
     email: user.email,
     tokenHash: sha256(rawToken),
     type,
-    expiresAt: new Date(now.getTime() + 1000 * 60 * 60 * 24).toISOString(),
+    expiresAt: new Date(now.getTime() + 1000 * 60 * 60).toISOString(),
     usedAt: '',
     createdAt: now.toISOString()
   };

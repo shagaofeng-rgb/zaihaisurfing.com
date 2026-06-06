@@ -2,11 +2,12 @@ import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {getCustomerSession} from '@/lib/customerAuth';
 import {readStoreOrders} from '@/lib/commerceStore';
+import {products} from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
-function money(value: number) {
-  return `USD ${value.toLocaleString()}`;
+function money(value: number, currency = 'USD') {
+  return `${currency} ${value.toLocaleString()}`;
 }
 
 export default async function AccountOrdersPage() {
@@ -32,10 +33,11 @@ export default async function AccountOrdersPage() {
       <section className="account-order-list">
         {orders.length ? orders.map((order) => (
           <article className="account-order-card" key={order.id}>
+            <img className="account-order-thumb" src={products[order.productSlug]?.image || '/assets/logo.jpg'} alt={order.productName} />
             <div>
               <small>{order.id}</small>
               <h2>{order.productName}</h2>
-              <p>{order.quantity} unit(s) - {money(order.total)}</p>
+              <p>{order.quantity} unit(s) · {money(order.total, order.currency)}</p>
             </div>
             <dl>
               <div><dt>Order status</dt><dd>{order.status.replace(/_/g, ' ')}</dd></div>
@@ -43,7 +45,7 @@ export default async function AccountOrdersPage() {
               <div><dt>Shipment</dt><dd>{order.shipmentStatus.replace(/_/g, ' ')}</dd></div>
               <div><dt>Tracking</dt><dd>{order.trackingNumber || 'Waiting for shipment'}</dd></div>
             </dl>
-            <Link className="button secondary small" href={`/en/products/${order.productSlug}`}>View product</Link>
+            <Link className="button secondary small" href={`/account/orders/${order.id}`}>View detail</Link>
           </article>
         )) : (
           <article className="account-order-card empty">

@@ -9,6 +9,14 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 
 
 PRODUCT_KEYWORDS = [
+    "surfing industry news",
+    "surfboard market trends",
+    "surfing gear trends",
+    "surf accessories market",
+    "paddle board industry",
+    "SUP board market",
+    "inflatable paddle board trends",
+    "custom surfboard manufacturing",
     "electric surfboard",
     "e surfboard",
     "motorized surfboard",
@@ -21,6 +29,8 @@ PRODUCT_KEYWORDS = [
     "electric kart boat",
     "water go kart",
     "water sports equipment",
+    "beach sports equipment",
+    "sports equipment export news",
 ]
 
 APPLICATION_KEYWORDS = [
@@ -50,6 +60,15 @@ PAIN_POINT_KEYWORDS = [
 ]
 
 TREND_KEYWORDS = [
+    "global surf market",
+    "water sports e-commerce",
+    "cross-border e-commerce outdoor sports",
+    "water sports consumer trends",
+    "surf lifestyle trends",
+    "surfing tourism news",
+    "outdoor sports retail trends",
+    "summer outdoor product trends",
+    "beach lifestyle products",
     "electric water sports",
     "marine electrification",
     "electric boats",
@@ -88,8 +107,10 @@ class Settings:
     min_total_score: float = float(os.getenv("NEWS_MONITOR_MIN_SCORE", "70"))
     daily_article_limit: int = int(os.getenv("NEWS_MONITOR_DAILY_LIMIT", "8"))
     export_dir: Path = Path(os.getenv("NEWS_MONITOR_EXPORT_DIR", str(ROOT_DIR / "exports")))
+    log_dir: Path = Path(os.getenv("NEWS_MONITOR_LOG_DIR", str(ROOT_DIR / "news_monitor_logs")))
+    request_timeout_seconds: int = int(os.getenv("NEWS_MONITOR_REQUEST_TIMEOUT_SECONDS", "10"))
     timezone: str = os.getenv("NEWS_MONITOR_TIMEZONE", "UTC")
-    run_hour_utc: int = int(os.getenv("NEWS_MONITOR_RUN_HOUR_UTC", "1"))
+    cron_hour: str = os.getenv("NEWS_MONITOR_CRON_HOUR", os.getenv("NEWS_MONITOR_RUN_HOUR_UTC", "*/4"))
     keyword_groups: dict[str, list[str]] = field(
         default_factory=lambda: {
             "product": PRODUCT_KEYWORDS,
@@ -112,4 +133,3 @@ class Settings:
 
 
 settings = Settings()
-

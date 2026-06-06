@@ -46,10 +46,22 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
   return (
     <form className="account-form" onSubmit={handleSubmit}>
       {mode === 'register' && (
-        <label>
-          Name
-          <input name="name" placeholder="Your full name" required />
-        </label>
+        <>
+          <div className="account-form-grid">
+            <label>
+              First name
+              <input name="firstName" placeholder="First name" required />
+            </label>
+            <label>
+              Last name
+              <input name="lastName" placeholder="Last name" />
+            </label>
+          </div>
+          <label>
+            Country / region
+            <input name="country" placeholder="Country / region" />
+          </label>
+        </>
       )}
       {mode !== 'reset' && (
         <label>
@@ -61,6 +73,18 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
         <label>
           Password
           <input name={mode === 'reset' ? 'password' : 'password'} type="password" placeholder="At least 8 characters" minLength={8} required />
+        </label>
+      )}
+      {(mode === 'register' || mode === 'reset') && (
+        <label>
+          Confirm password
+          <input name="confirmPassword" type="password" placeholder="Repeat password" minLength={8} required />
+        </label>
+      )}
+      {mode === 'register' && (
+        <label className="account-checkbox">
+          <input name="acceptedTerms" type="checkbox" value="true" required />
+          <span>I agree to the privacy policy and website terms.</span>
         </label>
       )}
       <button className="button primary" disabled={busy} type="submit">

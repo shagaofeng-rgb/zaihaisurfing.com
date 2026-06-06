@@ -8,8 +8,9 @@ export async function POST(request: Request) {
   const payload = await request.json().catch(() => ({}));
   const token = String(payload.token || '').trim();
   const password = String(payload.password || '');
-  if (!token || password.length < 8) {
-    return Response.json({message: 'Valid token and password of at least 8 characters are required.'}, {status: 400});
+  const confirmPassword = String(payload.confirmPassword || '');
+  if (!token || password.length < 8 || password !== confirmPassword) {
+    return Response.json({message: 'Valid token and matching passwords of at least 8 characters are required.'}, {status: 400});
   }
   const user = await consumeCustomerToken(token, password);
   if (!user) return Response.json({message: 'Reset link expired or invalid.'}, {status: 400});

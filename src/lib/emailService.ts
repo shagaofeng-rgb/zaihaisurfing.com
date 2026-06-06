@@ -201,8 +201,21 @@ export async function sendAccountActivationEmail(order: StoreOrder, setupUrl: st
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   const subject = 'Reset your ZAIHAI account password';
-  const text = `Reset your ZAIHAI account password here: ${resetUrl}`;
-  const html = `<p>Reset your ZAIHAI account password.</p><p><a href="${escapeHtml(resetUrl)}">Set a new password</a></p>`;
+  const text = [
+    'ZAIHAI SURFING account password reset',
+    '',
+    `Use this link within 60 minutes: ${resetUrl}`,
+    '',
+    'If you did not request this, you can ignore this email.',
+    'Support: davidsha@zaihaisurfing.com'
+  ].join('\n');
+  const html = `
+    <p>Hello,</p>
+    <p>We received a request to reset your ZAIHAI SURFING customer account password.</p>
+    <p><a href="${escapeHtml(resetUrl)}">Set a new password</a></p>
+    <p>This link is valid for 60 minutes. If you did not request this, you can ignore this email.</p>
+    <p>Support: davidsha@zaihaisurfing.com</p>
+  `;
   try {
     const result = await sendSmtpMail({to: email, subject, text, html});
     await appendEmailLog({

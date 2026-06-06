@@ -20,10 +20,9 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(
         scheduled_run,
         trigger="cron",
-        hour=settings.run_hour_utc,
+        hour=settings.cron_hour,
         minute=0,
-        id="daily_zaihai_news_monitor",
+        id="zaihai_news_monitor_every_4_hours",
         replace_existing=True,
     )
     return scheduler
-

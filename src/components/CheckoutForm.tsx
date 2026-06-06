@@ -286,11 +286,19 @@ export default function CheckoutForm({locale, productSlug, productName, productI
             <select name="country" required defaultValue="">
               <option value="" disabled>Choose destination country</option>
               <option>United States</option>
+              <option>United Kingdom</option>
+              <option>Canada</option>
               <option>United Arab Emirates</option>
               <option>Saudi Arabia</option>
               <option>Australia</option>
+              <option>China</option>
+              <option>Singapore</option>
+              <option>Japan</option>
+              <option>South Korea</option>
+              <option>Germany</option>
               <option>Spain</option>
               <option>France</option>
+              <option>Italy</option>
               <option>Maldives</option>
               <option>Thailand</option>
               <option>Other</option>

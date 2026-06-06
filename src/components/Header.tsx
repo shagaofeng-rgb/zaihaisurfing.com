@@ -1,18 +1,22 @@
 import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
 import {uiCopy} from '@/lib/uiCopy';
+import {getCustomerSession} from '@/lib/customerAuth';
 import LanguageSwitcher from './LanguageSwitcher';
 import MobileMenu from './MobileMenu';
 
 export default async function Header({locale}: {locale: Locale}) {
   const copy = uiCopy[locale];
+  const customerSession = await getCustomerSession();
+  const accountHref = customerSession ? '/account' : '/account/login';
+  const accountLabel = customerSession ? 'Account' : 'Sign in';
   const mobileNavItems = [
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
     {href: '/about', label: copy.nav.about},
     {href: '/contact', label: copy.nav.contact},
-    {href: '/account', label: 'Account'}
+    {href: accountHref, label: accountLabel}
   ];
 
   return (
@@ -74,10 +78,12 @@ export default async function Header({locale}: {locale: Locale}) {
         <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
         <Link href="/about">{copy.nav.about}</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
-        <a href="/account">Account</a>
       </nav>
       <div className="header-tools">
         <LanguageSwitcher locale={locale} />
+        <a className="header-account" href={accountHref} aria-label="Customer account">
+          {accountLabel}
+        </a>
         <Link className="header-cta" href="/contact">
           {copy.nav.quote}
         </Link>
