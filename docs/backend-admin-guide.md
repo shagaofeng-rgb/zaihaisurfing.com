@@ -11,7 +11,8 @@ The site now has a real Next.js backend foundation:
 - Checkout order capture under `/api/checkout/create-order`
 - Behavior event tracking under `/api/analytics/track`
 - Qianhai payment placeholder routes under `/api/payments/qianhai/*`
-- File-backed data store for local preview: `.data/admin-store.json`
+- KV / Upstash Redis-backed commerce storage when `KV_REST_API_URL` + `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are configured
+- File-backed data store for local preview only: `.data/admin-store.json`
 - Database migration blueprint: `docs/backend-schema.sql`
 
 ## Admin Login
@@ -59,6 +60,12 @@ Already connected:
 - Analytics tracker records page views, product views, checkout starts and CTA clicks.
 - Admin dashboard reads orders, events, products, content and settings from backend data.
 - Admin product/category/media/blog/news/settings forms write to the backend store.
+
+Important production storage note:
+
+- Live orders, payment callbacks, member accounts and reset tokens require KV / Upstash Redis REST credentials in Vercel.
+- Without those variables, Vercel production falls back to temporary function storage, so orders may disappear or not show consistently in the admin.
+- Use one variable pair: `KV_REST_API_URL` + `KV_REST_API_TOKEN`, or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`.
 
 Still static and planned for the next phase:
 

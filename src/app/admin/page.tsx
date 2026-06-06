@@ -3,6 +3,7 @@ import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {zhOrderStatus, zhPaymentStatus} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
 import {getCommerceSnapshot} from '@/lib/commerceStore';
+import {durableStoreConfigured} from '@/lib/durableStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +84,7 @@ export default async function AdminDashboardPage({
     getCommerceSnapshot({from: timeFilter.from, to: timeFilter.to}),
     getAdminDashboardData()
   ]);
+  const stableCommerceStore = durableStoreConfigured();
 
   return (
     <AdminShell active="数据总览">
@@ -128,7 +130,7 @@ export default async function AdminDashboardPage({
           <div><dt>访问统计</dt><dd>前台 `/api/analytics/track` 写入，后台“访问统计/数据总览”实时读取。</dd></div>
           <div><dt>订单数据</dt><dd>前台结账 `/api/checkout/create-order` 写入，后台“订单管理/客户管理/线索”实时读取。</dd></div>
           <div><dt>CMS 数据</dt><dd>后台产品、分类、媒体、博客、新闻表单写入后台数据源。</dd></div>
-          <div><dt>当前存储</dt><dd>{process.env.DATABASE_URL ? '已配置数据库连接' : '文件型临时存储；正式商用需要配置 DATABASE_URL'}</dd></div>
+          <div><dt>当前存储</dt><dd>{stableCommerceStore ? '已连接稳定订单库（KV / Upstash Redis）' : '临时存储；需要配置 KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据'}</dd></div>
         </dl>
       </section>
 

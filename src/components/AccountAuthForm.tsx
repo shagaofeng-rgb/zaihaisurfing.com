@@ -7,7 +7,8 @@ type Mode = 'login' | 'register' | 'forgot' | 'reset';
 export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?: string}) {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
-  const isEmailEntry = mode === 'login' || mode === 'register';
+  const isCompactEntry = mode === 'login' || mode === 'register';
+  const requiresPassword = mode === 'login' || mode === 'register' || mode === 'reset';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,8 +46,8 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
   }
 
   return (
-    <form className={isEmailEntry ? 'account-form account-email-form' : 'account-form'} onSubmit={handleSubmit}>
-      {isEmailEntry ? (
+    <form className={isCompactEntry ? 'account-form account-email-form' : 'account-form'} onSubmit={handleSubmit}>
+      {isCompactEntry ? (
         <label className="account-email-field">
           <span className="sr-only">Email</span>
           <input name="email" type="email" placeholder="Enter your email" autoComplete="email" required />
@@ -59,23 +60,37 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
           </label>
         )
       )}
-      {!isEmailEntry && mode !== 'forgot' && (
-        <label>
-          Password
-          <input name="password" type="password" placeholder="At least 8 characters" autoComplete="new-password" minLength={8} required />
+      {requiresPassword && (
+        <label className={isCompactEntry ? 'account-email-field' : undefined}>
+          <span className={isCompactEntry ? 'sr-only' : undefined}>Password</span>
+          <input
+            name="password"
+            type="password"
+            placeholder={mode === 'login' ? 'Enter your password' : 'Set your password'}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            minLength={8}
+            required
+          />
         </label>
       )}
-      {mode === 'reset' && (
-        <label>
-          Confirm password
-          <input name="confirmPassword" type="password" placeholder="Repeat password" autoComplete="new-password" minLength={8} required />
+      {(mode === 'register' || mode === 'reset') && (
+        <label className={isCompactEntry ? 'account-email-field' : undefined}>
+          <span className={isCompactEntry ? 'sr-only' : undefined}>Confirm password</span>
+          <input
+            name="confirmPassword"
+            type="password"
+            placeholder="Confirm your password"
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
         </label>
       )}
-      <button className={isEmailEntry ? 'account-email-submit' : 'button primary account-submit'} disabled={busy} type="submit">
-        {busy ? 'Processing...' : isEmailEntry ? 'Continue' : mode === 'forgot' ? 'Send reset link' : 'Set password'}
+      <button className={isCompactEntry ? 'account-email-submit' : 'button primary account-submit'} disabled={busy} type="submit">
+        {busy ? 'Processing...' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'forgot' ? 'Send reset link' : 'Set password'}
       </button>
-      {isEmailEntry && (
-        <p className="account-legal">By continuing, you agree to receive account emails from ZAIHAI SURFING and use this email to access your customer order center.</p>
+      {isCompactEntry && (
+        <p className="account-legal">Use the same email from checkout to view matching orders in your customer center.</p>
       )}
       {status && <p className="account-status">{status}</p>}
     </form>

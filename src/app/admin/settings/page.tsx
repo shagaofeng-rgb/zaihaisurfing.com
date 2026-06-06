@@ -1,10 +1,12 @@
 import AdminShell from '@/components/AdminShell';
 import {readAdminStore} from '@/lib/backendStore';
+import {durableStoreConfigured} from '@/lib/durableStore';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSettingsPage() {
   const {settings} = await readAdminStore();
+  const stableCommerceStore = durableStoreConfigured();
   return (
     <AdminShell active="系统设置">
       <div className="admin-title">
@@ -30,7 +32,7 @@ export default async function AdminSettingsPage() {
         </div>
         <dl className="admin-config-list">
           <div><dt>后台登录</dt><dd>ADMIN_EMAIL, ADMIN_PASSWORD_HASH 或 ADMIN_PASSWORD, ADMIN_JWT_SECRET</dd></div>
-          <div><dt>数据库</dt><dd>DATABASE_URL 后续用于迁移到 Postgres，避免 Vercel 临时文件存储丢失。</dd></div>
+          <div><dt>订单存储</dt><dd>{stableCommerceStore ? '已连接 KV / Upstash Redis，订单和会员数据会稳定保存。' : '需要配置 KV_REST_API_URL + KV_REST_API_TOKEN，或 UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN。'}</dd></div>
           <div><dt>邮件</dt><dd>SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM</dd></div>
           <div><dt>支付</dt><dd>QIANHAI_MERCHANT_ID, QIANHAI_GATEWAY_URL, QIANHAI_SECRET_KEY</dd></div>
         </dl>

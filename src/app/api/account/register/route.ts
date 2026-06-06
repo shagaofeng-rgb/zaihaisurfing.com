@@ -16,11 +16,22 @@ export async function POST(request: Request) {
   }
   const payload = await request.json().catch(() => ({}));
   const email = clean(payload.email).toLowerCase();
+  const password = String(payload.password || '');
+  const confirmPassword = String(payload.confirmPassword || '');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return Response.json({message: 'Please enter a valid email.'}, {status: 400});
   }
+  if (password.length < 8) {
+    return Response.json({message: 'Please set a password with at least 8 characters.'}, {status: 400});
+  }
+  if (password !== confirmPassword) {
+    return Response.json({message: 'The two passwords do not match.'}, {status: 400});
+  }
   const existing = await findCustomerUserByEmail(email);
-  const user = existing || await createOrUpdateCustomerUser({email, name: email, activate: true});
+  if (existing?.passwordHash) {
+    return Response.json({message: 'This email already has a password. Please sign in instead.'}, {status: 409});
+  }
+  const user = await createOrUpdateCustomerUser({email, name: existing?.name || email, password, activate: true});
   await bindOrdersToCustomer(email, user.id);
   if (!existing) await sendRegistrationWelcomeEmail(user.email, user.name);
   const cookieStore = await cookies();
