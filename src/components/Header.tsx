@@ -47,7 +47,7 @@ export default async function Header({locale}: {locale: Locale}) {
           <div className="mega-panel" role="menu" aria-label="Product mega menu">
             <div className="mega-feature">
               <span>{copy.mega.featured}</span>
-              <img src="/assets/catalog/x1-pro/product.png" alt="ZAIHAI X1 Pro electric surfboard" />
+              <img src="/assets/catalog/x1-pro/product-mega.jpg" alt="ZAIHAI X1 Pro electric surfboard" loading="lazy" decoding="async" width="496" height="620" />
               <h3>ZAIHAI X1 Pro</h3>
               <p>{copy.mega.featuredText}</p>
               <Link href="/products/x1-pro">{copy.mega.featuredLink}</Link>

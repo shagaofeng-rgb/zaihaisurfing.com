@@ -74,7 +74,7 @@ export default async function LocaleLayout({
         </NextIntlClientProvider>
         <Script
           src="https://plugin-code.salesmartly.com/js/project_653905_759291_1780551668.js"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
       </body>
     </html>
