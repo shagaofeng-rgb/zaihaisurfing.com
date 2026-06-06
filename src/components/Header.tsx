@@ -10,13 +10,19 @@ export default async function Header({locale}: {locale: Locale}) {
   const customerSession = await getCustomerSession();
   const accountHref = customerSession ? '/account' : '/account/login';
   const accountLabel = customerSession ? 'Account' : 'Sign in';
+  const authItems = customerSession
+    ? [{href: accountHref, label: accountLabel}]
+    : [
+        {href: '/account/login', label: 'Sign in'},
+        {href: '/account/register', label: 'Register'}
+      ];
   const mobileNavItems = [
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
     {href: '/about', label: copy.nav.about},
     {href: '/contact', label: copy.nav.contact},
-    {href: accountHref, label: accountLabel}
+    ...authItems
   ];
 
   return (
@@ -81,9 +87,11 @@ export default async function Header({locale}: {locale: Locale}) {
       </nav>
       <div className="header-tools">
         <LanguageSwitcher locale={locale} />
-        <a className="header-account" href={accountHref} aria-label="Customer account">
-          {accountLabel}
-        </a>
+        {authItems.map((item) => (
+          <a className="header-account" href={item.href} aria-label={item.label} key={item.href}>
+            {item.label}
+          </a>
+        ))}
         <Link className="header-cta" href="/contact">
           {copy.nav.quote}
         </Link>
