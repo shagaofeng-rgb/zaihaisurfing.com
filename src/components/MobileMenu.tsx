@@ -18,9 +18,15 @@ export default function MobileMenu({items}: MobileMenuProps) {
       <summary>Menu</summary>
       <div>
         {items.map((item) => (
-          <Link href={item.href} key={`${item.href}-${item.label}`} onClick={() => setOpen(false)}>
-            {item.label}
-          </Link>
+          item.href.startsWith('/account') ? (
+            <a href={item.href} key={`${item.href}-${item.label}`} onClick={() => setOpen(false)}>
+              {item.label}
+            </a>
+          ) : (
+            <Link href={item.href} key={`${item.href}-${item.label}`} onClick={() => setOpen(false)}>
+              {item.label}
+            </Link>
+          )
         ))}
       </div>
     </details>

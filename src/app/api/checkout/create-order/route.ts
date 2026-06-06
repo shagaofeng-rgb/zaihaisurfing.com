@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       productSlug,
       quantity: Number(payload.quantity || 1),
       paymentMethod: payload.paymentMethod || 'qianhai_card',
+      idempotencyKey: clean(payload.idempotencyKey || payload.clientRequestId, 120),
       customer,
       checkout: {
         contact: clean(payload.checkout?.contact, 160),

@@ -1,4 +1,6 @@
-import {appendAnalyticsEvent, updateStoreOrderPayment} from '@/lib/commerceStore';
+import {appendAnalyticsEvent, appendPaymentNotification, findStoreOrder, updateStoreOrderPayment} from '@/lib/commerceStore';
+import {createCustomerToken, ensureCustomerAccountForOrder} from '@/lib/customerAuth';
+import {sendAccountActivationEmail, sendOrderSuccessEmailOnce} from '@/lib/emailService';
 import {oceanpaymentStatusToOrder, parseGatewayPayload, verifyOceanpaymentReturn} from '@/lib/oceanpayment';
 
 export const runtime = 'nodejs';
@@ -14,11 +16,31 @@ export async function POST(request: Request) {
       return new Response('verify-fail', {status: 400});
     }
 
+    const previousOrder = await findStoreOrder(orderId);
+    await appendPaymentNotification({
+      orderId,
+      provider: 'oceanpayment',
+      verified,
+      paymentStatus: fields.payment_status || fields.status || '',
+      paymentId: fields.payment_id || fields.transaction_id || '',
+      raw: fields
+    });
     const paymentPatch = oceanpaymentStatusToOrder(fields);
     const order = await updateStoreOrderPayment(orderId, {
       paymentGateway: 'oceanpayment',
+      paymentId: fields.payment_id || fields.transaction_id || '',
+      transactionId: fields.payment_id || fields.transaction_id || '',
       ...paymentPatch
     });
+    if (order && paymentPatch.status === 'paid' && previousOrder?.status !== 'paid') {
+      const user = await ensureCustomerAccountForOrder(order);
+      const token = await createCustomerToken(user, user.status === 'active' ? 'password_reset' : 'password_setup');
+      const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.zaihaisurfing.com').replace(/\/$/, '');
+      await Promise.all([
+        sendOrderSuccessEmailOnce(order),
+        sendAccountActivationEmail(order, `${baseUrl}/account/reset-password?token=${encodeURIComponent(token)}`)
+      ]);
+    }
     await appendAnalyticsEvent({
       id: `${Date.now()}-oceanpayment-notice`,
       type: 'payment_notice',

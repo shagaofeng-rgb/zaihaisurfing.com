@@ -11,7 +11,8 @@ export default async function Header({locale}: {locale: Locale}) {
     {href: '/products', label: copy.nav.products},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
     {href: '/about', label: copy.nav.about},
-    {href: '/contact', label: copy.nav.contact}
+    {href: '/contact', label: copy.nav.contact},
+    {href: '/account', label: 'Account'}
   ];
 
   return (
@@ -73,6 +74,7 @@ export default async function Header({locale}: {locale: Locale}) {
         <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
         <Link href="/about">{copy.nav.about}</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
+        <a href="/account">Account</a>
       </nav>
       <div className="header-tools">
         <LanguageSwitcher locale={locale} />

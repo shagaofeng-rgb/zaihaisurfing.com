@@ -5,8 +5,27 @@ import {products, type CheckoutProductSlug} from '@/lib/site';
 const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.jsonl');
 const EVENTS_FILE = path.join(DATA_DIR, 'analytics-events.jsonl');
+const IDEMPOTENCY_FILE = path.join(DATA_DIR, 'idempotency-keys.jsonl');
+const EMAIL_LOGS_FILE = path.join(DATA_DIR, 'email-logs.jsonl');
+const REFUNDS_FILE = path.join(DATA_DIR, 'refunds.jsonl');
+const SHIPMENTS_FILE = path.join(DATA_DIR, 'shipments.jsonl');
+const AUTHORIZATIONS_FILE = path.join(DATA_DIR, 'payment-authorizations.jsonl');
+const PAYMENT_NOTIFICATIONS_FILE = path.join(DATA_DIR, 'payment-notifications.jsonl');
 
-export type OrderStatus = 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | 'pending_payment'
+  | 'paid'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'completed'
+  | 'cancelled'
+  | 'refunded'
+  | 'partial_refunded'
+  | 'failed';
+
+export type GatewayStatus = 'not_submitted' | 'pending' | 'processing' | 'success' | 'failed' | 'refunded' | 'partial_refunded';
+export type ShipmentStatus = 'unshipped' | 'shipped' | 'in_transit' | 'delivered' | 'returned';
 
 export type PaymentMethod =
   | 'qianhai_card'
@@ -29,9 +48,18 @@ export type StoreOrder = {
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   paymentGateway: string;
-  gatewayStatus: 'not_submitted' | 'pending' | 'success' | 'failed';
+  gatewayStatus: GatewayStatus;
+  idempotencyKey: string;
+  paymentId: string;
+  transactionId: string;
+  refundStatus: string;
   trackingNumber: string;
   logisticsStatus: string;
+  shipmentStatus: ShipmentStatus;
+  logisticsProvider: string;
+  shippedAt: string;
+  deliveredAt: string;
+  userId: string;
   customer: {
     name: string;
     email: string;
@@ -79,6 +107,83 @@ export type AnalyticsEvent = {
   payload: Record<string, unknown>;
 };
 
+export type IdempotencyRecord = {
+  id: string;
+  key: string;
+  orderId: string;
+  fingerprint: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EmailLog = {
+  id: string;
+  orderId: string;
+  customerEmail: string;
+  templateType: 'order_success' | 'account_activation' | 'password_reset';
+  status: 'pending' | 'sent' | 'failed' | 'skipped';
+  providerMessageId: string;
+  errorMessage: string;
+  sentAt: string;
+  createdAt: string;
+};
+
+export type PaymentNotification = {
+  id: string;
+  orderId: string;
+  provider: 'oceanpayment';
+  verified: boolean;
+  paymentStatus: string;
+  paymentId: string;
+  raw: Record<string, string>;
+  createdAt: string;
+};
+
+export type RefundRecord = {
+  id: string;
+  orderId: string;
+  paymentId: string;
+  refundNo: string;
+  oceanpaymentRefundId: string;
+  amount: number;
+  currency: 'USD';
+  status: 'pending' | 'submitted' | 'success' | 'failed';
+  reason: string;
+  requestPayload: Record<string, unknown>;
+  responsePayload: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ShipmentRecord = {
+  id: string;
+  orderId: string;
+  logisticsProvider: string;
+  trackingNumber: string;
+  shipmentStatus: ShipmentStatus;
+  shippedAt: string;
+  deliveredAt: string;
+  note: string;
+  uploadStatus: 'not_required' | 'pending' | 'submitted' | 'success' | 'failed';
+  uploadResponse: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AuthorizationRecord = {
+  id: string;
+  orderId: string;
+  authorizationNo: string;
+  amount: number;
+  currency: 'USD';
+  status: 'disabled' | 'created' | 'captured' | 'cancelled' | 'failed';
+  capturedAmount: number;
+  requestPayload: Record<string, unknown>;
+  responsePayload: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CommerceSnapshotFilter = {
   from?: Date;
   to?: Date;
@@ -97,6 +202,11 @@ async function appendJsonLine(file: string, value: unknown) {
   await fs.appendFile(file, `${JSON.stringify(value)}\n`, 'utf8');
 }
 
+async function writeJsonLines(file: string, values: unknown[]) {
+  await fs.mkdir(DATA_DIR, {recursive: true});
+  await fs.writeFile(file, `${values.map((value) => JSON.stringify(value)).join('\n')}${values.length ? '\n' : ''}`, 'utf8');
+}
+
 async function readJsonLines<T>(file: string) {
   try {
     const text = await fs.readFile(file, 'utf8');
@@ -104,6 +214,21 @@ async function readJsonLines<T>(file: string) {
   } catch {
     return [];
   }
+}
+
+function withOrderDefaults(order: StoreOrder): StoreOrder {
+  return {
+    ...order,
+    idempotencyKey: order.idempotencyKey || '',
+    paymentId: order.paymentId || '',
+    transactionId: order.transactionId || '',
+    refundStatus: order.refundStatus || '',
+    shipmentStatus: order.shipmentStatus || (order.status === 'shipped' || order.status === 'delivered' ? order.status : 'unshipped'),
+    logisticsProvider: order.logisticsProvider || '',
+    shippedAt: order.shippedAt || '',
+    deliveredAt: order.deliveredAt || '',
+    userId: order.userId || ''
+  };
 }
 
 export function shippingEstimateFor(country: string) {
@@ -121,9 +246,44 @@ export async function createStoreOrder(input: {
   paymentMethod?: StoreOrder['paymentMethod'];
   customer: StoreOrder['customer'];
   checkout?: Partial<StoreOrder['checkout']>;
+  idempotencyKey?: string;
 }) {
-  const product = products[input.productSlug];
   const quantity = Math.max(1, Math.min(99, Number(input.quantity || 1)));
+  const idempotencyKey = String(input.idempotencyKey || '').trim().slice(0, 120);
+  const fingerprint = [
+    input.customer.email.toLowerCase(),
+    input.productSlug,
+    quantity,
+    input.paymentMethod || 'qianhai_card'
+  ].join('|');
+
+  if (idempotencyKey) {
+    const existingRecord = (await readIdempotencyRecords()).find((record) => record.key === idempotencyKey);
+    if (existingRecord) {
+      const existingOrder = await findStoreOrder(existingRecord.orderId);
+      if (existingOrder) {
+        await appendAnalyticsEvent({
+          id: `${Date.now()}-checkout-idempotent-replay`,
+          type: 'checkout_duplicate_submit',
+          visitorId: 'checkout',
+          sessionId: existingOrder.id,
+          page: '/checkout',
+          pageTitle: 'Duplicate checkout submit',
+          referrer: '',
+          country: existingOrder.customer.country,
+          city: '',
+          device: 'Unknown',
+          browser: 'Unknown',
+          os: 'Unknown',
+          timestamp: new Date().toISOString(),
+          payload: {orderId: existingOrder.id, idempotencyKey, fingerprint}
+        });
+        return existingOrder;
+      }
+    }
+  }
+
+  const product = products[input.productSlug];
   const subtotal = product.priceAmount * quantity;
   const shippingEstimate = input.productSlug === 'payment-test' ? 0 : shippingEstimateFor(input.customer.country);
   const now = new Date().toISOString();
@@ -141,8 +301,17 @@ export async function createStoreOrder(input: {
     paymentMethod: input.paymentMethod || 'qianhai_card',
     paymentGateway: input.paymentMethod?.startsWith('oceanpayment') ? 'oceanpayment' : input.paymentMethod === 'qianhai_card' ? 'qianhai' : 'manual',
     gatewayStatus: 'not_submitted',
+    idempotencyKey,
+    paymentId: '',
+    transactionId: '',
+    refundStatus: '',
     trackingNumber: '',
-    logisticsStatus: '已收到订单，等待付款确认',
+    logisticsStatus: 'Order received. Waiting for payment confirmation.',
+    shipmentStatus: 'unshipped',
+    logisticsProvider: '',
+    shippedAt: '',
+    deliveredAt: '',
+    userId: '',
     customer: input.customer,
     checkout: {
       contact: input.checkout?.contact || input.customer.email,
@@ -165,11 +334,21 @@ export async function createStoreOrder(input: {
     updatedAt: now
   };
   await appendJsonLine(ORDERS_FILE, order);
+  if (idempotencyKey) {
+    await appendJsonLine(IDEMPOTENCY_FILE, {
+      id: `idem-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      key: idempotencyKey,
+      orderId: order.id,
+      fingerprint,
+      createdAt: now,
+      updatedAt: now
+    } satisfies IdempotencyRecord);
+  }
   return order;
 }
 
 export async function readStoreOrders() {
-  return readJsonLines<StoreOrder>(ORDERS_FILE);
+  return (await readJsonLines<StoreOrder>(ORDERS_FILE)).map(withOrderDefaults);
 }
 
 export async function findStoreOrder(orderId: string) {
@@ -177,13 +356,16 @@ export async function findStoreOrder(orderId: string) {
   return orders.find((order) => order.id === orderId) || null;
 }
 
+export async function readIdempotencyRecords() {
+  return readJsonLines<IdempotencyRecord>(IDEMPOTENCY_FILE);
+}
+
 export async function updateStoreOrderPayment(
   orderId: string,
-  patch: Partial<Pick<StoreOrder, 'status' | 'paymentMethod' | 'paymentGateway' | 'gatewayStatus' | 'logisticsStatus'>> & {
+  patch: Partial<Pick<StoreOrder, 'status' | 'paymentMethod' | 'paymentGateway' | 'gatewayStatus' | 'logisticsStatus' | 'paymentId' | 'transactionId' | 'refundStatus' | 'trackingNumber' | 'shipmentStatus' | 'logisticsProvider' | 'shippedAt' | 'deliveredAt' | 'userId'>> & {
     checkout?: Partial<StoreOrder['checkout']>;
   }
 ): Promise<StoreOrder | null> {
-  await fs.mkdir(DATA_DIR, {recursive: true});
   const orders = await readStoreOrders();
   let updated: StoreOrder | null = null;
   const now = new Date().toISOString();
@@ -198,7 +380,7 @@ export async function updateStoreOrderPayment(
     return updated;
   });
   if (!updated) return null;
-  await fs.writeFile(ORDERS_FILE, `${next.map((order) => JSON.stringify(order)).join('\n')}\n`, 'utf8');
+  await writeJsonLines(ORDERS_FILE, next);
   return updated;
 }
 
@@ -208,6 +390,100 @@ export async function appendAnalyticsEvent(event: AnalyticsEvent) {
 
 export async function readAnalyticsEvents() {
   return readJsonLines<AnalyticsEvent>(EVENTS_FILE);
+}
+
+export async function appendEmailLog(log: Omit<EmailLog, 'id' | 'createdAt'> & {id?: string; createdAt?: string}) {
+  const now = new Date().toISOString();
+  const next: EmailLog = {
+    id: log.id || `email-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    createdAt: log.createdAt || now,
+    ...log
+  };
+  await appendJsonLine(EMAIL_LOGS_FILE, next);
+  return next;
+}
+
+export async function readEmailLogs() {
+  return readJsonLines<EmailLog>(EMAIL_LOGS_FILE);
+}
+
+export async function hasSentEmail(orderId: string, templateType: EmailLog['templateType']) {
+  const logs = await readEmailLogs();
+  return logs.some((log) => log.orderId === orderId && log.templateType === templateType && log.status === 'sent');
+}
+
+export async function appendPaymentNotification(notification: Omit<PaymentNotification, 'id' | 'createdAt'>) {
+  const next: PaymentNotification = {
+    id: `paynotice-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    createdAt: new Date().toISOString(),
+    ...notification
+  };
+  await appendJsonLine(PAYMENT_NOTIFICATIONS_FILE, next);
+  return next;
+}
+
+export async function readPaymentNotifications() {
+  return readJsonLines<PaymentNotification>(PAYMENT_NOTIFICATIONS_FILE);
+}
+
+export async function appendRefundRecord(input: Omit<RefundRecord, 'id' | 'refundNo' | 'createdAt' | 'updatedAt'> & {id?: string; refundNo?: string}) {
+  const now = new Date().toISOString();
+  const next: RefundRecord = {
+    id: input.id || `refund-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    refundNo: input.refundNo || `RF-${Date.now()}-${Math.random().toString(16).slice(2, 6).toUpperCase()}`,
+    createdAt: now,
+    updatedAt: now,
+    ...input
+  };
+  await appendJsonLine(REFUNDS_FILE, next);
+  return next;
+}
+
+export async function readRefundRecords() {
+  return readJsonLines<RefundRecord>(REFUNDS_FILE);
+}
+
+export async function upsertShipmentRecord(input: Omit<ShipmentRecord, 'id' | 'createdAt' | 'updatedAt'>) {
+  const shipments = await readShipmentRecords();
+  const now = new Date().toISOString();
+  let nextRecord: ShipmentRecord | null = null;
+  const next = shipments.map((shipment) => {
+    if (shipment.orderId !== input.orderId) return shipment;
+    nextRecord = {...shipment, ...input, updatedAt: now};
+    return nextRecord;
+  });
+  if (!nextRecord) {
+    nextRecord = {
+      id: `ship-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      createdAt: now,
+      updatedAt: now,
+      ...input
+    };
+    next.push(nextRecord);
+  }
+  await writeJsonLines(SHIPMENTS_FILE, next);
+  return nextRecord;
+}
+
+export async function readShipmentRecords() {
+  return readJsonLines<ShipmentRecord>(SHIPMENTS_FILE);
+}
+
+export async function appendAuthorizationRecord(input: Omit<AuthorizationRecord, 'id' | 'authorizationNo' | 'createdAt' | 'updatedAt'> & {authorizationNo?: string}) {
+  const now = new Date().toISOString();
+  const next: AuthorizationRecord = {
+    id: `auth-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    authorizationNo: input.authorizationNo || `AUTH-${Date.now()}-${Math.random().toString(16).slice(2, 6).toUpperCase()}`,
+    createdAt: now,
+    updatedAt: now,
+    ...input
+  };
+  await appendJsonLine(AUTHORIZATIONS_FILE, next);
+  return next;
+}
+
+export async function readAuthorizationRecords() {
+  return readJsonLines<AuthorizationRecord>(AUTHORIZATIONS_FILE);
 }
 
 function isInsideRange(value: string, filter?: CommerceSnapshotFilter) {
@@ -223,7 +499,7 @@ export async function getCommerceSnapshot(filter?: CommerceSnapshotFilter) {
   const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
   const filteredOrders = orders.filter((order) => isInsideRange(order.createdAt, filter));
   const filteredEvents = events.filter((event) => isInsideRange(event.timestamp, filter));
-  const paidOrders = filteredOrders.filter((order) => order.status === 'paid' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered');
+  const paidOrders = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status));
   const pendingOrders = filteredOrders.filter((order) => order.status === 'pending_payment');
   const shippedOrders = filteredOrders.filter((order) => order.status === 'shipped' || order.status === 'delivered');
   const revenue = paidOrders.reduce((sum, order) => sum + order.total, 0);

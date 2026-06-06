@@ -1,0 +1,226 @@
+import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {cookies} from 'next/headers';
+import {readStoreOrders, updateStoreOrderPayment, type StoreOrder} from '@/lib/commerceStore';
+
+const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
+const USERS_FILE = path.join(DATA_DIR, 'customer-users.jsonl');
+const TOKENS_FILE = path.join(DATA_DIR, 'customer-tokens.jsonl');
+export const CUSTOMER_COOKIE_NAME = 'zaihai_customer_session';
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+
+export type CustomerUser = {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  status: 'pending_setup' | 'active';
+  createdAt: string;
+  updatedAt: string;
+};
+
+type CustomerToken = {
+  id: string;
+  userId: string;
+  email: string;
+  tokenHash: string;
+  type: 'password_setup' | 'password_reset';
+  expiresAt: string;
+  usedAt: string;
+  createdAt: string;
+};
+
+function safeJson<T>(line: string): T | null {
+  try {
+    return JSON.parse(line) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function appendJsonLine(file: string, value: unknown) {
+  await fs.mkdir(DATA_DIR, {recursive: true});
+  await fs.appendFile(file, `${JSON.stringify(value)}\n`, 'utf8');
+}
+
+async function writeJsonLines(file: string, values: unknown[]) {
+  await fs.mkdir(DATA_DIR, {recursive: true});
+  await fs.writeFile(file, `${values.map((value) => JSON.stringify(value)).join('\n')}${values.length ? '\n' : ''}`, 'utf8');
+}
+
+async function readJsonLines<T>(file: string) {
+  try {
+    const text = await fs.readFile(file, 'utf8');
+    return text.split(/\r?\n/).map((line) => safeJson<T>(line)).filter(Boolean) as T[];
+  } catch {
+    return [];
+  }
+}
+
+function authSecret() {
+  return process.env.AUTH_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET || process.env.ADMIN_JWT_SECRET || 'zaihai-local-customer-secret';
+}
+
+function sha256(value: string) {
+  return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+function sign(value: string) {
+  return crypto.createHmac('sha256', authSecret()).update(value).digest('base64url');
+}
+
+function base64Url(value: string) {
+  return Buffer.from(value).toString('base64url');
+}
+
+export function hashCustomerPassword(password: string, salt = crypto.randomBytes(16).toString('base64url')) {
+  const iterations = 210000;
+  const digest = crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha256').toString('base64url');
+  return `pbkdf2_sha256$${iterations}$${salt}$${digest}`;
+}
+
+function verifyPassword(password: string, storedHash: string) {
+  const [scheme, iterationsValue, salt, digest] = storedHash.split('$');
+  if (scheme !== 'pbkdf2_sha256' || !iterationsValue || !salt || !digest) return false;
+  const expected = crypto.pbkdf2Sync(password, salt, Number(iterationsValue), 32, 'sha256').toString('base64url');
+  return expected.length === digest.length && crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(digest));
+}
+
+export async function readCustomerUsers() {
+  return readJsonLines<CustomerUser>(USERS_FILE);
+}
+
+export async function findCustomerUserByEmail(email: string) {
+  const normalized = String(email || '').trim().toLowerCase();
+  return (await readCustomerUsers()).find((user) => user.email === normalized) || null;
+}
+
+export async function findCustomerUserById(userId: string) {
+  return (await readCustomerUsers()).find((user) => user.id === userId) || null;
+}
+
+export async function createOrUpdateCustomerUser(input: {email: string; name: string; password?: string; activate?: boolean}) {
+  const normalized = input.email.trim().toLowerCase();
+  const users = await readCustomerUsers();
+  const now = new Date().toISOString();
+  let user = users.find((item) => item.email === normalized) || null;
+  if (user) {
+    user = {
+      ...user,
+      name: input.name || user.name,
+      passwordHash: input.password ? hashCustomerPassword(input.password) : user.passwordHash,
+      status: input.activate || input.password ? 'active' : user.status,
+      updatedAt: now
+    };
+    await writeJsonLines(USERS_FILE, users.map((item) => item.id === user?.id ? user : item));
+    return user;
+  }
+  user = {
+    id: `cus-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    email: normalized,
+    name: input.name,
+    passwordHash: input.password ? hashCustomerPassword(input.password) : '',
+    status: input.activate || input.password ? 'active' : 'pending_setup',
+    createdAt: now,
+    updatedAt: now
+  };
+  await appendJsonLine(USERS_FILE, user);
+  return user;
+}
+
+export async function bindOrdersToCustomer(email: string, userId: string) {
+  const orders = await readStoreOrders();
+  const normalized = email.trim().toLowerCase();
+  const matching = orders.filter((order) => order.customer.email.trim().toLowerCase() === normalized && order.userId !== userId);
+  for (const order of matching) {
+    await updateStoreOrderPayment(order.id, {userId});
+  }
+  return matching.length;
+}
+
+export async function ensureCustomerAccountForOrder(order: StoreOrder) {
+  const name = order.customer.name || `${order.checkout.firstName} ${order.checkout.lastName}`.trim() || order.customer.email;
+  const user = await createOrUpdateCustomerUser({email: order.customer.email, name});
+  await bindOrdersToCustomer(order.customer.email, user.id);
+  return user;
+}
+
+export async function createCustomerToken(user: CustomerUser, type: CustomerToken['type']) {
+  const rawToken = crypto.randomBytes(32).toString('base64url');
+  const now = new Date();
+  const record: CustomerToken = {
+    id: `token-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    userId: user.id,
+    email: user.email,
+    tokenHash: sha256(rawToken),
+    type,
+    expiresAt: new Date(now.getTime() + 1000 * 60 * 60 * 24).toISOString(),
+    usedAt: '',
+    createdAt: now.toISOString()
+  };
+  await appendJsonLine(TOKENS_FILE, record);
+  return rawToken;
+}
+
+export async function consumeCustomerToken(rawToken: string, password: string) {
+  const tokenHash = sha256(rawToken);
+  const tokens = await readJsonLines<CustomerToken>(TOKENS_FILE);
+  const now = new Date().toISOString();
+  const token = tokens.find((item) => item.tokenHash === tokenHash && !item.usedAt && item.expiresAt > now);
+  if (!token) return null;
+  const users = await readCustomerUsers();
+  const user = users.find((item) => item.id === token.userId);
+  if (!user) return null;
+  const updatedUser = {...user, passwordHash: hashCustomerPassword(password), status: 'active' as const, updatedAt: now};
+  await writeJsonLines(USERS_FILE, users.map((item) => item.id === user.id ? updatedUser : item));
+  await writeJsonLines(TOKENS_FILE, tokens.map((item) => item.id === token.id ? {...item, usedAt: now} : item));
+  await bindOrdersToCustomer(updatedUser.email, updatedUser.id);
+  return updatedUser;
+}
+
+export async function verifyCustomerCredentials(email: string, password: string) {
+  const user = await findCustomerUserByEmail(email);
+  if (!user || user.status !== 'active' || !user.passwordHash) return null;
+  return verifyPassword(password, user.passwordHash) ? user : null;
+}
+
+export function createCustomerSession(user: CustomerUser) {
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
+  };
+  const encoded = base64Url(JSON.stringify(payload));
+  return `${encoded}.${sign(encoded)}`;
+}
+
+export function verifyCustomerSession(token?: string) {
+  if (!token || !token.includes('.')) return null;
+  const [payload, signature] = token.split('.');
+  const expected = sign(payload);
+  if (!signature || signature.length !== expected.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as {userId?: string; email?: string; exp?: number};
+    if (!decoded.userId || !decoded.email || !decoded.exp || decoded.exp < Math.floor(Date.now() / 1000)) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCustomerSession() {
+  const cookieStore = await cookies();
+  return verifyCustomerSession(cookieStore.get(CUSTOMER_COOKIE_NAME)?.value);
+}
+
+export function customerCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: SESSION_TTL_SECONDS
+  };
+}

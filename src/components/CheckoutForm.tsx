@@ -43,6 +43,8 @@ function readOceanpaymentValue(data: OceanpaymentCallbackData, key: string) {
 
 export default function CheckoutForm({locale, productSlug, productName, productImage, unitPrice, quantity, shippingEstimate}: CheckoutFormProps) {
   const [status, setStatus] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clientRequestId, setClientRequestId] = useState('');
   const [coupon, setCoupon] = useState('');
   const [billingMode, setBillingMode] = useState('same');
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
@@ -52,6 +54,18 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const total = unitPrice * quantity + shippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
   const finalTotal = total - discount;
+
+  useEffect(() => {
+    const storageKey = `zaihai-checkout-idem-${productSlug}-${quantity}`;
+    const existing = window.sessionStorage.getItem(storageKey);
+    if (existing) {
+      setClientRequestId(existing);
+      return;
+    }
+    const next = `idem-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+    window.sessionStorage.setItem(storageKey, next);
+    setClientRequestId(next);
+  }, [productSlug, quantity]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -102,6 +116,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         return;
       }
       setStatus(message || 'Oceanpayment returned a payment response. If payment did not continue, please try again or contact ZAIHAI sales.');
+      setIsSubmitting(false);
     };
     return () => {
       delete win.oceanpaymentCallBack;
@@ -162,6 +177,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setStatus('Submitting project order details...');
     const formData = new FormData(event.currentTarget);
     const firstName = String(formData.get('firstName') || '').trim();
@@ -177,6 +194,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       productSlug,
       quantity,
       paymentMethod,
+      idempotencyKey: clientRequestId,
       customer: {
         name: `${firstName} ${lastName}`.trim(),
         email: formData.get('contact'),
@@ -213,6 +231,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
     const result = await response.json();
     if (!response.ok) {
       setStatus(result.message || 'Order submission failed. Please check required fields.');
+      setIsSubmitting(false);
       return;
     }
     if (String(paymentMethod).startsWith('oceanpayment')) {
@@ -225,10 +244,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       const paymentResult = await paymentResponse.json();
       if (!paymentResponse.ok) {
         setStatus(paymentResult.message || 'Oceanpayment request failed. Please contact ZAIHAI sales.');
+        setIsSubmitting(false);
         return;
       }
       if (paymentResult.status === 'waiting_for_credentials') {
         setStatus(`Order ${result.order.id} saved. Oceanpayment credentials are not configured yet: ${paymentResult.oceanpayment.requiredEnv.join(', ')}.`);
+        setIsSubmitting(false);
         return;
       }
       setStatus('Opening Oceanpayment secure payment window...');
@@ -412,8 +433,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           {discount ? <div><dt>Discount</dt><dd>- USD {discount.toLocaleString()}</dd></div> : null}
           <div className="summary-total"><dt>Estimated total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
         </dl>
-        <button className="button primary checkout-pay-button" type="submit">
-          Pay now
+        <button className="button primary checkout-pay-button" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Processing...' : 'Pay now'}
         </button>
         <p className="form-note">{status || 'After submission, ZAIHAI sales will confirm final quotation, logistics and payment method before any charge.'}</p>
       </aside>

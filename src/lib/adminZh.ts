@@ -15,8 +15,12 @@ export function zhOrderStatus(status: string) {
     paid: '已付款',
     processing: '处理中',
     shipped: '已发货',
-    delivered: '已完成',
-    cancelled: '已取消'
+    delivered: '已送达',
+    completed: '已完成',
+    cancelled: '已取消',
+    refunded: '已退款',
+    partial_refunded: '部分退款',
+    failed: '失败'
   };
   return map[status] || status || '未知';
 }
@@ -25,8 +29,11 @@ export function zhPaymentStatus(status: string) {
   const map: Record<string, string> = {
     not_submitted: '未提交支付',
     pending: '支付处理中',
+    processing: '网关处理中',
     success: '支付成功',
-    failed: '支付失败'
+    failed: '支付失败',
+    refunded: '已退款',
+    partial_refunded: '部分退款'
   };
   return map[status] || status || '未知';
 }
@@ -34,6 +41,9 @@ export function zhPaymentStatus(status: string) {
 export function zhPaymentMethod(method: string) {
   const map: Record<string, string> = {
     qianhai_card: '前海信用卡',
+    oceanpayment_card: 'Oceanpayment 信用卡',
+    oceanpayment_google_pay: 'Oceanpayment Google Pay',
+    oceanpayment_apple_pay: 'Oceanpayment Apple Pay',
     bank_transfer: '银行转账/T/T',
     manual_quote: '人工报价'
   };
@@ -59,11 +69,16 @@ export function zhEventType(type: string) {
     commerce_click: '商业按钮点击',
     checkout_start: '进入结账',
     checkout_submit: '提交结账',
+    checkout_duplicate_submit: '重复提交拦截',
     begin_checkout: '开始结账',
     order_created: '创建订单',
     payment_started: '发起支付',
+    payment_request_create: '生成支付请求',
     payment_success: '支付成功',
     payment_failed: '支付失败',
+    shipment_saved: '物流保存',
+    refund_created: '退款记录',
+    authorization_action: '预授权操作',
     form_submit: '表单提交',
     contact_click: '联系按钮点击'
   };

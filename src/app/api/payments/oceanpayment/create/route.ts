@@ -12,7 +12,11 @@ export async function POST(request: Request) {
     if (!order) {
       return Response.json({message: 'Order not found'}, {status: 404});
     }
-    if (order.gatewayStatus === 'success') {
+    if (
+      order.gatewayStatus === 'success' ||
+      order.gatewayStatus === 'refunded' ||
+      ['paid', 'processing', 'shipped', 'delivered', 'completed', 'refunded'].includes(order.status)
+    ) {
       return Response.json({message: 'This order has already been paid'}, {status: 409});
     }
 

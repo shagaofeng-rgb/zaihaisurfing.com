@@ -3360,6 +3360,208 @@ a {
   padding: clamp(22px, 4vw, 42px);
 }
 
+.account-page {
+  min-height: 100vh;
+  padding: 120px 22px 80px;
+  background: #f6f8f5;
+}
+
+.account-page.wide {
+  padding-inline: clamp(18px, 6vw, 96px);
+}
+
+.account-card,
+.account-header,
+.account-order-card {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  border: 1px solid rgba(17, 19, 24, 0.1);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(17, 19, 24, 0.08);
+}
+
+.account-card {
+  padding: clamp(24px, 5vw, 44px);
+}
+
+.account-card h1,
+.account-header h1 {
+  margin: 0 0 12px;
+  font-size: clamp(36px, 7vw, 60px);
+  line-height: 0.95;
+}
+
+.account-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.account-form label {
+  display: grid;
+  gap: 8px;
+  color: #111318;
+  font-weight: 800;
+}
+
+.account-form input {
+  width: 100%;
+  border: 1px solid rgba(17, 19, 24, 0.18);
+  border-radius: 6px;
+  padding: 15px 16px;
+  font: inherit;
+  background: #fff;
+}
+
+.account-status {
+  margin: 0;
+  color: #ee2f2f;
+  font-weight: 700;
+}
+
+.account-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.account-links a {
+  color: #0077c8;
+  font-weight: 800;
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1160px, 100%);
+  padding: clamp(22px, 4vw, 36px);
+}
+
+.account-order-list {
+  display: grid;
+  gap: 18px;
+  width: min(1160px, 100%);
+  margin: 24px auto 0;
+}
+
+.account-order-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 2fr auto;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.account-order-card.empty {
+  grid-template-columns: 1fr;
+}
+
+.account-order-card h2 {
+  margin: 6px 0;
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1;
+}
+
+.account-order-card dl,
+.admin-detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.account-order-card dt,
+.admin-detail-list dt {
+  color: #5d6675;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-order-card dd,
+.admin-detail-list dd {
+  margin: 4px 0 0;
+  font-weight: 800;
+}
+
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-action-grid form {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(17, 19, 24, 0.1);
+  border-radius: 8px;
+  background: #f7f9f7;
+}
+
+.admin-action-grid input,
+.admin-action-grid select,
+.admin-action-grid textarea {
+  width: 100%;
+  border: 1px solid rgba(17, 19, 24, 0.16);
+  border-radius: 6px;
+  padding: 12px;
+  font: inherit;
+  background: #fff;
+}
+
+.admin-action-grid textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.admin-action-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ee2f2f;
+  font-weight: 800;
+}
+
+.admin-json {
+  max-height: 260px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #101318;
+  color: #e9f2ef;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .account-header,
+  .account-order-card,
+  .admin-detail-grid,
+  .admin-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-header {
+    align-items: flex-start;
+  }
+
+  .account-order-card dl,
+  .admin-detail-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-realtime-sync {
   display: flex;
   align-items: center;
