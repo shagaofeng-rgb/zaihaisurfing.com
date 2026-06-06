@@ -1,4 +1,5 @@
 import type {Metadata} from 'next';
+import {Manrope, Oxanium, Sora} from 'next/font/google';
 import Script from 'next/script';
 import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
@@ -13,6 +14,27 @@ import MobileBottomCta from '@/components/MobileBottomCta';
 import BackToTopButton from '@/components/BackToTopButton';
 import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
 import '../globals.css';
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope',
+  display: 'swap'
+});
+
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-sora',
+  display: 'swap'
+});
+
+const oxanium = Oxanium({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-oxanium',
+  display: 'swap'
+});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({locale}));
@@ -36,7 +58,7 @@ export default async function LocaleLayout({
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale} dir={dir} className={`${manrope.variable} ${sora.variable} ${oxanium.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Header locale={locale as Locale} />

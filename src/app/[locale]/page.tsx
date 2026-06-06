@@ -33,7 +33,7 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
         </div>
         <div className="vertical-video-card">
           <div className="video-frame">
-            <video controls muted loop playsInline preload="metadata" poster="/assets/banners/zaihai-video-poster.png" aria-label="ZAIHAI electric surfboard riding video">
+            <video controls muted loop playsInline preload="metadata" poster="/assets/banners/zaihai-video-poster-optimized.jpg" aria-label="ZAIHAI electric surfboard riding video">
               <source src="/assets/banners/zaihai-video-3.mp4" type="video/mp4" />
             </video>
           </div>
@@ -63,25 +63,25 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
               market: 'GCC',
               title: 'Luxury resorts, yacht clubs & Red Sea tourism',
               text: 'Strong fit for UAE, Saudi Arabia, Qatar and Gulf buyers building premium beach and yacht-side experiences.',
-              image: '/assets/banners/market-middle-east.png'
+              image: '/assets/banners/market-middle-east-optimized.jpg'
             },
             {
               market: 'United States',
               title: 'Lake rentals, marinas & adventure operators',
               text: 'Ideal for Florida, California, lake resorts, rental businesses and outdoor recreation distributors.',
-              image: '/assets/banners/market-north-america.png'
+              image: '/assets/banners/market-north-america-optimized.jpg'
             },
             {
               market: 'Mediterranean Europe',
               title: 'Beach clubs, coastal resorts & tourism rentals',
               text: 'Suitable for Spain, Greece, Italy and France where coastal leisure and premium water sports are mature.',
-              image: '/assets/banners/market-europe.png'
+              image: '/assets/banners/market-europe-optimized.jpg'
             },
             {
               market: 'Island Resorts',
               title: 'Maldives, Thailand & Indonesia resort activities',
               text: 'Practical for island hotels, lagoon experiences, water sports centers and tourism attraction packages.',
-              image: '/assets/banners/market-asia.png'
+              image: '/assets/banners/market-asia-optimized.jpg'
             }
           ].map((item) => (
             <article key={item.market} style={{'--market-bg': `url(${item.image})`} as React.CSSProperties}>

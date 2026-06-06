@@ -11,7 +11,17 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
-      <div className="hero-media" role="img" aria-label={copy.title} />
+      <picture className="hero-media">
+        <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile.jpg" />
+        <img
+          src="/assets/banners/zaihai-main-banner-desktop.jpg"
+          alt={copy.title}
+          width="1600"
+          height="686"
+          fetchPriority="high"
+          decoding="async"
+        />
+      </picture>
       <div className="hero-overlay" />
       <div className="hero-content">
         <p className="eyebrow">{copy.eyebrow}</p>
