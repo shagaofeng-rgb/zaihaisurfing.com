@@ -22,6 +22,15 @@ type ContactInquiryFormProps = {
   };
 };
 
+function getId(storage: Storage, key: string, prefix: string) {
+  let value = storage.getItem(key);
+  if (!value) {
+    value = `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    storage.setItem(key, value);
+  }
+  return value;
+}
+
 export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
@@ -41,6 +50,8 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           ...body,
+          visitorId: getId(window.localStorage, 'zaihai_visitor_id', 'v'),
+          sessionId: getId(window.sessionStorage, 'zaihai_session_id', 's'),
           page: window.location.pathname,
           referrer: document.referrer
         })

@@ -3,6 +3,65 @@ import {appendAnalyticsEvent, type AnalyticsEvent} from '@/lib/commerceStore';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const EVENT_TYPES = new Set([
+  'page_view',
+  'product_view',
+  'checkout_start',
+  'checkout_submit',
+  'checkout_duplicate_submit',
+  'commerce_click',
+  'contact_inquiry',
+  'payment_request_create',
+  'payment_return',
+  'payment_notice',
+  'admin_order_shipment',
+  'admin_order_refund',
+  'admin_order_authorization'
+]);
+
+const SENSITIVE_KEYS = /email|phone|name|message|address|contact|cardholder|token|password|secret/i;
+
+function clean(value: unknown, limit = 240) {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, limit);
+}
+
+function isBot(userAgent = '') {
+  return /bot|crawler|spider|crawling|lighthouse|pagespeed|headless|vercel|uptime|monitor|preview|facebookexternalhit|slurp|bingpreview/i.test(userAgent);
+}
+
+function safeEventType(value: unknown) {
+  const type = clean(value, 80);
+  return EVENT_TYPES.has(type) ? type : 'custom_event';
+}
+
+function sanitizePayload(payload: Record<string, unknown>) {
+  const allowed = [
+    'type',
+    'page',
+    'previousPage',
+    'pageTitle',
+    'language',
+    'screen',
+    'targetText',
+    'targetKind',
+    'productSlug',
+    'paymentMethod',
+    'cardBrand',
+    'buyerType',
+    'product',
+    'quantity',
+    'country',
+    'utmSource',
+    'utmMedium',
+    'utmCampaign'
+  ];
+  return Object.fromEntries(
+    allowed
+      .filter((key) => key in payload && !SENSITIVE_KEYS.test(key))
+      .map((key) => [key, typeof payload[key] === 'number' || typeof payload[key] === 'boolean' ? payload[key] : clean(payload[key], 180)])
+  );
+}
+
 function detectDevice(userAgent = '') {
   const ua = userAgent.toLowerCase();
   if (/ipad|tablet/.test(ua)) return 'Tablet';
@@ -31,21 +90,25 @@ export async function POST(request: Request) {
   try {
     const payload = await request.json();
     const userAgent = request.headers.get('user-agent') || '';
+    if (isBot(userAgent)) {
+      return Response.json({ok: true, skipped: 'bot'});
+    }
+    const safePayload = sanitizePayload(payload);
     const event: AnalyticsEvent = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      type: String(payload.type || 'page_view'),
-      visitorId: String(payload.visitorId || 'anonymous').slice(0, 80),
-      sessionId: String(payload.sessionId || 'session').slice(0, 80),
-      page: String(payload.page || '/').slice(0, 240),
-      pageTitle: String(payload.pageTitle || '').slice(0, 180),
-      referrer: String(payload.referrer || '').slice(0, 240),
+      type: safeEventType(payload.type || 'page_view'),
+      visitorId: clean(payload.visitorId || 'anonymous', 80),
+      sessionId: clean(payload.sessionId || 'session', 80),
+      page: clean(payload.page || '/', 240),
+      pageTitle: clean(payload.pageTitle || '', 180),
+      referrer: clean(payload.referrer || '', 240),
       country: request.headers.get('x-vercel-ip-country') || 'Unknown',
       city: request.headers.get('x-vercel-ip-city') || '',
       device: detectDevice(userAgent),
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
-      timestamp: String(payload.timestamp || new Date().toISOString()),
-      payload
+      timestamp: clean(payload.timestamp || new Date().toISOString(), 40),
+      payload: safePayload
     };
     await appendAnalyticsEvent(event);
     return Response.json({ok: true});

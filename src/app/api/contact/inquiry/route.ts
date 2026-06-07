@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     await appendAnalyticsEvent({
       id: eventId,
       type: 'contact_inquiry',
-      visitorId: inquiry.email,
+      visitorId: clean(payload.visitorId || 'contact-inquiry', 80),
       sessionId: eventId,
       page: clean(payload.page || '/contact', 240),
       pageTitle: 'Contact inquiry',
@@ -84,7 +84,16 @@ export async function POST(request: Request) {
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
       timestamp: new Date().toISOString(),
-      payload: inquiry
+      payload: {
+        buyerType: inquiry.buyerType,
+        product: inquiry.product,
+        quantity: inquiry.quantity,
+        country: inquiry.country,
+        targetMarket: inquiry.targetMarket,
+        waterArea: inquiry.waterArea,
+        oem: inquiry.oem ? 'yes' : '',
+        destinationPort: inquiry.destinationPort ? 'provided' : ''
+      }
     });
 
     let emailStatus: 'sent' | 'skipped' | 'failed' = 'sent';

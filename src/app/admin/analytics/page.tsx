@@ -1,11 +1,13 @@
 import AdminShell from '@/components/AdminShell';
 import {zhDevice, zhEventType} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
+import {durableStoreStatus} from '@/lib/durableStore';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminAnalyticsPage() {
   const data = await getAdminDashboardData();
+  const store = durableStoreStatus();
   return (
     <AdminShell active="访问统计">
       <div className="admin-title">
@@ -19,6 +21,15 @@ export default async function AdminAnalyticsPage() {
         <article><span>产品浏览</span><strong>{data.metrics.productViews}</strong><small>产品详情页访问</small></article>
         <article><span>结账事件</span><strong>{data.metrics.checkoutEvents}</strong><small>结账或订单相关信号</small></article>
       </div>
+      {!store.configured ? (
+        <section className="admin-panel">
+          <div>
+            <p className="eyebrow">数据源状态</p>
+            <h2>当前为临时存储</h2>
+            <p>生产环境需要配置 KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据，否则 serverless 重启或多实例会导致实时统计不稳定。</p>
+          </div>
+        </section>
+      ) : null}
       <section className="admin-panel">
         <div>
           <p className="eyebrow">来源与国家</p>

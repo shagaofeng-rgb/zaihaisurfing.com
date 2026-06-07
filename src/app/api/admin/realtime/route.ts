@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import {requireAdminApiSession} from '@/lib/adminAuth';
 import {buildCustomerLeads, getAdminDashboardData} from '@/lib/backendStore';
 import {getCommerceSnapshot, readAnalyticsEvents, readStoreOrders} from '@/lib/commerceStore';
+import {durableStoreStatus} from '@/lib/durableStore';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,7 @@ export async function GET() {
       ok: true,
       generatedAt: new Date().toISOString(),
       version: hash(state),
+      store: durableStoreStatus(),
       state,
       metrics: {
         ...snapshot.metrics,

@@ -15,6 +15,14 @@ export function durableStoreConfigured() {
   return Boolean(KV_URL && KV_TOKEN);
 }
 
+export function durableStoreStatus() {
+  return {
+    configured: durableStoreConfigured(),
+    provider: durableStoreConfigured() ? 'kv_rest' : process.env.VERCEL ? 'serverless_tmp_fallback' : 'local_file',
+    storePrefix: STORE_PREFIX
+  };
+}
+
 function storeKey(fileName: string) {
   return `${STORE_PREFIX}:${fileName.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
 }
