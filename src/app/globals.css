@@ -3975,7 +3975,7 @@ a {
 
 .admin-time-filter {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(140px, auto)) auto;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, auto) repeat(3, minmax(130px, auto)) auto;
   gap: 12px;
   align-items: end;
   margin-top: 18px;
@@ -3996,6 +3996,12 @@ a {
 .admin-time-filter label {
   display: grid;
   gap: 5px;
+}
+
+.admin-time-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .admin-time-filter span {
@@ -4032,6 +4038,22 @@ a {
   font-family: var(--font-display);
   font-weight: 950;
   cursor: pointer;
+}
+
+.admin-time-presets button {
+  min-height: 32px;
+  padding: 0 12px;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.admin-time-presets button.active,
+.admin-time-presets button:hover,
+.admin-time-presets button:focus-visible {
+  color: var(--ink);
+  background: var(--lime);
+  border-color: var(--lime);
 }
 
 .admin-metrics {

@@ -3,75 +3,13 @@ import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {zhOrderStatus, zhPaymentStatus} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
 import {getCommerceSnapshot} from '@/lib/commerceStore';
+import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {durableStoreConfigured} from '@/lib/durableStore';
 
 export const dynamic = 'force-dynamic';
 
-const rangeLabels: Record<string, string> = {
-  day: '今天',
-  week: '本周',
-  month: '本月',
-  year: '今年',
-  custom: '自定义'
-};
-
 function money(value: number) {
   return `USD ${value.toLocaleString()}`;
-}
-
-function dateInputValue(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function endOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
-}
-
-function startOfWeek(date: Date) {
-  const day = date.getDay() || 7;
-  const start = startOfDay(date);
-  start.setDate(start.getDate() - day + 1);
-  return start;
-}
-
-function parseDate(value: string | undefined, fallback: Date) {
-  if (!value) return fallback;
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? fallback : date;
-}
-
-function parseAdminTimeFilter(searchParams: Record<string, string | string[] | undefined>) {
-  const now = new Date();
-  const rangeParam = Array.isArray(searchParams.range) ? searchParams.range[0] : searchParams.range;
-  const range = (['day', 'week', 'month', 'year', 'custom'].includes(rangeParam || '') ? rangeParam : 'month') as 'day' | 'week' | 'month' | 'year' | 'custom';
-  const earliestCustomStart = new Date(now);
-  earliestCustomStart.setFullYear(earliestCustomStart.getFullYear() - 2);
-  let from = new Date(now.getFullYear(), now.getMonth(), 1);
-  let to = endOfDay(now);
-  let note = '';
-
-  if (range === 'day') from = startOfDay(now);
-  if (range === 'week') from = startOfWeek(now);
-  if (range === 'year') from = new Date(now.getFullYear(), 0, 1);
-  if (range === 'custom') {
-    const startParam = Array.isArray(searchParams.start) ? searchParams.start[0] : searchParams.start;
-    const endParam = Array.isArray(searchParams.end) ? searchParams.end[0] : searchParams.end;
-    from = parseDate(startParam, earliestCustomStart);
-    to = endOfDay(parseDate(endParam, now));
-    if (from < earliestCustomStart) {
-      from = earliestCustomStart;
-      note = '自定义查询最多保留最近 2 年。';
-    }
-    if (from > to) [from, to] = [startOfDay(to), endOfDay(from)];
-  }
-
-  const start = dateInputValue(from);
-  const end = dateInputValue(to);
-  return {range, start, end, from, to, summary: `${rangeLabels[range]} | ${start} 至 ${end}${note ? ` | ${note}` : ''}`};
 }
 
 export default async function AdminDashboardPage({
@@ -82,7 +20,7 @@ export default async function AdminDashboardPage({
   const timeFilter = parseAdminTimeFilter(await searchParams);
   const [snapshot, backend] = await Promise.all([
     getCommerceSnapshot({from: timeFilter.from, to: timeFilter.to}),
-    getAdminDashboardData()
+    getAdminDashboardData({from: timeFilter.from, to: timeFilter.to})
   ]);
   const stableCommerceStore = durableStoreConfigured();
 
@@ -92,7 +30,7 @@ export default async function AdminDashboardPage({
         <p className="eyebrow">B2B + B2C 后台系统</p>
         <h1>订单、线索、内容与转化数据</h1>
         <p>后台只显示真实采集到的数据：访问事件来自前台埋点，订单来自结账提交，内容来自后台管理数据。</p>
-        <AdminTimeFilter range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="数据统计时间" summary={timeFilter.summary} />
+        <AdminTimeFilter action="/admin" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="数据统计时间" summary={timeFilter.summary} />
       </div>
 
       <div className="admin-metrics">

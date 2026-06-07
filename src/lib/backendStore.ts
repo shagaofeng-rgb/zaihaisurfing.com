@@ -123,6 +123,11 @@ export type CustomerLead = {
   notes: string;
 };
 
+export type AdminDashboardFilter = {
+  from?: Date;
+  to?: Date;
+};
+
 function now() {
   return new Date().toISOString();
 }
@@ -176,36 +181,46 @@ export async function listAdminPosts(type?: ContentType) {
   return posts.filter((post) => !type || post.type === type).sort((a, b) => b.publishDate.localeCompare(a.publishDate));
 }
 
-export async function getAdminDashboardData() {
+function isInsideRange(timestamp: string, filter?: AdminDashboardFilter) {
+  const time = new Date(timestamp).getTime();
+  if (Number.isNaN(time)) return false;
+  if (filter?.from && time < filter.from.getTime()) return false;
+  if (filter?.to && time > filter.to.getTime()) return false;
+  return true;
+}
+
+export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
   const [store, orders, events] = await Promise.all([readAdminStore(), readStoreOrders(), readAnalyticsEvents()]);
-  const leads = buildCustomerLeads(orders, events);
-  const paidOrders = orders.filter((order) => ['paid', 'processing', 'shipped', 'delivered'].includes(order.status));
+  const filteredOrders = orders.filter((order) => isInsideRange(order.createdAt, filter));
+  const filteredEvents = events.filter((event) => isInsideRange(event.timestamp, filter));
+  const leads = buildCustomerLeads(filteredOrders, filteredEvents);
+  const paidOrders = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered'].includes(order.status));
   const revenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
-  const productViews = events.filter((event) => event.type === 'product_view').length;
-  const checkoutEvents = events.filter((event) => /checkout|order|payment/i.test(event.type)).length;
+  const productViews = filteredEvents.filter((event) => event.type === 'product_view').length;
+  const checkoutEvents = filteredEvents.filter((event) => /checkout|order|payment/i.test(event.type)).length;
   return {
     store,
     metrics: {
       products: store.products.length,
       publishedProducts: store.products.filter((product) => product.status === 'published').length,
       posts: store.posts.length,
-      orders: orders.length,
+      orders: filteredOrders.length,
       paidOrders: paidOrders.length,
       leads: leads.length,
       revenue,
-      visitors: new Set(events.map((event) => event.visitorId)).size,
-      pageViews: events.filter((event) => event.type === 'page_view').length,
+      visitors: new Set(filteredEvents.map((event) => event.visitorId)).size,
+      pageViews: filteredEvents.filter((event) => event.type === 'page_view').length,
       productViews,
       checkoutEvents,
-      conversionRate: events.length ? Math.round((orders.length / Math.max(1, new Set(events.map((event) => event.visitorId)).size)) * 1000) / 10 : 0
+      conversionRate: filteredEvents.length ? Math.round((filteredOrders.length / Math.max(1, new Set(filteredEvents.map((event) => event.visitorId)).size)) * 1000) / 10 : 0
     },
-    orders: orders.slice(-12).reverse(),
-    events: events.slice(-24).reverse(),
+    orders: filteredOrders.slice(-12).reverse(),
+    events: filteredEvents.slice(-24).reverse(),
     leads,
-    funnel: buildFunnel(events, orders),
-    popularProducts: countBy([...orders.map((order) => order.productName), ...events.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
-    trafficSources: countBy(events.map((event) => event.referrer || '直接访问')),
-    countries: countBy([...orders.map((order) => order.customer.country), ...events.map((event) => event.country)])
+    funnel: buildFunnel(filteredEvents, filteredOrders),
+    popularProducts: countBy([...filteredOrders.map((order) => order.productName), ...filteredEvents.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
+    trafficSources: countBy(filteredEvents.map((event) => event.referrer || '直接访问')),
+    countries: countBy([...filteredOrders.map((order) => order.customer.country), ...filteredEvents.map((event) => event.country)])
   };
 }
 

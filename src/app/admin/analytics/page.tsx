@@ -1,12 +1,19 @@
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {zhDevice, zhEventType} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
+import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {durableStoreStatus} from '@/lib/durableStore';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminAnalyticsPage() {
-  const data = await getAdminDashboardData();
+export default async function AdminAnalyticsPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const timeFilter = parseAdminTimeFilter(await searchParams);
+  const data = await getAdminDashboardData({from: timeFilter.from, to: timeFilter.to});
   const store = durableStoreStatus();
   return (
     <AdminShell active="访问统计">
@@ -14,6 +21,7 @@ export default async function AdminAnalyticsPage() {
         <p className="eyebrow">访问行为</p>
         <h1>访问统计</h1>
         <p>这里显示前台异步埋点采集到的真实访问、产品浏览、CTA 点击和结账行为。</p>
+        <AdminTimeFilter action="/admin/analytics" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="访问统计时间" summary={timeFilter.summary} />
       </div>
       <div className="admin-metrics">
         <article><span>UV</span><strong>{data.metrics.visitors}</strong><small>独立匿名访客</small></article>
