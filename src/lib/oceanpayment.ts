@@ -13,13 +13,23 @@ const scriptUrls = {
   'apple-pay': 'https://secure.oceanpayment.com/gateway/js/applepay_ec.js'
 } as const;
 
-export function oceanpaymentConfig() {
+export function oceanpaymentConfig(method: OceanpaymentMethod = 'credit-card') {
   const account = process.env.OCEANPAYMENT_ACCOUNT || process.env.OCEANPAYMENT_MERCHANT_NO || '';
-  const terminal = process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO || '';
-  const secureCode = process.env.OCEANPAYMENT_SECURE_CODE || '';
-  const publicKey = process.env.OCEANPAYMENT_PUBLIC_KEY || '';
+  const wallet = method === 'google-pay' || method === 'apple-pay';
+  const terminal = wallet
+    ? process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO || ''
+    : process.env.OCEANPAYMENT_CARD_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO || '';
+  const secureCode = wallet
+    ? process.env.OCEANPAYMENT_WALLET_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE || ''
+    : process.env.OCEANPAYMENT_CARD_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE || '';
+  const publicKey = wallet
+    ? process.env.OCEANPAYMENT_WALLET_PUBLIC_KEY || process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY || ''
+    : process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY || '';
   const endpoint = process.env.OCEANPAYMENT_GATEWAY_URL || 'https://secure.oceanpayment.com/gateway/service/test';
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || siteUrl).replace(/\/$/, '');
+  const requiredEnv = wallet
+    ? ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_WALLET_TERMINAL', 'OCEANPAYMENT_WALLET_SECURE_CODE', 'OCEANPAYMENT_WALLET_PUBLIC_KEY']
+    : ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_CARD_TERMINAL', 'OCEANPAYMENT_CARD_SECURE_CODE', 'OCEANPAYMENT_CARD_PUBLIC_KEY'];
   return {
     account,
     terminal,
@@ -28,8 +38,20 @@ export function oceanpaymentConfig() {
     endpoint,
     baseUrl,
     environment: process.env.OCEANPAYMENT_ENV || 'test',
-    configured: Boolean(account && terminal && secureCode && publicKey)
+    configured: Boolean(account && terminal && secureCode && publicKey),
+    requiredEnv
   };
+}
+
+function oceanpaymentConfigForTerminal(terminal: string) {
+  const normalized = clean(terminal, 40);
+  const walletTerminal = clean(
+    process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO,
+    40
+  );
+  return normalized && walletTerminal && normalized === walletTerminal
+    ? oceanpaymentConfig('google-pay')
+    : oceanpaymentConfig('credit-card');
 }
 
 export function paymentMethodToOceanpayment(value: string): OceanpaymentMethod {
@@ -442,7 +464,7 @@ export function buildOceanpaymentPayload({
   billingIp?: string;
   forceTestMode?: boolean;
 }) {
-  const config = oceanpaymentConfig();
+  const config = oceanpaymentConfig(method);
   const {firstName, lastName} = splitName(order);
   const orderAmount = amount(order.total);
   const orderNumber = order.id;
@@ -474,7 +496,7 @@ export function buildOceanpaymentPayload({
       : [scriptUrls.core, scriptUrls[method]],
     configured: config.configured,
     testMode,
-    requiredEnv: ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_TERMINAL', 'OCEANPAYMENT_SECURE_CODE', 'OCEANPAYMENT_PUBLIC_KEY'],
+    requiredEnv: config.requiredEnv,
     fields: {
       account: config.account,
       terminal: config.terminal,
@@ -518,7 +540,7 @@ export function buildOceanpaymentPayload({
 }
 
 export function verifyOceanpaymentReturn(fields: Record<string, string>) {
-  const config = oceanpaymentConfig();
+  const config = oceanpaymentConfigForTerminal(fields.terminal || '');
   const expected = sha256(
     `${fields.account || ''}${fields.terminal || ''}${fields.order_number || ''}${fields.order_currency || ''}${fields.order_amount || ''}${fields.order_notes || ''}${fields.card_number || ''}${fields.payment_id || ''}${fields.payment_authType || ''}${fields.payment_status || ''}${fields.payment_details || ''}${fields.payment_risk || ''}${config.secureCode}`
   );

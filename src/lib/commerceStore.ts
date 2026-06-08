@@ -519,7 +519,15 @@ export async function getCommerceSnapshot(filter?: CommerceSnapshotFilter) {
     },
     paymentGateway: {
       provider: 'Oceanpayment embedded gateway',
-      status: process.env.OCEANPAYMENT_ACCOUNT && process.env.OCEANPAYMENT_TERMINAL && process.env.OCEANPAYMENT_SECURE_CODE && process.env.OCEANPAYMENT_PUBLIC_KEY ? 'env_ready' : 'waiting_for_credentials',
+      status:
+        process.env.OCEANPAYMENT_ACCOUNT &&
+        (process.env.OCEANPAYMENT_CARD_TERMINAL || process.env.OCEANPAYMENT_TERMINAL) &&
+        (process.env.OCEANPAYMENT_CARD_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE) &&
+        (process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY) &&
+        (process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL) &&
+        (process.env.OCEANPAYMENT_WALLET_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE)
+          ? 'env_ready'
+          : 'waiting_for_credentials',
       createEndpoint: '/api/payments/oceanpayment/create',
       notifyEndpoint: '/api/payments/oceanpayment/notice'
     },
