@@ -6,6 +6,7 @@ export type OceanpaymentMethod = 'credit-card' | 'google-pay' | 'apple-pay';
 export type OceanpaymentScene = '3d' | 'non-3d';
 
 const scriptUrls = {
+  core: 'https://secure.oceanpayment.com/pub/js/op.js',
   jquery: 'https://secure.oceanpayment.com/pub/js/jquery/jq.js',
   'credit-card': 'https://secure.oceanpayment.com/pages/js/oceanpayment.js',
   'google-pay': 'https://secure.oceanpayment.com/gateway/js/googlepay_ec.js',
@@ -468,7 +469,9 @@ export function buildOceanpaymentPayload({
   return {
     gatewayUrl: config.endpoint,
     sdkUrl: scriptUrls[method],
-    sdkUrls: method === 'credit-card' ? [scriptUrls.jquery, scriptUrls['credit-card']] : [scriptUrls[method]],
+    sdkUrls: method === 'credit-card'
+      ? [scriptUrls.core, scriptUrls.jquery, scriptUrls['credit-card']]
+      : [scriptUrls.core, scriptUrls[method]],
     configured: config.configured,
     testMode,
     requiredEnv: ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_TERMINAL', 'OCEANPAYMENT_SECURE_CODE', 'OCEANPAYMENT_PUBLIC_KEY'],

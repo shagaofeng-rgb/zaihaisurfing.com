@@ -51,8 +51,10 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const [billingMode, setBillingMode] = useState('same');
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>('oceanpayment_card');
   const [paymentScene, setPaymentScene] = useState<OceanpaymentScene>('3d');
-  const [cardScriptReady, setCardScriptReady] = useState(false);
+  const [opScriptReady, setOpScriptReady] = useState(false);
+  const [cardSdkReady, setCardSdkReady] = useState(false);
   const [forceSandboxPayment, setForceSandboxPayment] = useState(productSlug === 'payment-test');
+  const cardScriptReady = opScriptReady && cardSdkReady;
   const activeShippingEstimate = country ? shippingEstimateFor(productSlug, country) : shippingEstimate;
   const total = unitPrice * quantity + activeShippingEstimate;
   const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
@@ -269,8 +271,19 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   return (
     <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
+      <Script
+        id="oceanpayment-core-sdk"
+        src="https://secure.oceanpayment.com/pub/js/op.js"
+        strategy="afterInteractive"
+        onLoad={() => setOpScriptReady(true)}
+      />
       <Script src="https://secure.oceanpayment.com/pub/js/jquery/jq.js" strategy="afterInteractive" />
-      <Script src="https://secure.oceanpayment.com/pages/js/oceanpayment.js" strategy="afterInteractive" onLoad={() => setCardScriptReady(true)} />
+      <Script
+        id="oceanpayment-card-sdk"
+        src="https://secure.oceanpayment.com/pages/js/oceanpayment.js"
+        strategy="afterInteractive"
+        onLoad={() => setCardSdkReady(true)}
+      />
       <Script src="https://secure.oceanpayment.com/gateway/js/googlepay_ec.js" strategy="afterInteractive" />
       <Script src="https://secure.oceanpayment.com/gateway/js/applepay_ec.js" strategy="afterInteractive" />
       <div className="checkout-left">
