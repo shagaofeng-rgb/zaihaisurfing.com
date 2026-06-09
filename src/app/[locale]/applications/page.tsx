@@ -6,7 +6,7 @@ import {localizedMetadata} from '@/lib/metadata';
 import {uiCopy} from '@/lib/uiCopy';
 
 const scenarioImages = [
-  '/assets/banners/zaihai-main-banner-desktop.jpg',
+  '/assets/banners/zaihai-main-banner-desktop-optimized.jpg',
   '/assets/catalog/x1/product.png',
   '/assets/catalog/rage-shark-x/main-boat.png',
   '/assets/catalog/x1-pro/product.png',

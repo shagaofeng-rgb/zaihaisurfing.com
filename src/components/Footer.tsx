@@ -11,7 +11,7 @@ export default async function Footer({locale}: {locale: Locale}) {
     <footer className="site-footer footer-upgraded">
       <div className="footer-brand">
         <Link className="brand" href="/">
-          <img src="/assets/logo.jpg" alt="ZAIHAI SURFING" />
+          <img src="/assets/logo-small.jpg" alt="ZAIHAI SURFING" />
           <span>ZAIHAI SURFING</span>
         </Link>
         <p>{copy.footer.brandText}</p>

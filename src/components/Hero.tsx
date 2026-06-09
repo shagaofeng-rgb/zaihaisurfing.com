@@ -11,12 +11,12 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-mobile.jpg" media="(max-width: 720px)" />
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-desktop.jpg" media="(min-width: 721px)" />
+      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-mobile-optimized.jpg" media="(max-width: 720px)" />
+      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-desktop-optimized.jpg" media="(min-width: 721px)" />
       <picture className="hero-media">
-        <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile.jpg" />
+        <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile-optimized.jpg" />
         <img
-          src="/assets/banners/zaihai-main-banner-desktop.jpg"
+          src="/assets/banners/zaihai-main-banner-desktop-optimized.jpg"
           alt={copy.title}
           width="1600"
           height="686"

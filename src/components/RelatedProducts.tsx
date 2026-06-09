@@ -28,7 +28,7 @@ export default function RelatedProducts({currentSlug}: RelatedProductsProps) {
           const product = products[slug];
           return (
             <Link className="related-card" href={`/products/${slug}`} key={slug}>
-              <img src={product.image} alt={`${product.name} product recommendation`} />
+              <img src={product.thumbnail} alt={`${product.name} product recommendation`} />
               <div>
                 <span>{product.category}</span>
                 <h3>{product.name}</h3>
