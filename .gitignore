@@ -4,6 +4,7 @@ node_modules/
 .vercel/
 .tools/
 .data/
+tsconfig.tsbuildinfo
 
 # Local build and preview artifacts
 *.log
