@@ -47,14 +47,14 @@ export default async function AdminDashboardPage({
       <section className="admin-panel">
         <div>
           <p className="eyebrow">支付接口</p>
-          <h2>前海信用卡通道</h2>
+          <h2>Oceanpayment 嵌入式支付通道</h2>
           <p>状态：<strong>{snapshot.paymentGateway.status}</strong></p>
         </div>
         <dl className="admin-config-list">
           <div><dt>创建支付</dt><dd>{snapshot.paymentGateway.createEndpoint}</dd></div>
           <div><dt>支付回调</dt><dd>{snapshot.paymentGateway.notifyEndpoint}</dd></div>
           <div><dt>通道</dt><dd>{snapshot.paymentGateway.provider}</dd></div>
-          <div><dt>所需变量</dt><dd>QIANHAI_MERCHANT_ID, QIANHAI_GATEWAY_URL, QIANHAI_SECRET_KEY</dd></div>
+          <div><dt>所需变量</dt><dd>OCEANPAYMENT_ACCOUNT, OCEANPAYMENT_CARD_TERMINAL, OCEANPAYMENT_CARD_SECURE_CODE, OCEANPAYMENT_CARD_PUBLIC_KEY, OCEANPAYMENT_WALLET_TERMINAL, OCEANPAYMENT_WALLET_SECURE_CODE, OCEANPAYMENT_WALLET_PUBLIC_KEY</dd></div>
         </dl>
       </section>
 
@@ -68,7 +68,7 @@ export default async function AdminDashboardPage({
           <div><dt>访问统计</dt><dd>前台 `/api/analytics/track` 写入，后台“访问统计/数据总览”实时读取。</dd></div>
           <div><dt>订单数据</dt><dd>前台结账 `/api/checkout/create-order` 写入，后台“订单管理/客户管理/线索”实时读取。</dd></div>
           <div><dt>CMS 数据</dt><dd>后台产品、分类、媒体、博客、新闻表单写入后台数据源。</dd></div>
-          <div><dt>当前存储</dt><dd>{stableCommerceStore ? '已连接稳定订单库（KV / Upstash Redis）' : '临时存储；需要配置 KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据'}</dd></div>
+          <div><dt>当前存储</dt><dd>{stableCommerceStore ? '已连接稳定订单库（Vercel Blob / KV / Upstash Redis）' : '临时存储；需要配置 BLOB_READ_WRITE_TOKEN、KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据'}</dd></div>
         </dl>
       </section>
 

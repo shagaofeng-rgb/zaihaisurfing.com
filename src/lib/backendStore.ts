@@ -1,11 +1,10 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
 import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
+import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
 
-const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
-const STORE_FILE = path.join(DATA_DIR, 'admin-store.json');
+const STORE_FILE = 'admin-store.json';
 
 export type PublishStatus = 'draft' | 'published' | 'unpublished' | 'scheduled' | 'archived';
 export type ContentType = 'blog' | 'news';
@@ -136,31 +135,18 @@ function cents(amount: number) {
   return Math.round(amount * 100);
 }
 
-async function readJson<T>(file: string) {
-  try {
-    return JSON.parse(await fs.readFile(file, 'utf8')) as T;
-  } catch {
-    return null;
-  }
-}
-
-async function writeJson(file: string, value: unknown) {
-  await fs.mkdir(path.dirname(file), {recursive: true});
-  await fs.writeFile(file, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
-}
-
 export async function readAdminStore() {
-  const stored = await readJson<AdminStore>(STORE_FILE);
+  const stored = await readStoreObject<AdminStore>(STORE_FILE);
   if (stored) return stored;
   const seeded = createSeedStore();
-  await writeJson(STORE_FILE, seeded);
+  await writeStoreObject(STORE_FILE, seeded);
   return seeded;
 }
 
 export async function writeAdminStore(updater: (store: AdminStore) => AdminStore) {
   const current = await readAdminStore();
   const next = updater(current);
-  await writeJson(STORE_FILE, next);
+  await writeStoreObject(STORE_FILE, next);
   return next;
 }
 

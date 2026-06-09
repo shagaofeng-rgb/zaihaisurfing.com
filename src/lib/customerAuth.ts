@@ -34,7 +34,12 @@ type CustomerToken = {
 };
 
 function authSecret() {
-  return process.env.AUTH_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET || process.env.ADMIN_JWT_SECRET || 'zaihai-local-customer-secret';
+  const value = process.env.AUTH_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET || process.env.ADMIN_JWT_SECRET || '';
+  if (value) return value;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_SECRET, JWT_SECRET, SESSION_SECRET or ADMIN_JWT_SECRET is required in production.');
+  }
+  return 'zaihai-local-customer-secret';
 }
 
 function sha256(value: string) {

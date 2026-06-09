@@ -1,9 +1,13 @@
 import {cookies} from 'next/headers';
 import {adminCookieOptions, ADMIN_COOKIE_NAME, createAdminSession, verifyAdminCredentials} from '@/lib/adminAuth';
+import {checkRateLimit, clientIp} from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
+  if (!checkRateLimit(`admin-login:${clientIp(request)}`, 8, 10 * 60_000)) {
+    return Response.redirect(new URL('/admin/login?error=rate-limit', request.url), 303);
+  }
   const contentType = request.headers.get('content-type') || '';
   let email = '';
   let password = '';

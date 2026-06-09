@@ -369,9 +369,10 @@ export async function updateStoreOrderPayment(
   const now = new Date().toISOString();
   const next = orders.map((order) => {
     if (order.id !== orderId) return order;
+    const protectedPatch = protectFinalPaymentState(order, patch);
     updated = {
       ...order,
-      ...patch,
+      ...protectedPatch,
       checkout: {...order.checkout, ...(patch.checkout || {})},
       updatedAt: now
     };
@@ -380,6 +381,27 @@ export async function updateStoreOrderPayment(
   if (!updated) return null;
   await writeStoreLines(ORDERS_FILE, next);
   return updated;
+}
+
+function protectFinalPaymentState(
+  order: StoreOrder,
+  patch: Partial<Pick<StoreOrder, 'status' | 'gatewayStatus' | 'logisticsStatus'>>
+) {
+  const next = {...patch};
+  const paidLike = new Set<OrderStatus>(['paid', 'processing', 'shipped', 'delivered', 'completed']);
+  const refundLike = new Set<OrderStatus>(['refunded', 'partial_refunded']);
+  const downgradeLike = new Set<OrderStatus>(['pending_payment', 'failed']);
+  if (refundLike.has(order.status) && next.status && paidLike.has(next.status)) {
+    delete next.status;
+    delete next.gatewayStatus;
+    delete next.logisticsStatus;
+  }
+  if (paidLike.has(order.status) && next.status && downgradeLike.has(next.status)) {
+    delete next.status;
+    delete next.gatewayStatus;
+    delete next.logisticsStatus;
+  }
+  return next;
 }
 
 export async function appendAnalyticsEvent(event: AnalyticsEvent) {

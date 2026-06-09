@@ -54,6 +54,23 @@ function oceanpaymentConfigForTerminal(terminal: string) {
     : oceanpaymentConfig('credit-card');
 }
 
+export function sanitizeOceanpaymentFields(fields: Record<string, string>) {
+  const sensitive = /card|cvv|cvc|token|password|secure|secret|key|sign/i;
+  return Object.fromEntries(
+    Object.entries(fields).map(([key, value]) => [
+      key,
+      sensitive.test(key) ? maskValue(value) : clean(value, 500)
+    ])
+  );
+}
+
+function maskValue(value: string) {
+  const cleanValue = clean(value, 500);
+  if (!cleanValue) return '';
+  if (cleanValue.length <= 4) return '****';
+  return `${'*'.repeat(Math.min(12, cleanValue.length - 4))}${cleanValue.slice(-4)}`;
+}
+
 export function paymentMethodToOceanpayment(value: string): OceanpaymentMethod {
   if (value === 'oceanpayment_google_pay') return 'google-pay';
   if (value === 'oceanpayment_apple_pay') return 'apple-pay';
@@ -545,6 +562,22 @@ export function verifyOceanpaymentReturn(fields: Record<string, string>) {
     `${fields.account || ''}${fields.terminal || ''}${fields.order_number || ''}${fields.order_currency || ''}${fields.order_amount || ''}${fields.order_notes || ''}${fields.card_number || ''}${fields.payment_id || ''}${fields.payment_authType || ''}${fields.payment_status || ''}${fields.payment_details || ''}${fields.payment_risk || ''}${config.secureCode}`
   );
   return Boolean(fields.signValue && expected.toLowerCase() === fields.signValue.toLowerCase());
+}
+
+export function validateOceanpaymentNotification(order: StoreOrder, fields: Record<string, string>) {
+  const errors: string[] = [];
+  const config = oceanpaymentConfigForTerminal(fields.terminal || '');
+  const callbackOrderNumber = clean(fields.order_number || fields.orderNo || fields.order_id, 120);
+  const callbackCurrency = clean(fields.order_currency || fields.currency, 20).toUpperCase();
+  const callbackAmount = Number(clean(fields.order_amount || fields.amount, 40));
+
+  if (callbackOrderNumber !== order.id) errors.push('order_number_mismatch');
+  if (callbackCurrency && callbackCurrency !== order.currency) errors.push('currency_mismatch');
+  if (!Number.isFinite(callbackAmount) || amount(callbackAmount) !== amount(order.total)) errors.push('amount_mismatch');
+  if (fields.account && clean(fields.account, 80) !== config.account) errors.push('account_mismatch');
+  if (fields.terminal && config.terminal && clean(fields.terminal, 80) !== config.terminal) errors.push('terminal_mismatch');
+
+  return {ok: errors.length === 0, errors};
 }
 
 export function oceanpaymentStatusToOrder(fields: Record<string, string>) {

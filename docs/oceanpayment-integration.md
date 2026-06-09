@@ -8,13 +8,18 @@ Configure these variables in Vercel Project Settings and local `.env.local`:
 
 ```bash
 OCEANPAYMENT_ACCOUNT=your_account
-OCEANPAYMENT_TERMINAL=your_terminal
-OCEANPAYMENT_SECURE_CODE=your_secure_code
-OCEANPAYMENT_PUBLIC_KEY=your_public_key
+OCEANPAYMENT_CARD_TERMINAL=your_card_terminal
+OCEANPAYMENT_CARD_SECURE_CODE=your_card_secure_code
+OCEANPAYMENT_CARD_PUBLIC_KEY=your_card_public_key
+OCEANPAYMENT_WALLET_TERMINAL=your_wallet_terminal
+OCEANPAYMENT_WALLET_SECURE_CODE=your_wallet_secure_code
+OCEANPAYMENT_WALLET_PUBLIC_KEY=your_wallet_public_key
 OCEANPAYMENT_GATEWAY_URL=https://secure.oceanpayment.com/gateway/service/test
 OCEANPAYMENT_ENV=test
 NEXT_PUBLIC_SITE_URL=https://zaihaisurfing.com
 ```
+
+Legacy `OCEANPAYMENT_TERMINAL`, `OCEANPAYMENT_SECURE_CODE` and `OCEANPAYMENT_PUBLIC_KEY` are still accepted as fallbacks, but production should use the card and wallet variables separately so each payment method maps to the correct terminal.
 
 Optional local testing variables:
 
@@ -127,3 +132,5 @@ The asynchronous notification endpoint must return:
 ```text
 receive-ok
 ```
+
+The notice handler must also reject callbacks where the signed data does not match the local order amount, currency, merchant account or terminal, and it must not allow later pending or failed notifications to overwrite a paid order.

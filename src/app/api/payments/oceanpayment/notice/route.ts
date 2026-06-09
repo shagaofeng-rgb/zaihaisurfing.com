@@ -1,7 +1,13 @@
 import {appendAnalyticsEvent, appendPaymentNotification, findStoreOrder, readStoreOrders, updateStoreOrderPayment} from '@/lib/commerceStore';
 import {createCustomerToken, ensureCustomerAccountForOrder} from '@/lib/customerAuth';
 import {sendAccountActivationEmail, sendOrderSuccessEmailOnce} from '@/lib/emailService';
-import {oceanpaymentStatusToOrder, parseGatewayPayload, verifyOceanpaymentReturn} from '@/lib/oceanpayment';
+import {
+  oceanpaymentStatusToOrder,
+  parseGatewayPayload,
+  sanitizeOceanpaymentFields,
+  validateOceanpaymentNotification,
+  verifyOceanpaymentReturn
+} from '@/lib/oceanpayment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,6 +21,24 @@ export async function POST(request: Request) {
       console.error('[oceanpayment-notice] invalid callback', {orderId, verified, keys: Object.keys(fields)});
       return new Response('verify-fail', {status: 400});
     }
+    const previousOrder = await findStoreOrder(orderId);
+    if (!previousOrder) {
+      console.error('[oceanpayment-notice] unknown order', {orderId});
+      return new Response('order-not-found', {status: 404});
+    }
+    const validation = validateOceanpaymentNotification(previousOrder, fields);
+    if (!validation.ok) {
+      console.error('[oceanpayment-notice] callback data mismatch', {orderId, errors: validation.errors});
+      await appendPaymentNotification({
+        orderId,
+        provider: 'oceanpayment',
+        verified: false,
+        paymentStatus: fields.payment_status || fields.status || '',
+        paymentId: fields.payment_id || fields.transaction_id || fields.trade_no || '',
+        raw: sanitizeOceanpaymentFields(fields)
+      });
+      return new Response('callback-mismatch', {status: 400});
+    }
     const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
     if (paymentId) {
       const duplicatePaymentOrder = (await readStoreOrders()).find((order) => {
@@ -27,14 +51,13 @@ export async function POST(request: Request) {
       }
     }
 
-    const previousOrder = await findStoreOrder(orderId);
     await appendPaymentNotification({
       orderId,
       provider: 'oceanpayment',
       verified,
       paymentStatus: fields.payment_status || fields.status || '',
       paymentId,
-      raw: fields
+      raw: sanitizeOceanpaymentFields(fields)
     });
     const paymentPatch = oceanpaymentStatusToOrder(fields);
     const order = await updateStoreOrderPayment(orderId, {

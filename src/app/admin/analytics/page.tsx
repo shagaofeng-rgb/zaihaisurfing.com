@@ -34,7 +34,7 @@ export default async function AdminAnalyticsPage({
           <div>
             <p className="eyebrow">数据源状态</p>
             <h2>当前为临时存储</h2>
-            <p>生产环境需要配置 KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据，否则 serverless 重启或多实例会导致实时统计不稳定。</p>
+            <p>生产环境需要配置 BLOB_READ_WRITE_TOKEN、KV_REST_API_URL + KV_REST_API_TOKEN 或 Upstash Redis REST 凭据，否则 serverless 重启或多实例会导致实时统计不稳定。</p>
           </div>
         </section>
       ) : null}

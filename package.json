@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/blob": "^2.4.0",
     "next": "latest",
     "next-intl": "latest",
     "react": "latest",

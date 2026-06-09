@@ -16,7 +16,7 @@ export async function GET() {
         store,
         eventCount: events.length,
         latestEvent,
-        warning: store.configured ? '' : 'Analytics is using temporary serverless storage. Configure KV_REST_API_URL and KV_REST_API_TOKEN or Upstash Redis REST credentials for stable realtime data.'
+        warning: store.configured ? '' : 'Analytics is using temporary serverless storage. Configure BLOB_READ_WRITE_TOKEN, KV_REST_API_URL + KV_REST_API_TOKEN, or Upstash Redis REST credentials for stable realtime data.'
       },
       {headers: {'Cache-Control': 'no-store, no-cache, must-revalidate'}}
     );

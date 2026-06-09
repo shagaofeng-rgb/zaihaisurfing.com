@@ -6,7 +6,12 @@ export const ADMIN_COOKIE_NAME = 'zaihai_admin_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 function secret() {
-  return process.env.ADMIN_JWT_SECRET || 'zaihai-local-admin-secret';
+  const value = process.env.ADMIN_JWT_SECRET || process.env.SESSION_SECRET || '';
+  if (value) return value;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('ADMIN_JWT_SECRET or SESSION_SECRET is required in production.');
+  }
+  return 'zaihai-local-admin-secret';
 }
 
 function base64Url(input: string) {
