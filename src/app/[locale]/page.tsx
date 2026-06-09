@@ -33,7 +33,7 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
         </div>
         <div className="vertical-video-card">
           <div className="video-frame">
-            <video controls muted loop playsInline preload="metadata" poster="/assets/banners/zaihai-video-poster-optimized.jpg" aria-label="ZAIHAI electric surfboard riding video">
+            <video controls muted loop playsInline preload="none" poster="/assets/banners/zaihai-video-poster-optimized.jpg" aria-label="ZAIHAI electric surfboard riding video">
               <source src="/assets/banners/zaihai-video-3.mp4" type="video/mp4" />
             </video>
           </div>

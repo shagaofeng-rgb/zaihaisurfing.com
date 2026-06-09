@@ -79,7 +79,7 @@ export default function ShareButtons({title}: ShareButtonsProps) {
   }
 
   return (
-    <div className="share-panel" aria-label="Share product">
+    <div className="share-panel" role="group" aria-label="Share product">
       <div>
         <strong>Share</strong>
         <p>{status}</p>

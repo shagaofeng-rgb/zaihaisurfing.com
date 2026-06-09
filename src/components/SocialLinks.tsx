@@ -4,7 +4,7 @@ export default function SocialLinks() {
   if (!socialLinks.length) return null;
 
   return (
-    <div className="social-links" aria-label="Social media links">
+    <nav className="social-links" aria-label="Social media links">
       {socialLinks.map((item) => (
         <a
           className="social-link"
@@ -17,7 +17,7 @@ export default function SocialLinks() {
           <SocialIcon name={item.icon} />
         </a>
       ))}
-    </div>
+    </nav>
   );
 }
 

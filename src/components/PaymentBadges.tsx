@@ -65,10 +65,10 @@ const paymentBadges = [
 
 export default function PaymentBadges() {
   return (
-    <div className="payment-badges" aria-label="Accepted payment methods">
+    <div className="payment-badges" role="list" aria-label="Accepted payment methods">
       {paymentBadges.map((badge) => (
-        <span className="payment-badge" key={badge.id} aria-label={badge.label} title={badge.label}>
-          <svg viewBox="0 0 56 32" role="img" aria-hidden="true">
+        <span className="payment-badge" role="listitem" key={badge.id} aria-label={badge.label} title={badge.label}>
+          <svg viewBox="0 0 56 32" aria-hidden="true" focusable="false">
             {badge.svg}
           </svg>
         </span>

@@ -178,7 +178,7 @@ export default async function ProductDetailPage({
             <span>Commercial checkout available. Final shipping is confirmed by destination and quantity.</span>
             <em>Factory direct price</em>
           </div>
-          <div className="buyer-rating" aria-label={copy.buyerRecommended}>
+          <div className="buyer-rating" role="group" aria-label={copy.buyerRecommended}>
             <span>★★★★★</span>
             <strong>{copy.buyerRecommended}</strong>
           </div>

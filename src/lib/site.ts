@@ -16,7 +16,7 @@ export type ProductSpecRow = {
 export const products = {
   x1: {
     name: 'ZAIHAI X1 Electric Surfboard',
-    image: '/assets/catalog/x1/hero-angle.png',
+    image: '/assets/catalog/optimized/x1.jpg',
     category: 'Electric Surfboards',
     price: 'USD 3,200',
     priceAmount: 3200,
@@ -24,7 +24,7 @@ export const products = {
   },
   'x1-pro': {
     name: 'ZAIHAI X1 Pro Electric Surfboard',
-    image: '/assets/catalog/x1-pro/hero-angle.png',
+    image: '/assets/catalog/optimized/x1-pro.jpg',
     category: 'Electric Surfboards',
     price: 'USD 3,600',
     priceAmount: 3600,
@@ -32,7 +32,7 @@ export const products = {
   },
   'rage-shark-x': {
     name: 'Rage Shark X Electric Go-Kart Boat',
-    image: '/assets/catalog/rage-shark-x/hero-angle.png',
+    image: '/assets/catalog/optimized/rage-shark-x.jpg',
     category: 'Electric Go-Kart Boats',
     price: 'USD 4,000',
     priceAmount: 4000,
@@ -40,7 +40,7 @@ export const products = {
   },
   p1: {
     name: 'ZAIHAI P1 Fuel-Powered Surfboard',
-    image: '/assets/catalog/p1/hero-angle.png',
+    image: '/assets/catalog/optimized/p1.jpg',
     category: 'Fuel-Powered Surfboards',
     price: 'USD 5,800',
     priceAmount: 5800,
@@ -48,7 +48,7 @@ export const products = {
   },
   'p1-pro': {
     name: 'ZAIHAI P1 Pro Fuel-Powered Surfboard',
-    image: '/assets/catalog/p1-pro/product.png',
+    image: '/assets/catalog/optimized/p1-pro.jpg',
     category: 'Fuel-Powered Surfboards',
     price: 'USD 6,499',
     priceAmount: 6499,
@@ -56,7 +56,7 @@ export const products = {
   },
   'payment-test': {
     name: 'ZAIHAI Payment Gateway Test Product',
-    image: '/assets/catalog/x1/hero-angle.png',
+    image: '/assets/catalog/optimized/x1.jpg',
     category: 'Payment Test',
     price: 'USD 10',
     priceAmount: 10,

@@ -1,6 +1,5 @@
 import type {Metadata} from 'next';
 import {Manrope, Oxanium, Sora} from 'next/font/google';
-import Script from 'next/script';
 import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
@@ -13,25 +12,26 @@ import WhatsAppFloatingButton from '@/components/WhatsAppFloatingButton';
 import MobileBottomCta from '@/components/MobileBottomCta';
 import BackToTopButton from '@/components/BackToTopButton';
 import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
+import DelayedThirdPartyScript from '@/components/DelayedThirdPartyScript';
 import '../globals.css';
 
 const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '600', '700'],
   variable: '--font-manrope',
   display: 'swap'
 });
 
 const sora = Sora({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['700'],
   variable: '--font-sora',
   display: 'swap'
 });
 
 const oxanium = Oxanium({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['700'],
   variable: '--font-oxanium',
   display: 'swap'
 });
@@ -71,11 +71,8 @@ export default async function LocaleLayout({
           <BackToTopButton />
           <MobileBottomCta locale={locale as Locale} />
           <FloatingWidgetGuard />
+          <DelayedThirdPartyScript />
         </NextIntlClientProvider>
-        <Script
-          src="https://plugin-code.salesmartly.com/js/project_653905_759291_1780551668.js"
-          strategy="lazyOnload"
-        />
       </body>
     </html>
   );

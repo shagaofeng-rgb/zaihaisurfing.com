@@ -11,6 +11,8 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
+      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-mobile.jpg" media="(max-width: 720px)" />
+      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-desktop.jpg" media="(min-width: 721px)" />
       <picture className="hero-media">
         <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile.jpg" />
         <img
@@ -38,10 +40,10 @@ export default function Hero({locale}: HeroProps) {
             {copy.watch}
           </Link>
         </div>
-        <div className="hero-tags" aria-label="ZAIHAI product advantages">
+        <div className="hero-tags" role="list" aria-label="ZAIHAI product advantages">
           {copy.tags.map((tag) => <span key={tag}>{tag}</span>)}
         </div>
-        <div className="hero-showcase" aria-label="Featured product lines">
+        <div className="hero-showcase" role="navigation" aria-label="Featured product lines">
           {copy.cards.map((card) => (
             <Link className="hero-product-card" href={card.href} key={card.title}>
               <span>{card.label}</span>

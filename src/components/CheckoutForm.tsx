@@ -356,7 +356,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           <p className="checkout-help">All transactions are secure and encrypted.</p>
           <input name="paymentMethod" type="hidden" value={paymentMethod} />
           <input name="paymentScene" type="hidden" value={paymentScene} />
-          <div className="shopline-payment-box" aria-label="Oceanpayment secure payment">
+          <div className="shopline-payment-box" role="group" aria-label="Oceanpayment secure payment">
             <button
               type="button"
               className={`shopline-payment-row shopline-payment-card ${paymentMethod === 'oceanpayment_card' ? 'active' : ''}`}
@@ -367,13 +367,13 @@ export default function CheckoutForm({locale, productSlug, productName, productI
                 <span className="payment-radio-dot" aria-hidden="true" />
                 <strong>Credit Card</strong>
               </span>
-              <span className="card-brand-row" aria-label="Supported card brands">
+              <span className="card-brand-row" role="group" aria-label="Supported card brands">
                 {cardBadges.map((badge) => <b key={badge}>{badge}</b>)}
               </span>
             </button>
             {paymentMethod === 'oceanpayment_card' ? (
               <div className="shopline-card-fields">
-                <div id="oceanpayment-element" className="oceanpayment-card-element" aria-label="Oceanpayment secure card form" />
+                <div id="oceanpayment-element" className="oceanpayment-card-element" role="group" aria-label="Oceanpayment secure card form" />
                 <p className="payment-safe-note">Enter card details in the Oceanpayment secure card form. ZAIHAI does not store full card numbers or CVV.</p>
               </div>
             ) : null}
@@ -387,7 +387,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
                 <span className="payment-radio-dot" aria-hidden="true" />
                 <strong>Multiple payments</strong>
               </span>
-              <span className="payment-icon-strip" aria-label="Wallet and alternative payment methods">
+              <span className="payment-icon-strip" role="group" aria-label="Wallet and alternative payment methods">
                 {multiplePaymentBadges.map((badge) => <b key={badge}>{badge}</b>)}
               </span>
             </button>
@@ -403,7 +403,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
             </div>
           ) : null}
           {String(paymentMethod).startsWith('oceanpayment') ? (
-            <div className="oceanpayment-scenes" aria-label="3D payment scene">
+            <div className="oceanpayment-scenes" role="group" aria-label="3D payment scene">
               <button type="button" className={paymentScene === '3d' ? 'active' : ''} onClick={() => setPaymentScene('3d')}>3D Secure</button>
               <button type="button" className={paymentScene === 'non-3d' ? 'active' : ''} onClick={() => setPaymentScene('non-3d')}>Non-3D</button>
             </div>

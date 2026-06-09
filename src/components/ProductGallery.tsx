@@ -29,7 +29,7 @@ export default function ProductGallery({images, mainAlt, productName}: ProductGa
           />
         ))}
       </div>
-      <div className="product-thumbs" aria-label="Product detail images">
+      <div className="product-thumbs" role="group" aria-label="Product detail images">
         {images.map((image, index) => (
           <label
             aria-label={`View ${productName} image ${index + 1}`}

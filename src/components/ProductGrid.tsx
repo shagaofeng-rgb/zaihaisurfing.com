@@ -99,7 +99,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
           {copy.requestQuote}
         </Link>
       </section>
-      <div className="model-compare-table" aria-label="ZAIHAI model comparison table">
+      <div className="model-compare-table" role="region" aria-label="ZAIHAI model comparison table">
         <table>
           <thead>
             <tr>
