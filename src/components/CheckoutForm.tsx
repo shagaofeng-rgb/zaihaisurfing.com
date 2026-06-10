@@ -43,6 +43,7 @@ function readOceanpaymentValue(data: OceanpaymentCallbackData, key: string) {
 }
 
 export default function CheckoutForm({locale, productSlug, productName, productImage, unitPrice, quantity, shippingEstimate}: CheckoutFormProps) {
+  const isOneTimePayment = productSlug === 'one-time-35';
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientRequestId, setClientRequestId] = useState('');
@@ -57,7 +58,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   const cardScriptReady = opScriptReady && cardSdkReady;
   const activeShippingEstimate = country ? shippingEstimateFor(productSlug, country) : shippingEstimate;
   const total = unitPrice * quantity + activeShippingEstimate;
-  const discount = useMemo(() => (coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, total]);
+  const discount = useMemo(() => (!isOneTimePayment && coupon.trim().toUpperCase() === 'ZAIHAI' ? Math.round(total * 0.03) : 0), [coupon, isOneTimePayment, total]);
   const finalTotal = total - discount;
 
   useEffect(() => {
@@ -408,13 +409,15 @@ export default function CheckoutForm({locale, productSlug, productName, productI
               <button type="button" className={paymentScene === 'non-3d' ? 'active' : ''} onClick={() => setPaymentScene('non-3d')}>Non-3D</button>
             </div>
           ) : null}
-          <label className="checkout-method">
-            <input type="radio" checked={paymentMethod === 'bank_transfer'} onChange={() => setPaymentMethod('bank_transfer')} />
-            <span>
-              <strong>Bank transfer / T/T</strong>
-              <small>Receive proforma invoice and bank details from ZAIHAI sales.</small>
-            </span>
-          </label>
+          {!isOneTimePayment ? (
+            <label className="checkout-method">
+              <input type="radio" checked={paymentMethod === 'bank_transfer'} onChange={() => setPaymentMethod('bank_transfer')} />
+              <span>
+                <strong>Bank transfer / T/T</strong>
+                <small>Receive proforma invoice and bank details from ZAIHAI sales.</small>
+              </span>
+            </label>
+          ) : null}
         </section>
 
         <section className="checkout-block">
@@ -444,10 +447,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           </div>
           <strong>USD {(unitPrice * quantity).toLocaleString()}</strong>
         </div>
-        <div className="coupon-row">
-          <input name="couponCode" value={coupon} onChange={(event) => setCoupon(event.target.value)} placeholder="Coupon code" />
-          <button type="button">Apply</button>
-        </div>
+        {!isOneTimePayment ? (
+          <div className="coupon-row">
+            <input name="couponCode" value={coupon} onChange={(event) => setCoupon(event.target.value)} placeholder="Coupon code" />
+            <button type="button">Apply</button>
+          </div>
+        ) : null}
         <dl className="summary-totals">
           <div><dt>Subtotal</dt><dd>USD {(unitPrice * quantity).toLocaleString()}</dd></div>
           <div><dt>Shipping</dt><dd>USD {activeShippingEstimate.toLocaleString()}</dd></div>

@@ -6,6 +6,7 @@ import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
 import {checkoutProductSlugs, products, type CheckoutProductSlug} from '@/lib/site';
 import {shippingEstimateFor} from '@/lib/shipping';
+import {isOneTimePaymentUnavailable} from '@/lib/commerceStore';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
@@ -25,8 +26,23 @@ export default async function CheckoutPage({
   const productSlug = (query.product || 'x1-pro') as CheckoutProductSlug;
   if (!checkoutProductSlugs.includes(productSlug)) notFound();
   const product = products[productSlug];
-  const quantity = Math.max(1, Math.min(99, Number(query.qty || 1)));
+  const isOneTimePayment = productSlug === 'one-time-35';
+  const quantity = isOneTimePayment ? 1 : Math.max(1, Math.min(99, Number(query.qty || 1)));
   const shippingEstimate = shippingEstimateFor(productSlug, query.country || '');
+
+  if (await isOneTimePaymentUnavailable(productSlug)) {
+    return (
+      <main>
+        <section className="checkout-hero">
+          <div>
+            <p className="eyebrow">Payment Link Closed</p>
+            <h1>This one-time payment link is no longer available.</h1>
+            <p>The USD 35 one-time payment has already been reserved or completed. Please contact ZAIHAI if you need a new payment link.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main>

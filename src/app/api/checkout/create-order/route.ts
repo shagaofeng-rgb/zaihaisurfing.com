@@ -1,5 +1,5 @@
 import {cookies} from 'next/headers';
-import {checkoutProductSlugs, type CheckoutProductSlug} from '@/lib/site';
+import {checkoutProductSlugs, oneTimePaymentSlug, type CheckoutProductSlug} from '@/lib/site';
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
 import {bindOrdersToCustomer, createCustomerSession, createOrUpdateCustomerUser, customerCookieOptions, findCustomerUserByEmail, getCustomerSession} from '@/lib/customerAuth';
 import {sendRegistrationWelcomeEmail} from '@/lib/emailService';
@@ -17,6 +17,9 @@ export async function POST(request: Request) {
     const productSlug = payload.productSlug as CheckoutProductSlug;
     if (!checkoutProductSlugs.includes(productSlug)) {
       return Response.json({message: 'Invalid product'}, {status: 400});
+    }
+    if (productSlug === oneTimePaymentSlug && !String(payload.paymentMethod || '').startsWith('oceanpayment')) {
+      return Response.json({message: 'This one-time payment link only supports Oceanpayment online collection.'}, {status: 400});
     }
     const customer = {
       name: clean(payload.customer?.name, 120),
@@ -89,6 +92,9 @@ export async function POST(request: Request) {
     });
     return Response.json({ok: true, order});
   } catch (error) {
+    if (error instanceof Error && error.message === 'ONE_TIME_PAYMENT_UNAVAILABLE') {
+      return Response.json({message: 'This one-time payment link is no longer available.'}, {status: 409});
+    }
     console.error('Create order failed', error);
     return Response.json({message: 'Order submission failed'}, {status: 500});
   }

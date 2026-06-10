@@ -45,7 +45,7 @@ function normalizeCountry(country: string) {
 }
 
 export function shippingEstimateFor(productSlug: CheckoutProductSlug, country: string) {
-  if (productSlug === 'payment-test') return 0;
+  if (productSlug === 'payment-test' || productSlug === 'one-time-35') return 0;
   const group = shippingGroupFor(productSlug);
   const countryKey = normalizeCountry(country);
   const rates = group === 'kart' ? kartRates : boardRates;

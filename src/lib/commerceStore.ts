@@ -1,6 +1,6 @@
 import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
 import {shippingEstimateFor} from '@/lib/shipping';
-import {products, type CheckoutProductSlug} from '@/lib/site';
+import {oneTimePaymentSlug, products, type CheckoutProductSlug} from '@/lib/site';
 
 const ORDERS_FILE = 'orders.jsonl';
 const EVENTS_FILE = 'analytics-events.jsonl';
@@ -243,7 +243,7 @@ export async function createStoreOrder(input: {
   idempotencyKey?: string;
   userId?: string;
 }) {
-  const quantity = Math.max(1, Math.min(99, Number(input.quantity || 1)));
+  const quantity = input.productSlug === oneTimePaymentSlug ? 1 : Math.max(1, Math.min(99, Number(input.quantity || 1)));
   const idempotencyKey = String(input.idempotencyKey || '').trim().slice(0, 120);
   const fingerprint = [
     input.customer.email.toLowerCase(),
@@ -276,6 +276,9 @@ export async function createStoreOrder(input: {
         return existingOrder;
       }
     }
+  }
+  if (await isOneTimePaymentUnavailable(input.productSlug)) {
+    throw new Error('ONE_TIME_PAYMENT_UNAVAILABLE');
   }
 
   const product = products[input.productSlug];
@@ -347,6 +350,16 @@ export async function createStoreOrder(input: {
 
 export async function readStoreOrders() {
   return (await readStoreLines<StoreOrder>(ORDERS_FILE)).map(withOrderDefaults);
+}
+
+export async function isOneTimePaymentUnavailable(productSlug: CheckoutProductSlug) {
+  if (productSlug !== oneTimePaymentSlug) return false;
+  const unavailableStatuses = new Set<OrderStatus>(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'completed']);
+  return (await readStoreOrders()).some((order) => (
+    order.productSlug === oneTimePaymentSlug &&
+    unavailableStatuses.has(order.status) &&
+    order.gatewayStatus !== 'failed'
+  ));
 }
 
 export async function findStoreOrder(orderId: string) {

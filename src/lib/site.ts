@@ -5,7 +5,8 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfin
 
 export const productSlugs = ['x1', 'x1-pro', 'rage-shark-x', 'p1', 'p1-pro'] as const;
 export type ProductSlug = (typeof productSlugs)[number];
-export const checkoutProductSlugs = [...productSlugs, 'payment-test'] as const;
+export const oneTimePaymentSlug = 'one-time-35' as const;
+export const checkoutProductSlugs = [...productSlugs, 'payment-test', oneTimePaymentSlug] as const;
 export type CheckoutProductSlug = (typeof checkoutProductSlugs)[number];
 
 export type ProductSpecRow = {
@@ -67,6 +68,15 @@ export const products = {
     price: 'USD 10',
     priceAmount: 10,
     specs: ['Test order', 'No shipment', 'Gateway check', 'USD 10']
+  },
+  'one-time-35': {
+    name: 'ZAIHAI One-Time Payment Link',
+    image: '/assets/logo-small.jpg',
+    thumbnail: '/assets/logo-small.jpg',
+    category: 'One-Time Payment',
+    price: 'USD 35',
+    priceAmount: 35,
+    specs: ['One-time listing', 'Formal Oceanpayment collection', 'No shipment', 'USD 35']
   }
 } satisfies Record<CheckoutProductSlug, {name: string; image: string; thumbnail: string; category: string; price: string; priceAmount: number; specs: string[]}>;
 
