@@ -185,6 +185,27 @@ export default function CheckoutForm({locale, productSlug, productName, productI
     setStatus('This wallet payment script is still loading or not available on this device. Please try Credit Card or Bank transfer.');
   }
 
+  function submitHostedOceanpayment(oceanpayment: OceanpaymentPayload) {
+    if (!oceanpayment.gatewayUrl) {
+      setStatus('Oceanpayment hosted payment URL is not configured. Please contact ZAIHAI sales.');
+      setIsSubmitting(false);
+      return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = oceanpayment.gatewayUrl;
+    form.style.display = 'none';
+    Object.entries(oceanpayment.fields).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+
   function watchOrderPayment(orderId: string) {
     let attempts = 0;
     const poll = async () => {
@@ -300,10 +321,16 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       setStatus('Opening Oceanpayment secure payment window...');
       submitOceanpayment(paymentMethod as OceanpaymentTab, paymentResult.oceanpayment);
       watchOrderPayment(result.order.id);
+      if (isOneTimePayment && paymentMethod === 'oceanpayment_card') {
+        window.setTimeout(() => {
+          setStatus('Opening Oceanpayment hosted payment page...');
+          submitHostedOceanpayment(paymentResult.oceanpayment);
+        }, 6000);
+      }
       window.setTimeout(() => {
         setStatus('If no Oceanpayment window opened, please allow pop-ups/third-party payment frames and click Pay now again.');
         setIsSubmitting(false);
-      }, 15000);
+      }, isOneTimePayment ? 18000 : 15000);
       return;
     }
     setStatus(`Project order received: ${result.order.id}. ZAIHAI sales will confirm quotation, logistics and payment next.`);
