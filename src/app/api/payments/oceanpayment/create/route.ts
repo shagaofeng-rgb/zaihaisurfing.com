@@ -4,6 +4,15 @@ import {buildOceanpaymentPayload, oceanpaymentToStoreMethod, paymentMethodToOcea
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function clientIp(request: Request) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
+    ''
+  ).slice(0, 80);
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
@@ -61,7 +70,9 @@ export async function POST(request: Request) {
       device: 'Unknown',
       browser: 'Unknown',
       os: 'Unknown',
+      ip: clientIp(request),
       timestamp: new Date().toISOString(),
+      attribution: order.attribution || null,
       payload: {
         orderId: order.id,
         method,

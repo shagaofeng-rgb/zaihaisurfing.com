@@ -91,6 +91,7 @@ export async function POST(request: Request) {
       device: detectDevice(userAgent),
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
+      ip: clientIp(request),
       timestamp: new Date().toISOString(),
       attribution,
       payload: {

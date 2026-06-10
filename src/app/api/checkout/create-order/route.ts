@@ -12,6 +12,15 @@ function clean(value: unknown, limit = 240) {
   return String(value || '').trim().slice(0, limit);
 }
 
+function clientIp(request: Request) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
+    ''
+  ).slice(0, 80);
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
@@ -89,6 +98,7 @@ export async function POST(request: Request) {
       device: 'Unknown',
       browser: 'Unknown',
       os: 'Unknown',
+      ip: clientIp(request),
       timestamp: new Date().toISOString(),
       attribution: order.attribution || {
         visitorId: 'checkout',

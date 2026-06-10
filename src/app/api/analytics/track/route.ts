@@ -87,6 +87,15 @@ function detectOs(userAgent = '') {
   return 'Other';
 }
 
+function clientIp(request: Request) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
+    ''
+  ).slice(0, 80);
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
@@ -115,6 +124,7 @@ export async function POST(request: Request) {
       device: detectDevice(userAgent),
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
+      ip: clientIp(request),
       timestamp: clean(payload.timestamp || new Date().toISOString(), 40),
       payload: safePayload,
       attribution

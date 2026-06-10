@@ -12,6 +12,7 @@ const navItems = [
   {key: 'customers', label: '客户管理', href: '/admin/customers'},
   {key: 'leads', label: '线索/弃单', href: '/admin/leads'},
   {key: 'analytics', label: '访问统计', href: '/admin/analytics'},
+  {key: 'visitors', label: '访客记录', href: '/admin/visitors'},
   {key: 'acquisition', label: '来源归因', href: '/admin/analytics/acquisition'},
   {key: 'funnel', label: '转化漏斗', href: '/admin/funnel'},
   {key: 'settings', label: '系统设置', href: '/admin/settings'}

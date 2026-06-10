@@ -107,6 +107,7 @@ export type AnalyticsEvent = {
   device: string;
   browser: string;
   os: string;
+  ip?: string;
   timestamp: string;
   payload: Record<string, unknown>;
   attribution?: AttributionSnapshot | null;
