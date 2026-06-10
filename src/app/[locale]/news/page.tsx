@@ -3,7 +3,9 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
-import {newsArticles} from '@/lib/news';
+import {getAllNewsArticles} from '@/lib/newsFeed';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;
@@ -18,6 +20,7 @@ export async function generateMetadata({params}: {params: Promise<{locale: Local
 export default async function NewsPage({params}: {params: Promise<{locale: Locale}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
+  const newsArticles = await getAllNewsArticles();
   const featured = newsArticles[0];
   const latest = newsArticles.slice(1);
 

@@ -4,11 +4,13 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
-import {getNewsArticle, newsSlugs} from '@/lib/news';
+import {getAllNewsSlugs, getNewsArticleBySlug} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
 
-export function generateStaticParams() {
-  return newsSlugs.map((slug) => ({slug}));
+export const dynamic = 'force-dynamic';
+
+export async function generateStaticParams() {
+  return (await getAllNewsSlugs()).map((slug) => ({slug}));
 }
 
 export async function generateMetadata({
@@ -17,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{locale: Locale; slug: string}>;
 }): Promise<Metadata> {
   const {locale, slug} = await params;
-  const article = getNewsArticle(slug);
+  const article = await getNewsArticleBySlug(slug);
   if (!article) notFound();
   return localizedMetadata(locale, `/news/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt);
 }
@@ -28,7 +30,7 @@ export default async function NewsArticlePage({
   params: Promise<{locale: Locale; slug: string}>;
 }) {
   const {locale, slug} = await params;
-  const article = getNewsArticle(slug);
+  const article = await getNewsArticleBySlug(slug);
   if (!article) notFound();
   setRequestLocale(locale);
 

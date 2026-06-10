@@ -1,9 +1,14 @@
 import type {MetadataRoute} from 'next';
 import {locales, pathnames} from '@/i18n/routing';
-import {newsCategories, newsSlugs, newsTags} from '@/lib/news';
+import {getAllNewsSlugs, getNewsCategories, getNewsTags} from '@/lib/newsFeed';
 import {siteUrl, productSlugs} from '@/lib/site';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [newsSlugs, newsCategories, newsTags] = await Promise.all([
+    getAllNewsSlugs(),
+    getNewsCategories(),
+    getNewsTags()
+  ]);
   const staticPaths = Array.from(new Set([
     ...pathnames,
     '/news',

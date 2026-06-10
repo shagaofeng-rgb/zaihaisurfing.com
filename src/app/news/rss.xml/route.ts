@@ -1,4 +1,4 @@
-import {newsArticles} from '@/lib/news';
+import {getAllNewsArticles} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,8 @@ function xmlEscape(value: string) {
     .replace(/'/g, '&apos;');
 }
 
-export function GET() {
+export async function GET() {
+  const newsArticles = await getAllNewsArticles();
   const items = newsArticles.map((article) => `
     <item>
       <title>${xmlEscape(article.title)}</title>

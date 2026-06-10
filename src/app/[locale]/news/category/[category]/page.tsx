@@ -4,10 +4,12 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
-import {getNewsCategory, newsCategories} from '@/lib/news';
+import {getNewsCategories, getNewsCategory} from '@/lib/newsFeed';
 
-export function generateStaticParams() {
-  return newsCategories.map((category) => ({category: category.slug}));
+export const dynamic = 'force-dynamic';
+
+export async function generateStaticParams() {
+  return (await getNewsCategories()).map((category) => ({category: category.slug}));
 }
 
 export async function generateMetadata({
@@ -16,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{locale: Locale; category: string}>;
 }): Promise<Metadata> {
   const {locale, category} = await params;
-  const group = getNewsCategory(category);
+  const group = await getNewsCategory(category);
   if (!group) notFound();
   return localizedMetadata(
     locale,
@@ -32,7 +34,7 @@ export default async function NewsCategoryPage({
   params: Promise<{locale: Locale; category: string}>;
 }) {
   const {locale, category} = await params;
-  const group = getNewsCategory(category);
+  const group = await getNewsCategory(category);
   if (!group) notFound();
   setRequestLocale(locale);
 

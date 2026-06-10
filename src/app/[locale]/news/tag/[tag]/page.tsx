@@ -4,10 +4,12 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {localizedMetadata} from '@/lib/metadata';
-import {getNewsTag, newsTags} from '@/lib/news';
+import {getNewsTag, getNewsTags} from '@/lib/newsFeed';
 
-export function generateStaticParams() {
-  return newsTags.map((tag) => ({tag: tag.slug}));
+export const dynamic = 'force-dynamic';
+
+export async function generateStaticParams() {
+  return (await getNewsTags()).map((tag) => ({tag: tag.slug}));
 }
 
 export async function generateMetadata({
@@ -16,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{locale: Locale; tag: string}>;
 }): Promise<Metadata> {
   const {locale, tag} = await params;
-  const group = getNewsTag(tag);
+  const group = await getNewsTag(tag);
   if (!group) notFound();
   return localizedMetadata(
     locale,
@@ -28,7 +30,7 @@ export async function generateMetadata({
 
 export default async function NewsTagPage({params}: {params: Promise<{locale: Locale; tag: string}>}) {
   const {locale, tag} = await params;
-  const group = getNewsTag(tag);
+  const group = await getNewsTag(tag);
   if (!group) notFound();
   setRequestLocale(locale);
 
