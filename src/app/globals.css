@@ -4207,6 +4207,36 @@ a {
   border-bottom: 1px solid var(--line);
 }
 
+.admin-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.admin-pagination > div,
+.admin-pagination nav,
+.admin-pagination form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-pagination span {
+  color: var(--muted);
+}
+
+.admin-pagination select {
+  min-width: 92px;
+}
+
+.admin-pagination .is-disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
 .admin-grid-list article span,
 .admin-grid-list article small {
   color: var(--muted);

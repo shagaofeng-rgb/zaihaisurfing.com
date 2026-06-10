@@ -12,16 +12,18 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const params = Object.fromEntries(url.searchParams.entries());
   const timeFilter = parseAdminTimeFilter(params);
+  const format = url.searchParams.get('format');
   const report = await getVisitorRecords({
     from: timeFilter.from,
     to: timeFilter.to,
     q: url.searchParams.get('q') || '',
     country: url.searchParams.get('country') || '',
     source: url.searchParams.get('source') || '',
-    limit: Number(url.searchParams.get('limit') || 1000)
+    page: Number(url.searchParams.get('page') || 1),
+    perPage: format === 'csv' ? 10000 : Number(url.searchParams.get('perPage') || 10)
   });
 
-  if (url.searchParams.get('format') === 'csv') {
+  if (format === 'csv') {
     return new Response(`\uFEFF${visitorRecordsCsv(report.records)}`, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',

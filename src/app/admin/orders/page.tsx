@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhOrderStatus, zhPaymentMethod, zhPaymentStatus} from '@/lib/adminZh';
 import {readStoreOrders} from '@/lib/commerceStore';
 
@@ -9,8 +11,16 @@ function money(value: number) {
   return `USD ${value.toLocaleString()}`;
 }
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const {page, perPage} = parseAdminPagination(params);
   const orders = (await readStoreOrders()).slice().reverse();
+  const pagedOrders = paginate(orders, page, perPage);
+
   return (
     <AdminShell active="orders">
       <div className="admin-title">
@@ -34,7 +44,7 @@ export default async function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.length ? orders.map((order) => (
+              {pagedOrders.items.length ? pagedOrders.items.map((order) => (
                 <tr key={order.id}>
                   <td><strong>{order.id}</strong><br /><small>{zhOrderStatus(order.status)}</small></td>
                   <td>{order.customer.name}<br /><small>{order.customer.email} | {order.customer.country}</small></td>
@@ -43,7 +53,7 @@ export default async function AdminOrdersPage() {
                   <td>
                     {zhPaymentMethod(order.paymentMethod)}<br />
                     <small>{zhPaymentStatus(order.gatewayStatus)}</small><br />
-                    <small>{order.paymentId || order.transactionId || 'Payment ID waiting'}</small>
+                    <small>{order.paymentId || order.transactionId || '等待 Payment ID'}</small>
                   </td>
                   <td>{order.logisticsStatus}<br /><small>{order.trackingNumber || '暂无物流单号'}</small></td>
                   <td>{order.createdAt.slice(0, 10)}</td>
@@ -53,6 +63,7 @@ export default async function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
+        <AdminPagination basePath="/admin/orders" params={params} page={pagedOrders.page} perPage={pagedOrders.perPage} total={pagedOrders.total} totalPages={pagedOrders.totalPages} />
       </section>
     </AdminShell>
   );

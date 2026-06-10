@@ -1,8 +1,10 @@
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
+import AdminPagination from '@/components/AdminPagination';
+import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhOrderStatus, zhPaymentStatus} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
-import {getCommerceSnapshot} from '@/lib/commerceStore';
+import {getCommerceSnapshot, readStoreOrders} from '@/lib/commerceStore';
 import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {durableStoreConfigured} from '@/lib/durableStore';
 
@@ -17,11 +19,25 @@ export default async function AdminDashboardPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const timeFilter = parseAdminTimeFilter(await searchParams);
-  const [snapshot, backend] = await Promise.all([
+  const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
+  const {page, perPage} = parseAdminPagination(params);
+  const [snapshot, backend, allOrders] = await Promise.all([
     getCommerceSnapshot({from: timeFilter.from, to: timeFilter.to}),
-    getAdminDashboardData({from: timeFilter.from, to: timeFilter.to})
+    getAdminDashboardData({from: timeFilter.from, to: timeFilter.to}),
+    readStoreOrders()
   ]);
+  const filteredOrders = allOrders
+    .filter((order) => {
+      const time = new Date(order.createdAt).getTime();
+      if (Number.isNaN(time)) return false;
+      if (timeFilter.from && time < timeFilter.from.getTime()) return false;
+      if (timeFilter.to && time > timeFilter.to.getTime()) return false;
+      return true;
+    })
+    .slice()
+    .reverse();
+  const pagedOrders = paginate(filteredOrders, page, perPage);
   const stableCommerceStore = durableStoreConfigured();
 
   return (
@@ -99,7 +115,7 @@ export default async function AdminDashboardPage({
               <tr><th>订单号</th><th>日期</th><th>产品</th><th>国家/地区</th><th>金额</th><th>订单状态</th><th>支付状态</th></tr>
             </thead>
             <tbody>
-              {snapshot.recentOrders.length ? snapshot.recentOrders.map((order) => (
+              {pagedOrders.items.length ? pagedOrders.items.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
                   <td>{order.createdAt.slice(0, 10)}</td>
@@ -113,6 +129,7 @@ export default async function AdminDashboardPage({
             </tbody>
           </table>
         </div>
+        <AdminPagination basePath="/admin" params={params} page={pagedOrders.page} perPage={pagedOrders.perPage} total={pagedOrders.total} totalPages={pagedOrders.totalPages} />
       </section>
 
       <section className="admin-panel">

@@ -1,5 +1,6 @@
 import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent} from '@/lib/commerceStore';
 import {durableStoreStatus} from '@/lib/durableStore';
+import {zhCountry, zhTrafficPlatform, zhTrafficSource} from '@/lib/adminLabels';
 import {classifyTraffic, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
 
 export type VisitorRecord = {
@@ -25,6 +26,8 @@ type Filter = {
   country?: string;
   source?: string;
   limit?: number;
+  page?: number;
+  perPage?: number;
 };
 
 const GATEWAY_EVENTS = new Set(['payment_notice', 'payment_return']);
@@ -159,17 +162,25 @@ export async function getVisitorRecords(filter: Filter = {}) {
   const country = (filter.country || '').trim().toLowerCase();
   const source = (filter.source || '').trim().toLowerCase();
   const filtered = records.filter((record) => {
-    if (country && record.country.toLowerCase() !== country) return false;
-    if (source && !`${record.source} ${record.sourcePlatform}`.toLowerCase().includes(source)) return false;
+    if (country && !`${record.country} ${zhCountry(record.country)}`.toLowerCase().includes(country)) return false;
+    if (source && !`${record.source} ${zhTrafficSource(record.source)} ${record.sourcePlatform} ${zhTrafficPlatform(record.sourcePlatform)}`.toLowerCase().includes(source)) return false;
     if (!q) return true;
     return Object.values(record).some((value) => String(value).toLowerCase().includes(q));
   });
+
+  const perPage = Math.max(1, filter.perPage || filter.limit || 10);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const page = Math.min(Math.max(1, filter.page || 1), totalPages);
+  const start = (page - 1) * perPage;
 
   return {
     generatedAt: new Date().toISOString(),
     store: durableStoreStatus(),
     total: filtered.length,
-    records: filtered.slice(0, filter.limit || 300)
+    page,
+    perPage,
+    totalPages,
+    records: filtered.slice(start, start + perPage)
   };
 }
 
