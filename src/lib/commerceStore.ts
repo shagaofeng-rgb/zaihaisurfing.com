@@ -354,7 +354,7 @@ export async function readStoreOrders() {
 
 export async function isOneTimePaymentUnavailable(productSlug: CheckoutProductSlug) {
   if (productSlug !== oneTimePaymentSlug) return false;
-  const unavailableStatuses = new Set<OrderStatus>(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'completed']);
+  const unavailableStatuses = new Set<OrderStatus>(['paid', 'processing', 'shipped', 'delivered', 'completed']);
   return (await readStoreOrders()).some((order) => (
     order.productSlug === oneTimePaymentSlug &&
     unavailableStatuses.has(order.status) &&

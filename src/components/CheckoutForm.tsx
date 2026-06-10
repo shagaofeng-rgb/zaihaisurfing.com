@@ -185,6 +185,41 @@ export default function CheckoutForm({locale, productSlug, productName, productI
     setStatus('This wallet payment script is still loading or not available on this device. Please try Credit Card or Bank transfer.');
   }
 
+  function watchOrderPayment(orderId: string) {
+    let attempts = 0;
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const response = await fetch(`/api/account/orders/${encodeURIComponent(orderId)}`, {
+          headers: {'Accept': 'application/json'},
+          cache: 'no-store'
+        });
+        if (response.ok) {
+          const result = await response.json();
+          const orderStatus = String(result.order?.orderStatus || result.order?.status || '');
+          const paymentStatus = String(result.order?.paymentStatus || result.order?.gatewayStatus || '');
+          if (/^(paid|processing|shipped|delivered|completed)$/i.test(orderStatus) || /^(success|processing)$/i.test(paymentStatus)) {
+            window.location.href = `/${locale}/checkout/success?order=${encodeURIComponent(orderId)}&payment=oceanpayment`;
+            return;
+          }
+          if (/^(failed|cancelled|canceled)$/i.test(orderStatus) || /^failed$/i.test(paymentStatus)) {
+            window.location.href = `/${locale}/checkout/failed?order=${encodeURIComponent(orderId)}&payment=failed`;
+            return;
+          }
+        }
+      } catch {
+        // Keep polling; transient account/session timing can happen right after order creation.
+      }
+      if (attempts < 20) {
+        window.setTimeout(poll, 3000);
+        return;
+      }
+      setStatus('Oceanpayment did not open or confirm in time. Please click Pay now again, or try another browser if the payment window was blocked.');
+      setIsSubmitting(false);
+    };
+    window.setTimeout(poll, 3000);
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -264,6 +299,11 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       }
       setStatus('Opening Oceanpayment secure payment window...');
       submitOceanpayment(paymentMethod as OceanpaymentTab, paymentResult.oceanpayment);
+      watchOrderPayment(result.order.id);
+      window.setTimeout(() => {
+        setStatus('If no Oceanpayment window opened, please allow pop-ups/third-party payment frames and click Pay now again.');
+        setIsSubmitting(false);
+      }, 15000);
       return;
     }
     setStatus(`Project order received: ${result.order.id}. ZAIHAI sales will confirm quotation, logistics and payment next.`);
