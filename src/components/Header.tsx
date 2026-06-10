@@ -20,6 +20,7 @@ export default async function Header({locale}: {locale: Locale}) {
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
+    {href: '/news', label: copy.nav.news},
     {href: '/about', label: copy.nav.about},
     {href: '/contact', label: copy.nav.contact},
     ...authItems
@@ -82,6 +83,7 @@ export default async function Header({locale}: {locale: Locale}) {
           </div>
         </div>
         <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
+        <Link href="/news">{copy.nav.news}</Link>
         <Link href="/about">{copy.nav.about}</Link>
         <Link href="/contact">{copy.nav.contact}</Link>
       </nav>

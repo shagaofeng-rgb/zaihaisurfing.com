@@ -19,7 +19,7 @@ export async function generateMetadata({
   const {locale, slug} = await params;
   const article = getNewsArticle(slug);
   if (!article) notFound();
-  return localizedMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt);
+  return localizedMetadata(locale, `/news/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt);
 }
 
 export default async function NewsArticlePage({
@@ -40,15 +40,9 @@ export default async function NewsArticlePage({
     datePublished: article.date,
     dateModified: article.updatedAt,
     image: [article.hero],
-    author: {
-      '@type': 'Organization',
-      name: 'ZAIHAI SURFING'
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'ZAIHAI SURFING'
-    },
-    mainEntityOfPage: `${siteUrl}/${locale}/blog/${article.slug}`,
+    author: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
+    publisher: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
+    mainEntityOfPage: `${siteUrl}/${locale}/news/${article.slug}`,
     articleSection: article.category,
     keywords: article.tags.join(', '),
     citation: article.sources.map((source) => source.url)
@@ -59,18 +53,15 @@ export default async function NewsArticlePage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />
       <section className="news-detail-hero">
         <div>
-          <Link href="/blog" className="text-link">
-            Back to News
-          </Link>
-          <p className="eyebrow">Industry news interpretation</p>
+          <Link href="/news" className="text-link">Back to News</Link>
+          <p className="eyebrow">News & Insights</p>
           <h1>{article.title}</h1>
           <p>{article.excerpt}</p>
           <div className="news-meta">
             <time dateTime={article.date}>{article.date}</time>
-            {article.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
+            <span>Updated {article.updatedAt}</span>
             <span>{article.readTime}</span>
+            {article.tags.map((tag) => <span key={tag}>{tag}</span>)}
           </div>
         </div>
         <figure className="news-hero-figure">
@@ -87,40 +78,30 @@ export default async function NewsArticlePage({
         </div>
         <section className="key-takeaways">
           <h2>Key Takeaways</h2>
-          <ul>
-            {article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}
-          </ul>
+          <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
         </section>
         {article.body.map((section) => (
           <section key={section.heading}>
             <h2>{section.heading}</h2>
-            {section.paragraphs.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
+            {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           </section>
         ))}
         <section className="product-fit-box">
           <h2>How this connects to ZAIHAI products</h2>
           <p>{article.productFit}</p>
-          <Link href="/products" className="button primary">
-            View matching products
-          </Link>
+          <Link href="/products" className="button primary">View matching products</Link>
         </section>
         <section>
           <h2>Sources and attribution</h2>
           <ul className="source-list">
             {article.sources.map((source) => (
               <li key={source.url}>
-                <a href={source.url} target="_blank" rel="noreferrer">
-                  {source.name}: {source.title}
-                </a>
+                <a href={source.url} target="_blank" rel="noreferrer">{source.name}: {source.title}</a>
                 <p>Published: {source.publishedDate}. Accessed: {source.accessedDate}. {source.note}</p>
               </li>
             ))}
             <li>
-              <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">
-                Image source: {article.imageCredit.publisher}
-              </a>
+              <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">Image source: {article.imageCredit.publisher}</a>
               <p>Image URL: {article.imageCredit.imageUrl}. Accessed: {article.imageCredit.accessedDate}. {article.imageCredit.note}</p>
             </li>
           </ul>

@@ -34,12 +34,12 @@ export default async function BlogPage({params}: {params: Promise<{locale: Local
         <div className="news-grid">
           {newsArticles.map((article) => (
             <Link href={`/blog/${article.slug}`} className="news-card" key={article.slug}>
-              <img src={article.hero} alt={`${article.title} cover image`} />
+              <img src={article.hero} alt={article.heroAlt} />
               <div>
                 <time dateTime={article.date}>{article.date}</time>
                 <h3>{article.title}</h3>
                 <p>{article.excerpt}</p>
-                <span>{article.sources.length} cited sources</span>
+                <span>{article.category} | {article.readTime} | {article.sources.length} cited sources</span>
               </div>
             </Link>
           ))}

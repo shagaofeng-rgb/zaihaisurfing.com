@@ -1,11 +1,23 @@
 export type NewsArticle = {
   slug: string;
   date: string;
+  updatedAt: string;
   title: string;
   excerpt: string;
   hero: string;
+  heroAlt: string;
+  imageCredit: {
+    publisher: string;
+    sourceUrl: string;
+    imageUrl: string;
+    note: string;
+    accessedDate: string;
+  };
   tags: string[];
-  sources: {name: string; url: string; note: string}[];
+  category: string;
+  readTime: string;
+  sources: {name: string; title: string; url: string; publishedDate: string; accessedDate: string; note: string}[];
+  keyTakeaways: string[];
   body: {heading: string; paragraphs: string[]}[];
   productFit: string;
 };
@@ -14,22 +26,44 @@ export const newsArticles: NewsArticle[] = [
   {
     slug: 'middle-east-luxury-tourism-water-attractions',
     date: '2026-05-31',
+    updatedAt: '2026-06-10',
     title: 'Middle East Luxury Tourism Growth Creates Demand for Premium Water Attractions',
     excerpt:
       'WTTC reports strong regional travel growth, while Red Sea yacht destinations such as Sindalah show why resorts and marinas need memorable water experiences.',
-    hero: '/assets/banners/surfing-rider-01.png',
+    hero: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-prl.jpeg',
+    heroAlt: 'Sindalah coastal luxury island and marina visual from NEOM official newsroom',
+    imageCredit: {
+      publisher: 'NEOM',
+      sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
+      imageUrl: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-prl.jpeg',
+      note: 'Feature image and part of the destination context are sourced from the official NEOM Sindalah newsroom page.',
+      accessedDate: '2026-06-10'
+    },
     tags: ['Middle East', 'Resorts', 'Yacht Clubs'],
+    category: 'Water Sports Destinations',
+    readTime: '5 min read',
     sources: [
       {
         name: 'WTTC Middle East Economic Impact Research 2026',
+        title: 'Middle East Travel & Tourism Continued to Grow in 2025',
         url: 'https://wttc.org/news/middle-east-eir',
+        publishedDate: '2026',
+        accessedDate: '2026-06-10',
         note: 'Used for Middle East travel and tourism growth context.'
       },
       {
         name: 'NEOM Sindalah opening announcement',
+        title: 'NEOM Board of Directors showcases opening of Sindalah',
         url: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
+        publishedDate: '2024',
+        accessedDate: '2026-06-10',
         note: 'Used for Red Sea luxury island and marina development context.'
       }
+    ],
+    keyTakeaways: [
+      'Middle East tourism growth is increasing demand for differentiated waterfront experiences.',
+      'Luxury marina projects show how water activities can support destination positioning.',
+      'Resorts and yacht clubs should compare equipment by guest profile, training needs and operating workflow.'
     ],
     body: [
       {
@@ -59,22 +93,44 @@ export const newsArticles: NewsArticle[] = [
   {
     slug: 'electric-boating-growth-rental-fleets',
     date: '2026-05-31',
+    updatedAt: '2026-06-10',
     title: 'Electric Boating Growth Points to a Bigger Rental Fleet Opportunity',
     excerpt:
       'Electric boats and smaller electric watercraft are gaining attention as lakes, marinas and rental operators look for cleaner and easier guest experiences.',
-    hero: '/assets/banners/surfing-rider-03.png',
+    hero: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
+    heroAlt: 'Waterfront dock and marina equipment image from ShoreMaster industry report page',
+    imageCredit: {
+      publisher: 'ShoreMaster',
+      sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
+      imageUrl: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
+      note: "Feature image and part of the waterfront industry context are sourced from ShoreMaster's public report page.",
+      accessedDate: '2026-06-10'
+    },
     tags: ['Electric Boating', 'Rentals', 'Marinas'],
+    category: 'Resort & Rental Operations',
+    readTime: '5 min read',
     sources: [
       {
         name: 'Grand View Research U.S. Electric Boat Market Report',
+        title: 'U.S. Electric Boat Market Size, Share & Trends Analysis Report',
         url: 'https://www.grandviewresearch.com/industry-analysis/us-electric-boat-market-report',
+        publishedDate: '2026',
+        accessedDate: '2026-06-10',
         note: 'Used for electric boat market size, growth and leisure segment context.'
       },
       {
         name: 'Leisure Properties Group 2026 Marina Investment Report',
+        title: '2026 Marina Investment Report',
         url: 'https://www.leisurepropertiesgroup.com/wp-content/uploads/2026/03/2026-Marina-Investment-Report-Final-2.pdf',
+        publishedDate: '2026',
+        accessedDate: '2026-06-10',
         note: 'Used for marina occupancy, shared access models and technology adoption context.'
       }
+    ],
+    keyTakeaways: [
+      'Electric boating growth is relevant for rental fleets and waterfront leisure operators.',
+      'Small electric watercraft can help marinas add short-session experiences without full-size boat complexity.',
+      'Fleet planning should include charging, maintenance, guest onboarding and spare parts.'
     ],
     body: [
       {
@@ -104,22 +160,44 @@ export const newsArticles: NewsArticle[] = [
   {
     slug: 'electric-surfboard-market-commercial-resorts',
     date: '2026-05-31',
+    updatedAt: '2026-06-10',
     title: 'Electric Surfboards Are Moving From Niche Toys to Commercial Resort Assets',
     excerpt:
       'New market commentary shows electric surfboards gaining commercial relevance as resorts, rentals and coastal projects look for premium water sports products.',
-    hero: '/assets/catalog/x1-pro/product.png',
+    hero: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
+    heroAlt: 'Electric surfboard market report preview image from Claritas Intelligence',
+    imageCredit: {
+      publisher: 'Claritas Intelligence',
+      sourceUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
+      imageUrl: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
+      note: "Feature image and part of the market context are sourced from Claritas Intelligence's public press-release page.",
+      accessedDate: '2026-06-10'
+    },
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection'],
+    category: 'Electric Surfboards',
+    readTime: '5 min read',
     sources: [
       {
         name: 'Claritas Intelligence Electric Surfboard Market Press Release',
+        title: 'Global Electric Surfboard Market Projected to Reach US$ 66.34 Million by 2033',
         url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
+        publishedDate: '2026',
+        accessedDate: '2026-06-10',
         note: 'Used for electric surfboard market growth and commercial rental/luxury resort context.'
       },
       {
         name: 'ShoreMaster State of the Waterfront Industry 2026',
+        title: 'State of the Waterfront Industry 2026',
         url: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
+        publishedDate: '2026',
+        accessedDate: '2026-06-10',
         note: 'Used for waterfront lifestyle, rentals and PWC/accessory demand context.'
       }
+    ],
+    keyTakeaways: [
+      'Electric surfboards are increasingly discussed as commercial resort and rental assets.',
+      'Buyers should evaluate operating workflow, safety process and support, not only top speed.',
+      'Product recommendations should stay tied to verified ZAIHAI specifications and real use cases.'
     ],
     body: [
       {
@@ -149,6 +227,36 @@ export const newsArticles: NewsArticle[] = [
 ];
 
 export const newsSlugs = newsArticles.map((article) => article.slug);
+
+function slugify(value: string) {
+  return value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+export const newsCategories = Array.from(
+  new Map(newsArticles.map((article) => [slugify(article.category), article.category]))
+).map(([slug, name]) => ({slug, name}));
+
+export const newsTags = Array.from(
+  new Map(newsArticles.flatMap((article) => article.tags.map((tag) => [slugify(tag), tag])))
+).map(([slug, name]) => ({slug, name}));
+
+export function getNewsCategory(slug: string) {
+  const category = newsCategories.find((item) => item.slug === slug);
+  if (!category) return null;
+  return {
+    ...category,
+    articles: newsArticles.filter((article) => slugify(article.category) === slug)
+  };
+}
+
+export function getNewsTag(slug: string) {
+  const tag = newsTags.find((item) => item.slug === slug);
+  if (!tag) return null;
+  return {
+    ...tag,
+    articles: newsArticles.filter((article) => article.tags.some((value) => slugify(value) === slug))
+  };
+}
 
 export function getNewsArticle(slug: string) {
   return newsArticles.find((article) => article.slug === slug);
