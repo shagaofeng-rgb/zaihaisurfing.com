@@ -2,6 +2,7 @@
 
 import {useEffect, useRef} from 'react';
 import {usePathname, useSearchParams} from 'next/navigation';
+import {classifyTraffic, isMeaningfulMarketingTouch, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
 
 function getId(storage: Storage, key: string, prefix: string) {
   let value = storage.getItem(key);
@@ -26,6 +27,24 @@ function sendEvent(payload: Record<string, unknown>) {
   }).catch(() => {});
 }
 
+function readJson<T>(storage: Storage, key: string): T | null {
+  try {
+    const value = storage.getItem(key);
+    return value ? JSON.parse(value) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeJson(storage: Storage, key: string, value: unknown) {
+  storage.setItem(key, JSON.stringify(value));
+}
+
+function setCookie(name: string, value: string, maxAgeDays: number) {
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeDays * 86400}; SameSite=Lax${secure}`;
+}
+
 function safeLinkTarget(link: HTMLAnchorElement) {
   const href = link.getAttribute('href') || '';
   if (href.startsWith('mailto:')) return 'email';
@@ -39,13 +58,28 @@ function safeLinkTarget(link: HTMLAnchorElement) {
   }
 }
 
-function readUtm() {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    utmSource: params.get('utm_source') || '',
-    utmMedium: params.get('utm_medium') || '',
-    utmCampaign: params.get('utm_campaign') || ''
-  };
+function readAttribution(visitorId: string, sessionId: string, page: string): AttributionSnapshot {
+  const now = new Date().toISOString();
+  const touch = classifyTraffic({
+    url: window.location.href,
+    referrer: document.referrer,
+    locale: document.documentElement.lang || navigator.language,
+    deviceType: /mobile|iphone|android/i.test(navigator.userAgent) ? 'Mobile' : /ipad|tablet/i.test(navigator.userAgent) ? 'Tablet' : 'Desktop',
+    browser: navigator.userAgent,
+    now
+  });
+  const first = readJson<TrafficTouch>(window.localStorage, 'traffic_first_touch') || touch;
+  const lastStored = readJson<TrafficTouch>(window.localStorage, 'traffic_last_touch') || touch;
+  const last = isMeaningfulMarketingTouch(touch) || !lastStored || lastStored.channel === 'direct' ? touch : lastStored;
+  const session = readJson<TrafficTouch>(window.sessionStorage, 'traffic_session') || {...touch, landingPage: page};
+  writeJson(window.localStorage, 'traffic_first_touch', first);
+  writeJson(window.localStorage, 'traffic_last_touch', last);
+  writeJson(window.sessionStorage, 'traffic_session', session);
+  setCookie('anonymous_visitor_id', visitorId, 365);
+  setCookie('traffic_first_touch', JSON.stringify(first), 365);
+  setCookie('traffic_last_touch', JSON.stringify(last), 90);
+  setCookie('traffic_session', JSON.stringify(session), 1);
+  return {visitorId, sessionId, firstTouch: first, lastTouch: last, sessionTouch: session};
 }
 
 export default function AnalyticsTracker() {
@@ -57,9 +91,12 @@ export default function AnalyticsTracker() {
     if (pathname?.startsWith('/admin')) return;
     const page = `${pathname || '/'}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
     if (previousPage.current === page) return;
+    const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+    const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+    const attribution = readAttribution(visitorId, sessionId, page);
     const base = {
-      visitorId: getId(window.localStorage, 'zaihai_visitor_id', 'v'),
-      sessionId: getId(window.sessionStorage, 'zaihai_session_id', 's'),
+      visitorId,
+      sessionId,
       page,
       previousPage: previousPage.current,
       pageTitle: document.title,
@@ -67,7 +104,7 @@ export default function AnalyticsTracker() {
       timestamp: new Date().toISOString(),
       language: document.documentElement.lang || navigator.language,
       screen: `${window.screen.width}x${window.screen.height}`,
-      ...readUtm()
+      attribution
     };
     sendEvent({...base, type: 'page_view'});
     if (pathname?.includes('/products/')) sendEvent({...base, type: 'product_view'});
@@ -85,16 +122,19 @@ export default function AnalyticsTracker() {
       const text = link.textContent?.trim().slice(0, 120) || '';
       const targetKind = safeLinkTarget(link);
       if (/buy now|checkout|quote|whatsapp|get project quote|contact|send/i.test(text) || ['email', 'phone', 'whatsapp'].includes(targetKind)) {
+        const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+        const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
         sendEvent({
           type: 'commerce_click',
-          visitorId: getId(window.localStorage, 'zaihai_visitor_id', 'v'),
-          sessionId: getId(window.sessionStorage, 'zaihai_session_id', 's'),
+          visitorId,
+          sessionId,
           page: window.location.pathname,
           pageTitle: document.title,
           targetText: text,
           targetKind,
           language: document.documentElement.lang || navigator.language,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          attribution: readAttribution(visitorId, sessionId, window.location.pathname)
         });
       }
     }

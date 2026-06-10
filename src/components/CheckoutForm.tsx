@@ -4,6 +4,7 @@ import {useEffect, useMemo, useState} from 'react';
 import Script from 'next/script';
 import {shippingEstimateFor} from '@/lib/shipping';
 import type {CheckoutProductSlug} from '@/lib/site';
+import {classifyTraffic, isMeaningfulMarketingTouch, type TrafficTouch} from '@/lib/trafficAttribution';
 
 type CheckoutFormProps = {
   locale: string;
@@ -40,6 +41,45 @@ function readOceanpaymentValue(data: OceanpaymentCallbackData, key: string) {
   if (xmlMatch) return xmlMatch[1];
   const params = new URLSearchParams(data);
   return params.get(key) || '';
+}
+
+function getId(storage: Storage, key: string, prefix: string) {
+  let value = storage.getItem(key);
+  if (!value) {
+    value = `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    storage.setItem(key, value);
+  }
+  return value;
+}
+
+function readJson<T>(storage: Storage, key: string): T | null {
+  try {
+    const value = storage.getItem(key);
+    return value ? JSON.parse(value) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+function attributionSnapshot() {
+  const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+  const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+  const touch = classifyTraffic({
+    url: window.location.href,
+    referrer: document.referrer,
+    locale: document.documentElement.lang || navigator.language,
+    deviceType: /mobile|iphone|android/i.test(navigator.userAgent) ? 'Mobile' : /ipad|tablet/i.test(navigator.userAgent) ? 'Tablet' : 'Desktop',
+    browser: navigator.userAgent
+  });
+  const firstTouch = readJson<TrafficTouch>(window.localStorage, 'traffic_first_touch') || touch;
+  const storedLast = readJson<TrafficTouch>(window.localStorage, 'traffic_last_touch') || touch;
+  return {
+    visitorId,
+    sessionId,
+    firstTouch,
+    lastTouch: isMeaningfulMarketingTouch(touch) || storedLast.channel === 'direct' ? touch : storedLast,
+    sessionTouch: readJson<TrafficTouch>(window.sessionStorage, 'traffic_session') || touch
+  };
 }
 
 export default function CheckoutForm({locale, productSlug, productName, productImage, unitPrice, quantity, shippingEstimate}: CheckoutFormProps) {
@@ -286,7 +326,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         cardBrand: '',
         cardLast4: '',
         cardholderName: ''
-      }
+      },
+      attribution: attributionSnapshot()
     };
 
     const response = await fetch('/api/checkout/create-order', {

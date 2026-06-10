@@ -1,4 +1,5 @@
 import {appendAnalyticsEvent, type AnalyticsEvent} from '@/lib/commerceStore';
+import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -94,6 +95,13 @@ export async function POST(request: Request) {
       return Response.json({ok: true, skipped: 'bot'});
     }
     const safePayload = sanitizePayload(payload);
+    const attribution = compactAttribution(payload.attribution) || {
+      visitorId: clean(payload.visitorId || 'anonymous', 80),
+      sessionId: clean(payload.sessionId || 'session', 80),
+      firstTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)}),
+      lastTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)}),
+      sessionTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)})
+    };
     const event: AnalyticsEvent = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       type: safeEventType(payload.type || 'page_view'),
@@ -108,7 +116,8 @@ export async function POST(request: Request) {
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
       timestamp: clean(payload.timestamp || new Date().toISOString(), 40),
-      payload: safePayload
+      payload: safePayload,
+      attribution
     };
     await appendAnalyticsEvent(event);
     return Response.json({ok: true});

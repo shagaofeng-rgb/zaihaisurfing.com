@@ -1,6 +1,7 @@
 import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
 import {shippingEstimateFor} from '@/lib/shipping';
 import {oneTimePaymentSlug, products, type CheckoutProductSlug} from '@/lib/site';
+import type {AttributionSnapshot} from '@/lib/trafficAttribution';
 
 const ORDERS_FILE = 'orders.jsonl';
 const EVENTS_FILE = 'analytics-events.jsonl';
@@ -90,6 +91,7 @@ export type StoreOrder = {
   };
   createdAt: string;
   updatedAt: string;
+  attribution?: AttributionSnapshot | null;
 };
 
 export type AnalyticsEvent = {
@@ -107,6 +109,7 @@ export type AnalyticsEvent = {
   os: string;
   timestamp: string;
   payload: Record<string, unknown>;
+  attribution?: AttributionSnapshot | null;
 };
 
 export type IdempotencyRecord = {
@@ -242,6 +245,7 @@ export async function createStoreOrder(input: {
   checkout?: Partial<StoreOrder['checkout']>;
   idempotencyKey?: string;
   userId?: string;
+  attribution?: AttributionSnapshot | null;
 }) {
   const quantity = input.productSlug === oneTimePaymentSlug ? 1 : Math.max(1, Math.min(99, Number(input.quantity || 1)));
   const idempotencyKey = String(input.idempotencyKey || '').trim().slice(0, 120);
@@ -332,7 +336,8 @@ export async function createStoreOrder(input: {
       cardholderName: input.checkout?.cardholderName || ''
     },
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
+    attribution: input.attribution || null
   };
   await appendStoreLine(ORDERS_FILE, order);
   if (idempotencyKey) {

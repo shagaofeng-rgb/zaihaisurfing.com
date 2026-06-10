@@ -3,6 +3,7 @@ import {checkoutProductSlugs, oneTimePaymentSlug, type CheckoutProductSlug} from
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
 import {bindOrdersToCustomer, createCustomerSession, createOrUpdateCustomerUser, customerCookieOptions, findCustomerUserByEmail, getCustomerSession} from '@/lib/customerAuth';
 import {sendRegistrationWelcomeEmail} from '@/lib/emailService';
+import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
       paymentMethod: payload.paymentMethod || 'qianhai_card',
       idempotencyKey: clean(payload.idempotencyKey || payload.clientRequestId, 120),
       userId: session?.email?.toLowerCase() === normalizedEmail ? session.userId || accountUser.id : accountUser.id,
+      attribution: compactAttribution(payload.attribution),
       customer,
       checkout: {
         contact: clean(payload.checkout?.contact, 160),
@@ -88,6 +90,13 @@ export async function POST(request: Request) {
       browser: 'Unknown',
       os: 'Unknown',
       timestamp: new Date().toISOString(),
+      attribution: order.attribution || {
+        visitorId: 'checkout',
+        sessionId: order.id,
+        firstTouch: classifyTraffic({url: '/checkout', referrer: ''}),
+        lastTouch: classifyTraffic({url: '/checkout', referrer: ''}),
+        sessionTouch: classifyTraffic({url: '/checkout', referrer: ''})
+      },
       payload: {orderId: order.id, total: order.total, productSlug, paymentMethod: order.paymentMethod, cardBrand: order.checkout.cardBrand}
     });
     return Response.json({ok: true, order});

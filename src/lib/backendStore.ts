@@ -3,6 +3,7 @@ import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
 import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
 import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
 
 const STORE_FILE = 'admin-store.json';
 
@@ -205,9 +206,15 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
     leads,
     funnel: buildFunnel(filteredEvents, filteredOrders),
     popularProducts: countBy([...filteredOrders.map((order) => order.productName), ...filteredEvents.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
-    trafficSources: countBy(filteredEvents.map((event) => event.referrer || '直接访问')),
+    trafficSources: countBy(filteredEvents.map((event) => trafficSourceLabel(event))),
     countries: countBy([...filteredOrders.map((order) => order.customer.country), ...filteredEvents.map((event) => event.country)])
   };
+}
+
+function trafficSourceLabel(event: AnalyticsEvent) {
+  const attribution = event.attribution as AttributionSnapshot | null | undefined;
+  const touch = attribution?.lastTouch || classifyTraffic({url: event.page, referrer: event.referrer});
+  return `${touch.source || 'direct'} / ${touch.channel || 'direct'}`;
 }
 
 export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[]): CustomerLead[] {

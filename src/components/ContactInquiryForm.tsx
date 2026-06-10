@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {classifyTraffic, isMeaningfulMarketingTouch, type TrafficTouch} from '@/lib/trafficAttribution';
 
 type ContactInquiryFormProps = {
   copy: {
@@ -31,6 +32,35 @@ function getId(storage: Storage, key: string, prefix: string) {
   return value;
 }
 
+function readJson<T>(storage: Storage, key: string): T | null {
+  try {
+    const value = storage.getItem(key);
+    return value ? JSON.parse(value) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+function attributionSnapshot(visitorId: string, sessionId: string) {
+  const touch = classifyTraffic({
+    url: window.location.href,
+    referrer: document.referrer,
+    locale: document.documentElement.lang || navigator.language,
+    deviceType: /mobile|iphone|android/i.test(navigator.userAgent) ? 'Mobile' : /ipad|tablet/i.test(navigator.userAgent) ? 'Tablet' : 'Desktop',
+    browser: navigator.userAgent
+  });
+  const firstTouch = readJson<TrafficTouch>(window.localStorage, 'traffic_first_touch') || touch;
+  const storedLast = readJson<TrafficTouch>(window.localStorage, 'traffic_last_touch') || touch;
+  const lastTouch = isMeaningfulMarketingTouch(touch) || storedLast.channel === 'direct' ? touch : storedLast;
+  return {
+    visitorId,
+    sessionId,
+    firstTouch,
+    lastTouch,
+    sessionTouch: readJson<TrafficTouch>(window.sessionStorage, 'traffic_session') || touch
+  };
+}
+
 export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
@@ -53,7 +83,11 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
           visitorId: getId(window.localStorage, 'zaihai_visitor_id', 'v'),
           sessionId: getId(window.sessionStorage, 'zaihai_session_id', 's'),
           page: window.location.pathname,
-          referrer: document.referrer
+          referrer: document.referrer,
+          attribution: attributionSnapshot(
+            getId(window.localStorage, 'zaihai_visitor_id', 'v'),
+            getId(window.sessionStorage, 'zaihai_session_id', 's')
+          )
         })
       });
       const result = await response.json().catch(() => ({}));

@@ -1,6 +1,7 @@
 import {appendAnalyticsEvent} from '@/lib/commerceStore';
 import {sendContactInquiryEmail} from '@/lib/emailService';
 import {checkRateLimit, clientIp} from '@/lib/rateLimit';
+import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -70,6 +71,13 @@ export async function POST(request: Request) {
 
     const userAgent = request.headers.get('user-agent') || '';
     const eventId = `contact-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    const attribution = compactAttribution(payload.attribution) || {
+      visitorId: clean(payload.visitorId || 'contact-inquiry', 80),
+      sessionId: clean(payload.sessionId || eventId, 80),
+      firstTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)}),
+      lastTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)}),
+      sessionTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)})
+    };
     await appendAnalyticsEvent({
       id: eventId,
       type: 'contact_inquiry',
@@ -84,6 +92,7 @@ export async function POST(request: Request) {
       browser: detectBrowser(userAgent),
       os: detectOs(userAgent),
       timestamp: new Date().toISOString(),
+      attribution,
       payload: {
         buyerType: inquiry.buyerType,
         product: inquiry.product,
