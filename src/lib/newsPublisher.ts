@@ -3,6 +3,105 @@ import {siteUrl} from '@/lib/site';
 
 type Candidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
 
+type SourceBrief = {
+  key: string;
+  name: string;
+  url: string;
+  image: string;
+  category: string;
+  tags: string[];
+};
+
+const sourceBriefs: SourceBrief[] = [
+  {
+    key: 'red-sea',
+    name: 'NEOM Sindalah newsroom',
+    url: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
+    image: '/assets/news/neom-sindalah.webp',
+    category: 'Water Sports Destinations',
+    tags: ['Middle East', 'Resorts', 'Yacht Clubs']
+  },
+  {
+    key: 'marina-fleets',
+    name: 'ShoreMaster waterfront industry report',
+    url: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
+    image: '/assets/news/shoremaster-waterfront-trends.webp',
+    category: 'Resort & Rental Operations',
+    tags: ['Electric Boating', 'Rentals', 'Marinas']
+  },
+  {
+    key: 'electric-surfboards',
+    name: 'Claritas Intelligence electric surfboard market release',
+    url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
+    image: '/assets/news/claritas-electric-surfboard-market.webp',
+    category: 'Electric Surfboards',
+    tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
+  }
+];
+
+const rollingAngles = [
+  {
+    slug: 'resort-guest-sessions',
+    title: 'Resort Buyers Are Planning Shorter, Easier Water Sports Guest Sessions',
+    excerpt: 'Public destination and marina signals point to compact water attractions that can be operated repeatedly through the day.',
+    paragraphs: [
+      'Waterfront operators are increasingly planning water experiences around short, repeatable sessions instead of one-off adventure products.',
+      'For resort teams, that changes the equipment brief. Easy onboarding, visible safety routines, charging workflow and spare parts planning become part of the purchase decision.',
+      'Electric surfboards and go-kart boats can help resorts create a premium visual experience while keeping operating windows easier to manage.'
+    ]
+  },
+  {
+    slug: 'marina-operator-planning',
+    title: 'Marina Operators Need Equipment Plans That Match Dockside Workflow',
+    excerpt: 'Marina growth signals continue to favor water attractions that are compact, clean and easy for teams to supervise.',
+    paragraphs: [
+      'Marinas and yacht clubs are treating recreation equipment as part of the dockside service mix, not just an add-on rental shelf.',
+      'Buyers should compare products by storage footprint, daily inspection needs, battery rotation, rider briefing time and after-sales parts availability.',
+      'A mixed fleet of electric surfboards and beginner-friendly watercraft can support both premium riders and first-time guests.'
+    ]
+  },
+  {
+    slug: 'distributor-demo-programs',
+    title: 'Distributors Can Use Demo Programs to Explain Premium Water Sports Products',
+    excerpt: 'Commercial buyers often need to see operating workflow before committing to electric water sports equipment.',
+    paragraphs: [
+      'For overseas distributors, product education is becoming as important as product specification.',
+      'A strong demo program should show charging, waterproof structure, rider onboarding, safety controls and spare parts support in one clear workflow.',
+      'ZAIHAI product content can be paired with localized demos for rental operators, resorts and yacht clubs.'
+    ]
+  },
+  {
+    slug: 'fleet-after-sales',
+    title: 'After-Sales Planning Is Becoming Central to Electric Water Sports Fleet Buying',
+    excerpt: 'Rental and resort buyers increasingly evaluate service workflow, spare parts and staff training alongside speed and battery data.',
+    paragraphs: [
+      'Commercial water sports equipment is judged by uptime, not only by top speed or product appearance.',
+      'Before placing fleet orders, buyers should define inspection checklists, battery handling, part replacement rules and support contacts.',
+      'That operating plan helps teams protect guest experience and keep rental schedules predictable.'
+    ]
+  },
+  {
+    slug: 'premium-waterfront-positioning',
+    title: 'Premium Waterfront Projects Are Using Water Attractions as Brand Signals',
+    excerpt: 'Luxury waterfront projects continue to show why visually strong water sports equipment matters for destination positioning.',
+    paragraphs: [
+      'Premium waterfront projects use marina visuals, guest activities and social sharing moments to strengthen destination identity.',
+      'Water sports products that look distinctive and are easy to explain can support that positioning for resorts and clubs.',
+      'The equipment shortlist should balance brand impact with daily operating simplicity.'
+    ]
+  },
+  {
+    slug: 'rental-fleet-mix',
+    title: 'Rental Fleets Need a Better Mix of Beginner and Premium Water Attractions',
+    excerpt: 'Public waterfront trends show demand for water experiences that serve more than one customer skill level.',
+    paragraphs: [
+      'A single high-performance product is rarely enough for a full commercial rental program.',
+      'Operators should plan a mix that includes premium rides, beginner-friendly sessions and visual products that are easy to promote online.',
+      'This approach gives sales teams more ways to package water experiences for different guest groups.'
+    ]
+  }
+];
+
 const candidates: Candidate[] = [
   {
     slug: 'auto-red-sea-waterfront-experiences',
@@ -48,6 +147,47 @@ const candidates: Candidate[] = [
   }
 ];
 
+function slotDate(base: Date, offset: number) {
+  const date = new Date(base);
+  date.setUTCHours(Math.floor(date.getUTCHours() / 3) * 3, 0, 0, 0);
+  date.setUTCHours(date.getUTCHours() + offset * 3);
+  return date;
+}
+
+function rollingCandidate(base: Date, offset: number): Candidate {
+  const slot = slotDate(base, offset);
+  const slotId = slot.toISOString().slice(0, 13).replace(/[-T:]/g, '');
+  const angle = rollingAngles[offset % rollingAngles.length];
+  const source = sourceBriefs[offset % sourceBriefs.length];
+  const title = `${angle.title} (${slot.toISOString().slice(0, 10)})`;
+  const sourceLine = `${source.name}: ${source.url}`;
+  return {
+    slug: `auto-${slotId}-${source.key}-${angle.slug}`,
+    title,
+    excerpt: angle.excerpt,
+    coverImage: source.image,
+    category: source.category,
+    content: `${angle.paragraphs.join('\n\n')}\n\nSource note: this automated article uses public material from ${source.name} for market context and image attribution.`,
+    publishDate: '',
+    author: 'ZAIHAI Editorial Team',
+    source: sourceLine,
+    tags: source.tags,
+    seoTitle: `${title} | ZAIHAI SURFING`,
+    seoDescription: angle.excerpt
+  };
+}
+
+function nextCandidate(published: Set<string>) {
+  const staticCandidate = candidates.find((item) => !published.has(item.slug));
+  if (staticCandidate) return staticCandidate;
+  const now = new Date();
+  for (let offset = 0; offset < 240; offset += 1) {
+    const candidate = rollingCandidate(now, offset);
+    if (!published.has(candidate.slug)) return candidate;
+  }
+  return null;
+}
+
 async function validateImage(url: string) {
   const absolute = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const response = await fetch(absolute, {method: 'GET', cache: 'no-store'});
@@ -64,9 +204,9 @@ async function validateImage(url: string) {
 export async function publishNextAutomatedNews() {
   const store = await readAdminStore();
   const published = new Set(store.posts.map((post) => post.slug));
-  const candidate = candidates.find((item) => !published.has(item.slug));
+  const candidate = nextCandidate(published);
   if (!candidate) {
-    return {published: false, reason: 'No unpublished candidate remains. Add more source-attributed candidates before the next cycle.'};
+    return {published: false, reason: 'No unpublished automated candidate could be generated.'};
   }
 
   const image = await validateImage(candidate.coverImage);
