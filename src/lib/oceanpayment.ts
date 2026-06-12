@@ -14,18 +14,18 @@ const scriptUrls = {
 } as const;
 
 export function oceanpaymentConfig(method: OceanpaymentMethod = 'credit-card') {
-  const account = process.env.OCEANPAYMENT_ACCOUNT || process.env.OCEANPAYMENT_MERCHANT_NO || '';
+  const account = envValue(process.env.OCEANPAYMENT_ACCOUNT || process.env.OCEANPAYMENT_MERCHANT_NO);
   const wallet = method === 'google-pay' || method === 'apple-pay';
   const terminal = wallet
-    ? process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO || ''
-    : process.env.OCEANPAYMENT_CARD_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO || '';
+    ? envValue(process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO)
+    : envValue(process.env.OCEANPAYMENT_CARD_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO);
   const secureCode = wallet
-    ? process.env.OCEANPAYMENT_WALLET_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE || ''
-    : process.env.OCEANPAYMENT_CARD_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE || '';
+    ? envValue(process.env.OCEANPAYMENT_WALLET_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE)
+    : envValue(process.env.OCEANPAYMENT_CARD_SECURE_CODE || process.env.OCEANPAYMENT_SECURE_CODE);
   const publicKey = wallet
-    ? process.env.OCEANPAYMENT_WALLET_PUBLIC_KEY || process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY || ''
-    : process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY || '';
-  const endpoint = process.env.OCEANPAYMENT_GATEWAY_URL || 'https://secure.oceanpayment.com/gateway/service/test';
+    ? envValue(process.env.OCEANPAYMENT_WALLET_PUBLIC_KEY || process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY)
+    : envValue(process.env.OCEANPAYMENT_CARD_PUBLIC_KEY || process.env.OCEANPAYMENT_PUBLIC_KEY);
+  const endpoint = envValue(process.env.OCEANPAYMENT_GATEWAY_URL) || 'https://secure.oceanpayment.com/gateway/service/test';
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || siteUrl).replace(/\/$/, '');
   const requiredEnv = wallet
     ? ['OCEANPAYMENT_ACCOUNT', 'OCEANPAYMENT_WALLET_TERMINAL', 'OCEANPAYMENT_WALLET_SECURE_CODE', 'OCEANPAYMENT_WALLET_PUBLIC_KEY']
@@ -44,8 +44,8 @@ export function oceanpaymentConfig(method: OceanpaymentMethod = 'credit-card') {
 }
 
 function oceanpaymentConfigForTerminal(terminal: string) {
-  const normalized = clean(terminal, 40);
-  const walletTerminal = clean(
+  const normalized = gatewayField(terminal, 40);
+  const walletTerminal = gatewayField(
     process.env.OCEANPAYMENT_WALLET_TERMINAL || process.env.OCEANPAYMENT_TERMINAL || process.env.OCEANPAYMENT_TERMINAL_NO,
     40
   );
@@ -87,6 +87,10 @@ function sha256(value: string) {
   return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
+function envValue(value: unknown) {
+  return String(value || '').trim();
+}
+
 function amount(value: number) {
   return Math.max(0.01, value).toFixed(2);
 }
@@ -95,11 +99,20 @@ function clean(value: unknown, limit = 120) {
   return String(value || '').trim().slice(0, limit);
 }
 
+function gatewayField(value: unknown, limit = 120) {
+  return clean(value, limit)
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[<>'"]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function nameParts(value: string) {
-  return clean(value, 160)
+  return gatewayField(value, 160)
     .replace(/[._-]+/g, ' ')
     .split(/\s+/)
-    .map((part) => clean(part, 80))
+    .map((part) => gatewayField(part, 80))
     .filter(Boolean);
 }
 
@@ -107,8 +120,8 @@ function splitName(order: StoreOrder) {
   const customerParts = nameParts(order.customer.name);
   const emailParts = nameParts(order.customer.email.split('@')[0] || '');
   const orderFallback = `Order${order.id.slice(-6) || Date.now().toString().slice(-6)}`;
-  const firstName = clean(order.checkout.firstName || customerParts[0] || emailParts[0] || orderFallback, 80);
-  let lastName = clean(
+  const firstName = gatewayField(order.checkout.firstName || customerParts[0] || emailParts[0] || orderFallback, 80);
+  let lastName = gatewayField(
     order.checkout.lastName ||
       customerParts.slice(1).join(' ') ||
       emailParts.find((part) => part.toLowerCase() !== firstName.toLowerCase()) ||
@@ -116,7 +129,7 @@ function splitName(order: StoreOrder) {
     80
   );
   if (lastName.toLowerCase() === firstName.toLowerCase()) {
-    lastName = clean(emailParts.find((part) => part.toLowerCase() !== firstName.toLowerCase()) || orderFallback, 80);
+    lastName = gatewayField(emailParts.find((part) => part.toLowerCase() !== firstName.toLowerCase()) || orderFallback, 80);
   }
   return {firstName, lastName};
 }
@@ -457,7 +470,7 @@ export function normalizeBillingState({
 }
 
 export function validateOceanpaymentBillingState(billingState: string) {
-  const value = clean(billingState, 40);
+  const value = gatewayField(billingState, 40);
   if (!value) return false;
   if (/[\u4e00-\u9fff]/.test(value)) return false;
   if (/undefined|null|nan|\[object object\]/i.test(value)) return false;
@@ -484,12 +497,11 @@ export function buildOceanpaymentPayload({
   const config = oceanpaymentConfig(method);
   const {firstName, lastName} = splitName(order);
   const orderAmount = amount(order.total);
-  const orderNumber = order.id;
-  const orderCurrency = order.currency || 'USD';
-  const billingEmail = clean(order.customer.email, 160);
-  const signValue = sha256(
-    `${config.account}${config.terminal}${orderNumber}${orderCurrency}${orderAmount}${firstName}${lastName}${billingEmail}${config.secureCode}`
-  );
+  const orderNumber = gatewayField(order.id, 120);
+  const orderCurrency = gatewayField(order.currency || 'USD', 8).toUpperCase();
+  const billingEmail = gatewayField(order.customer.email, 160);
+  const signSource = `${config.account}${config.terminal}${orderNumber}${orderCurrency}${orderAmount}${firstName}${lastName}${billingEmail}${config.secureCode}`;
+  const signValue = sha256(signSource);
   const noticeUrl = `${config.baseUrl}/api/payments/oceanpayment/notice`;
   const backUrl = `${config.baseUrl}/api/payments/oceanpayment/back?locale=${encodeURIComponent(locale)}`;
   const methodName = method === 'credit-card' ? 'Credit Card' : method === 'google-pay' ? 'Google Pay' : 'Apple Pay';
@@ -521,35 +533,43 @@ export function buildOceanpaymentPayload({
       order_number: orderNumber,
       order_currency: orderCurrency,
       order_amount: orderAmount,
-      order_notes: order.productName,
+      order_notes: gatewayField(order.productName, 180),
       methods: methodName,
       payment_scenario: scene === '3d' ? '3D' : 'Non-3D',
       billing_firstName: firstName,
       billing_lastName: lastName,
       billing_email: billingEmail,
-      billing_phone: clean(order.customer.phone, 40),
+      billing_phone: gatewayField(order.customer.phone, 40),
       billing_country: billingCountry,
       billing_state: billingState,
-      billing_city: clean(order.checkout.city || 'NA', 80),
-      billing_address: clean(order.customer.address, 240),
-      billing_zip: clean(order.checkout.zip || '00000', 32),
+      billing_city: gatewayField(order.checkout.city || 'NA', 80),
+      billing_address: gatewayField(order.customer.address, 240),
+      billing_zip: gatewayField(order.checkout.zip || '00000', 32),
       ship_firstName: firstName,
       ship_lastName: lastName,
       ship_email: billingEmail,
-      ship_phone: clean(order.customer.phone, 40),
+      ship_phone: gatewayField(order.customer.phone, 40),
       ship_country: billingCountry,
       ship_state: billingState,
-      ship_city: clean(order.checkout.city || 'NA', 80),
-      ship_addr: clean(order.customer.address, 240),
-      ship_zip: clean(order.checkout.zip || '00000', 32),
-      productName: clean(order.productName, 180),
+      ship_city: gatewayField(order.checkout.city || 'NA', 80),
+      ship_addr: gatewayField(order.customer.address, 240),
+      ship_zip: gatewayField(order.checkout.zip || '00000', 32),
+      productName: gatewayField(order.productName, 180),
       productNum: String(order.quantity),
-      productSku: clean(order.productSlug, 80),
+      productSku: gatewayField(order.productSlug, 80),
       productPrice: amount(order.unitPrice),
-      cart_info: `${clean(order.productName, 120)} x ${order.quantity}`,
-      billing_ip: clean(billingIp || '127.0.0.1', 40),
+      cart_info: gatewayField(`${order.productName} x ${order.quantity}`, 140),
+      billing_ip: gatewayField(billingIp || '127.0.0.1', 40),
       backUrl,
       noticeUrl,
+      signValue
+    },
+    signature: {
+      algorithm: 'sha256',
+      structure: 'account + terminal + order_number + order_currency + order_amount + billing_firstName + billing_lastName + billing_email + secureCode',
+      fields: ['account', 'terminal', 'order_number', 'order_currency', 'order_amount', 'billing_firstName', 'billing_lastName', 'billing_email', 'secureCode'],
+      sourceLength: signSource.length,
+      secureCodeLength: config.secureCode.length,
       signValue
     },
     billing
@@ -558,8 +578,23 @@ export function buildOceanpaymentPayload({
 
 export function verifyOceanpaymentReturn(fields: Record<string, string>) {
   const config = oceanpaymentConfigForTerminal(fields.terminal || '');
+  const signFields = [
+    gatewayField(fields.account, 80),
+    gatewayField(fields.terminal, 80),
+    gatewayField(fields.order_number, 120),
+    gatewayField(fields.order_currency, 8).toUpperCase(),
+    gatewayField(fields.order_amount, 40),
+    gatewayField(fields.order_notes, 240),
+    gatewayField(fields.card_number, 80),
+    gatewayField(fields.payment_id, 120),
+    gatewayField(fields.payment_authType, 80),
+    gatewayField(fields.payment_status, 80),
+    gatewayField(fields.payment_details, 240),
+    gatewayField(fields.payment_risk, 80),
+    config.secureCode
+  ];
   const expected = sha256(
-    `${fields.account || ''}${fields.terminal || ''}${fields.order_number || ''}${fields.order_currency || ''}${fields.order_amount || ''}${fields.order_notes || ''}${fields.card_number || ''}${fields.payment_id || ''}${fields.payment_authType || ''}${fields.payment_status || ''}${fields.payment_details || ''}${fields.payment_risk || ''}${config.secureCode}`
+    signFields.join('')
   );
   return Boolean(fields.signValue && expected.toLowerCase() === fields.signValue.toLowerCase());
 }
@@ -567,15 +602,15 @@ export function verifyOceanpaymentReturn(fields: Record<string, string>) {
 export function validateOceanpaymentNotification(order: StoreOrder, fields: Record<string, string>) {
   const errors: string[] = [];
   const config = oceanpaymentConfigForTerminal(fields.terminal || '');
-  const callbackOrderNumber = clean(fields.order_number || fields.orderNo || fields.order_id, 120);
-  const callbackCurrency = clean(fields.order_currency || fields.currency, 20).toUpperCase();
-  const callbackAmount = Number(clean(fields.order_amount || fields.amount, 40));
+  const callbackOrderNumber = gatewayField(fields.order_number || fields.orderNo || fields.order_id, 120);
+  const callbackCurrency = gatewayField(fields.order_currency || fields.currency, 20).toUpperCase();
+  const callbackAmount = Number(gatewayField(fields.order_amount || fields.amount, 40));
 
   if (callbackOrderNumber !== order.id) errors.push('order_number_mismatch');
   if (callbackCurrency && callbackCurrency !== order.currency) errors.push('currency_mismatch');
   if (!Number.isFinite(callbackAmount) || amount(callbackAmount) !== amount(order.total)) errors.push('amount_mismatch');
-  if (fields.account && clean(fields.account, 80) !== config.account) errors.push('account_mismatch');
-  if (fields.terminal && config.terminal && clean(fields.terminal, 80) !== config.terminal) errors.push('terminal_mismatch');
+  if (fields.account && gatewayField(fields.account, 80) !== config.account) errors.push('account_mismatch');
+  if (fields.terminal && config.terminal && gatewayField(fields.terminal, 80) !== config.terminal) errors.push('terminal_mismatch');
 
   return {ok: errors.length === 0, errors};
 }
@@ -595,14 +630,14 @@ export async function parseGatewayPayload(request: Request) {
   const contentType = request.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
     const json = await request.json();
-    return Object.fromEntries(Object.entries(json).map(([key, value]) => [key, clean(value, 500)]));
+    return Object.fromEntries(Object.entries(json).map(([key, value]) => [key, gatewayField(value, 500)]));
   }
   if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
     const formData = await request.formData();
-    return Object.fromEntries([...formData.entries()].map(([key, value]) => [key, clean(value, 500)]));
+    return Object.fromEntries([...formData.entries()].map(([key, value]) => [key, gatewayField(value, 500)]));
   }
   const text = await request.text();
-  const xmlPairs = [...text.matchAll(/<([^/?][^>\s]*)[^>]*>([^<]*)<\/\1>/g)].map((match) => [match[1], clean(match[2], 500)]);
+  const xmlPairs = [...text.matchAll(/<([^/?][^>\s]*)[^>]*>([^<]*)<\/\1>/g)].map((match) => [match[1], gatewayField(match[2], 500)]);
   if (xmlPairs.length) return Object.fromEntries(xmlPairs);
-  return Object.fromEntries(new URLSearchParams(text).entries());
+  return Object.fromEntries([...new URLSearchParams(text).entries()].map(([key, value]) => [key, gatewayField(value, 500)]));
 }
