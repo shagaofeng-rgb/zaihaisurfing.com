@@ -41,7 +41,7 @@ export default function Hero({locale}: HeroProps) {
           </Link>
         </div>
         <div className="hero-tags" role="list" aria-label="ZAIHAI product advantages">
-          {copy.tags.map((tag) => <span key={tag}>{tag}</span>)}
+          {copy.tags.map((tag) => <span role="listitem" key={tag}>{tag}</span>)}
         </div>
         <div className="hero-showcase" role="navigation" aria-label="Featured product lines">
           {copy.cards.map((card) => (

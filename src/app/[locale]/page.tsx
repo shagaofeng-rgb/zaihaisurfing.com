@@ -63,29 +63,52 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
               market: 'GCC',
               title: 'Luxury resorts, yacht clubs & Red Sea tourism',
               text: 'Strong fit for UAE, Saudi Arabia, Qatar and Gulf buyers building premium beach and yacht-side experiences.',
-              image: '/assets/banners/market-middle-east-optimized.jpg'
+              image: '/assets/banners/market-middle-east-optimized.jpg',
+              mobileImage: '/assets/banners/market-middle-east-mobile.jpg',
+              width: 1100,
+              height: 733
             },
             {
               market: 'United States',
               title: 'Lake rentals, marinas & adventure operators',
               text: 'Ideal for Florida, California, lake resorts, rental businesses and outdoor recreation distributors.',
-              image: '/assets/banners/market-north-america-optimized.jpg'
+              image: '/assets/banners/market-north-america-optimized.jpg',
+              mobileImage: '/assets/banners/market-north-america-mobile.jpg',
+              width: 1100,
+              height: 626
             },
             {
               market: 'Mediterranean Europe',
               title: 'Beach clubs, coastal resorts & tourism rentals',
               text: 'Suitable for Spain, Greece, Italy and France where coastal leisure and premium water sports are mature.',
-              image: '/assets/banners/market-europe-optimized.jpg'
+              image: '/assets/banners/market-europe-optimized.jpg',
+              mobileImage: '/assets/banners/market-europe-mobile.jpg',
+              width: 1100,
+              height: 733
             },
             {
               market: 'Island Resorts',
               title: 'Maldives, Thailand & Indonesia resort activities',
               text: 'Practical for island hotels, lagoon experiences, water sports centers and tourism attraction packages.',
-              image: '/assets/banners/market-asia-optimized.jpg'
+              image: '/assets/banners/market-asia-optimized.jpg',
+              mobileImage: '/assets/banners/market-asia-mobile.jpg',
+              width: 1100,
+              height: 733
             }
           ].map((item) => (
             <article key={item.market}>
-              <img src={item.image} alt="" loading="lazy" decoding="async" className="market-card-image" />
+              <picture>
+                <source media="(max-width: 720px)" srcSet={item.mobileImage} />
+                <img
+                  src={item.image}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  width={item.width}
+                  height={item.height}
+                  className="market-card-image"
+                />
+              </picture>
               <span>{item.market}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
