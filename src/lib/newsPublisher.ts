@@ -158,8 +158,8 @@ function rollingCandidate(base: Date, offset: number): Candidate {
   const slot = slotDate(base, offset);
   const slotId = slot.toISOString().slice(0, 13).replace(/[-T:]/g, '');
   const angle = rollingAngles[offset % rollingAngles.length];
-  const source = sourceBriefs[offset % sourceBriefs.length];
-  const title = `${angle.title} (${slot.toISOString().slice(0, 10)})`;
+  const source = sourceBriefs[Math.floor(offset / rollingAngles.length) % sourceBriefs.length];
+  const title = `${angle.title} for ${source.category}`;
   const sourceLine = `${source.name}: ${source.url}`;
   return {
     slug: `auto-${slotId}-${source.key}-${angle.slug}`,
@@ -177,13 +177,27 @@ function rollingCandidate(base: Date, offset: number): Candidate {
   };
 }
 
-function nextCandidate(published: Set<string>) {
-  const staticCandidate = candidates.find((item) => !published.has(item.slug));
+function canonical(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/\(\d{4}-\d{2}-\d{2}\)/g, '')
+    .replace(/\s+for\s+(water sports destinations|resort and rental operations|electric surfboards)$/i, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function topicKey(candidate: Pick<Candidate, 'title' | 'excerpt' | 'content'>) {
+  return `${canonical(candidate.title)}|${canonical(candidate.excerpt)}|${canonical(candidate.content).slice(0, 120)}`;
+}
+
+function nextCandidate(publishedSlugs: Set<string>, publishedTopics: Set<string>) {
+  const staticCandidate = candidates.find((item) => !publishedSlugs.has(item.slug) && !publishedTopics.has(topicKey(item)));
   if (staticCandidate) return staticCandidate;
   const now = new Date();
   for (let offset = 0; offset < 240; offset += 1) {
     const candidate = rollingCandidate(now, offset);
-    if (!published.has(candidate.slug)) return candidate;
+    const key = topicKey(candidate);
+    if (!publishedSlugs.has(candidate.slug) && !publishedTopics.has(key)) return candidate;
   }
   return null;
 }
@@ -203,8 +217,9 @@ async function validateImage(url: string) {
 
 export async function publishNextAutomatedNews() {
   const store = await readAdminStore();
-  const published = new Set(store.posts.map((post) => post.slug));
-  const candidate = nextCandidate(published);
+  const publishedSlugs = new Set(store.posts.map((post) => post.slug));
+  const publishedTopics = new Set(store.posts.map((post) => topicKey(post)));
+  const candidate = nextCandidate(publishedSlugs, publishedTopics);
   if (!candidate) {
     return {published: false, reason: 'No unpublished automated candidate could be generated.'};
   }

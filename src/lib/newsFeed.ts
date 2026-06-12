@@ -6,6 +6,15 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+function topicFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
+  return `${article.title} ${article.excerpt}`
+    .toLowerCase()
+    .replace(/\(\d{4}-\d{2}-\d{2}\)/g, '')
+    .replace(/\s+for\s+(water sports destinations|resort and rental operations|electric surfboards)/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function sourceUrlFrom(post: ContentPost) {
   return post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/news/${post.slug}`;
 }
@@ -67,10 +76,14 @@ export async function getAllNewsArticles() {
     .filter((post) => post.status === 'published')
     .map(postToArticle);
   const seen = new Set<string>();
+  const seenTopics = new Set<string>();
   return [...published, ...newsArticles]
     .filter((article) => {
       if (seen.has(article.slug)) return false;
+      const topic = topicFingerprint(article);
+      if (seenTopics.has(topic)) return false;
       seen.add(article.slug);
+      seenTopics.add(topic);
       return true;
     })
     .sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
