@@ -19,6 +19,34 @@ function sourceUrlFrom(post: ContentPost) {
   return post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/news/${post.slug}`;
 }
 
+const displayImagePool = [
+  {url: '/assets/news/neom-sindalah.webp', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses a stable ZAIHAI-hosted copy of public NEOM Sindalah newsroom material.'},
+  {url: '/assets/news/neom-sindalah-marina-detail.jpg', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses a cropped ZAIHAI-hosted copy of public NEOM Sindalah newsroom material.'},
+  {url: '/assets/news/shoremaster-waterfront-trends.webp', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses a stable ZAIHAI-hosted copy of public ShoreMaster waterfront industry material.'},
+  {url: '/assets/news/shoremaster-vertical-lift-sunset.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster waterfront equipment material saved as a stable ZAIHAI-hosted copy.'},
+  {url: '/assets/news/shoremaster-dock-bench.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster dock material saved as a stable ZAIHAI-hosted copy.'},
+  {url: '/assets/news/shoremaster-dock-ipe.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster dock material saved as a stable ZAIHAI-hosted copy.'},
+  {url: '/assets/news/claritas-electric-surfboard-market.webp', publisher: 'Claritas Intelligence', sourceUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market', note: 'Feature image uses a stable ZAIHAI-hosted preview image associated with the public Claritas market release.'},
+  {url: '/assets/catalog/optimized/x1-pro.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/x1-pro`, note: 'Feature image uses ZAIHAI product media to support the article topic.'},
+  {url: '/assets/catalog/optimized/x1.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/x1`, note: 'Feature image uses ZAIHAI product media to support the article topic.'},
+  {url: '/assets/catalog/optimized/rage-shark-x.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/rage-shark-x`, note: 'Feature image uses ZAIHAI product media to support the article topic.'},
+  {url: '/assets/catalog/optimized/p1.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/p1`, note: 'Feature image uses ZAIHAI product media to support the article topic.'},
+  {url: '/assets/catalog/optimized/p1-pro.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/p1-pro`, note: 'Feature image uses ZAIHAI product media to support the article topic.'},
+  {url: '/assets/banners/market-middle-east-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-north-america-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-europe-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-asia-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-middle-east-mobile.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-north-america-mobile.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-europe-mobile.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/market-asia-mobile.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/applications`, note: 'Feature image uses ZAIHAI market application media to support the article topic.'},
+  {url: '/assets/banners/zaihai-main-banner-desktop-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en`, note: 'Feature image uses ZAIHAI site media to support the article topic.'},
+  {url: '/assets/banners/zaihai-main-banner-mobile-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en`, note: 'Feature image uses ZAIHAI site media to support the article topic.'},
+  {url: '/assets/banners/zaihai-video-poster-card.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en#riding-video`, note: 'Feature image uses ZAIHAI riding video poster media to support the article topic.'},
+  {url: '/assets/banners/zaihai-video-poster-optimized.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en#riding-video`, note: 'Feature image uses ZAIHAI riding video poster media to support the article topic.'},
+  {url: '/assets/catalog/x1-pro/product-mega-thumb.jpg', publisher: 'ZAIHAI SURFING', sourceUrl: `${siteUrl}/en/products/x1-pro`, note: 'Feature image uses ZAIHAI product media to support the article topic.'}
+];
+
 function postToArticle(post: ContentPost): NewsArticle {
   const sourceUrl = sourceUrlFrom(post);
   const sourceName = post.source.split(':')[0]?.trim() || 'Public source';
@@ -70,6 +98,31 @@ function postToArticle(post: ContentPost): NewsArticle {
   };
 }
 
+function diversifyArticleImages(articles: NewsArticle[]) {
+  const used = new Set<string>();
+  return articles.map((article) => {
+    if (!used.has(article.hero)) {
+      used.add(article.hero);
+      return article;
+    }
+    const replacement = displayImagePool.find((image) => !used.has(image.url));
+    if (!replacement) return article;
+    used.add(replacement.url);
+    return {
+      ...article,
+      hero: replacement.url,
+      heroAlt: `${article.title} supporting industry image`,
+      imageCredit: {
+        publisher: replacement.publisher,
+        sourceUrl: replacement.sourceUrl,
+        imageUrl: `${siteUrl}${replacement.url}`,
+        note: replacement.note,
+        accessedDate: article.updatedAt
+      }
+    };
+  });
+}
+
 export async function getAllNewsArticles() {
   const adminPosts = await listAdminPosts('news');
   const published = adminPosts
@@ -77,7 +130,7 @@ export async function getAllNewsArticles() {
     .map(postToArticle);
   const seen = new Set<string>();
   const seenTopics = new Set<string>();
-  return [...published, ...newsArticles]
+  const articles = [...published, ...newsArticles]
     .filter((article) => {
       if (seen.has(article.slug)) return false;
       const topic = topicFingerprint(article);
@@ -87,6 +140,7 @@ export async function getAllNewsArticles() {
       return true;
     })
     .sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
+  return diversifyArticleImages(articles);
 }
 
 export async function getAllNewsSlugs() {

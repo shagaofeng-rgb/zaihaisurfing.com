@@ -7,7 +7,7 @@ type SourceBrief = {
   key: string;
   name: string;
   url: string;
-  image: string;
+  images: string[];
   category: string;
   tags: string[];
 };
@@ -17,7 +17,7 @@ const sourceBriefs: SourceBrief[] = [
     key: 'red-sea',
     name: 'NEOM Sindalah newsroom',
     url: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
-    image: '/assets/news/neom-sindalah.webp',
+    images: ['/assets/news/neom-sindalah.webp', '/assets/news/neom-sindalah-marina-detail.jpg'],
     category: 'Water Sports Destinations',
     tags: ['Middle East', 'Resorts', 'Yacht Clubs']
   },
@@ -25,7 +25,12 @@ const sourceBriefs: SourceBrief[] = [
     key: 'marina-fleets',
     name: 'ShoreMaster waterfront industry report',
     url: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
-    image: '/assets/news/shoremaster-waterfront-trends.webp',
+    images: [
+      '/assets/news/shoremaster-waterfront-trends.webp',
+      '/assets/news/shoremaster-vertical-lift-sunset.jpg',
+      '/assets/news/shoremaster-dock-bench.jpg',
+      '/assets/news/shoremaster-dock-ipe.jpg'
+    ],
     category: 'Resort & Rental Operations',
     tags: ['Electric Boating', 'Rentals', 'Marinas']
   },
@@ -33,7 +38,12 @@ const sourceBriefs: SourceBrief[] = [
     key: 'electric-surfboards',
     name: 'Claritas Intelligence electric surfboard market release',
     url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
-    image: '/assets/news/claritas-electric-surfboard-market.webp',
+    images: [
+      '/assets/news/claritas-electric-surfboard-market.webp',
+      '/assets/catalog/optimized/x1-pro.jpg',
+      '/assets/catalog/optimized/x1.jpg',
+      '/assets/catalog/optimized/rage-shark-x.jpg'
+    ],
     category: 'Electric Surfboards',
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
   }
@@ -154,18 +164,20 @@ function slotDate(base: Date, offset: number) {
   return date;
 }
 
-function rollingCandidate(base: Date, offset: number): Candidate {
+function rollingCandidate(base: Date, offset: number, usedImages: Set<string>): Candidate | null {
   const slot = slotDate(base, offset);
   const slotId = slot.toISOString().slice(0, 13).replace(/[-T:]/g, '');
   const angle = rollingAngles[offset % rollingAngles.length];
   const source = sourceBriefs[Math.floor(offset / rollingAngles.length) % sourceBriefs.length];
+  const coverImage = source.images.find((image) => !usedImages.has(image));
+  if (!coverImage) return null;
   const title = `${angle.title} for ${source.category}`;
   const sourceLine = `${source.name}: ${source.url}`;
   return {
     slug: `auto-${slotId}-${source.key}-${angle.slug}`,
     title,
     excerpt: angle.excerpt,
-    coverImage: source.image,
+    coverImage,
     category: source.category,
     content: `${angle.paragraphs.join('\n\n')}\n\nSource note: this automated article uses public material from ${source.name} for market context and image attribution.`,
     publishDate: '',
@@ -190,16 +202,77 @@ function topicKey(candidate: Pick<Candidate, 'title' | 'excerpt' | 'content'>) {
   return `${canonical(candidate.title)}|${canonical(candidate.excerpt)}|${canonical(candidate.content).slice(0, 120)}`;
 }
 
-function nextCandidate(publishedSlugs: Set<string>, publishedTopics: Set<string>) {
-  const staticCandidate = candidates.find((item) => !publishedSlugs.has(item.slug) && !publishedTopics.has(topicKey(item)));
+function nextCandidate(publishedSlugs: Set<string>, publishedTopics: Set<string>, usedImages: Set<string>) {
+  const staticCandidate = candidates.find((item) => !publishedSlugs.has(item.slug) && !publishedTopics.has(topicKey(item)) && !usedImages.has(item.coverImage));
   if (staticCandidate) return staticCandidate;
   const now = new Date();
   for (let offset = 0; offset < 240; offset += 1) {
-    const candidate = rollingCandidate(now, offset);
+    const candidate = rollingCandidate(now, offset, usedImages);
+    if (!candidate) continue;
     const key = topicKey(candidate);
     if (!publishedSlugs.has(candidate.slug) && !publishedTopics.has(key)) return candidate;
   }
   return null;
+}
+
+const repairImagePool = [
+  '/assets/news/neom-sindalah.webp',
+  '/assets/news/neom-sindalah-marina-detail.jpg',
+  '/assets/news/shoremaster-waterfront-trends.webp',
+  '/assets/news/shoremaster-vertical-lift-sunset.jpg',
+  '/assets/news/shoremaster-dock-bench.jpg',
+  '/assets/news/shoremaster-dock-ipe.jpg',
+  '/assets/news/claritas-electric-surfboard-market.webp',
+  '/assets/catalog/optimized/x1-pro.jpg',
+  '/assets/catalog/optimized/x1.jpg',
+  '/assets/catalog/optimized/rage-shark-x.jpg',
+  '/assets/catalog/optimized/p1.jpg',
+  '/assets/catalog/optimized/p1-pro.jpg',
+  '/assets/banners/market-middle-east-optimized.jpg',
+  '/assets/banners/market-north-america-optimized.jpg',
+  '/assets/banners/market-europe-optimized.jpg',
+  '/assets/banners/market-asia-optimized.jpg',
+  '/assets/banners/market-middle-east-mobile.jpg',
+  '/assets/banners/market-north-america-mobile.jpg',
+  '/assets/banners/market-europe-mobile.jpg',
+  '/assets/banners/market-asia-mobile.jpg',
+  '/assets/banners/zaihai-main-banner-desktop-optimized.jpg',
+  '/assets/banners/zaihai-main-banner-mobile-optimized.jpg',
+  '/assets/banners/zaihai-video-poster-card.jpg',
+  '/assets/banners/zaihai-video-poster-optimized.jpg',
+  '/assets/catalog/x1-pro/product-mega-thumb.jpg'
+];
+
+function replacementImage(used: Set<string>) {
+  return repairImagePool.find((image) => !used.has(image));
+}
+
+export async function repairNewsImageDiversity() {
+  const now = new Date().toISOString();
+  let changed = 0;
+  const store = await writeAdminStore((current) => {
+    const used = new Set(
+      current.posts
+        .filter((post) => post.type === 'news' && post.status === 'published' && !post.slug.startsWith('auto-'))
+        .map((post) => post.coverImage)
+    );
+    const posts = current.posts.map((post) => {
+      if (post.type !== 'news' || post.status !== 'published') return post;
+      if (!post.slug.startsWith('auto-')) return post;
+      if (!used.has(post.coverImage)) {
+        used.add(post.coverImage);
+        return post;
+      }
+      const coverImage = replacementImage(used);
+      if (!coverImage) return post;
+      used.add(coverImage);
+      changed += 1;
+      return {...post, coverImage, updatedAt: now};
+    });
+    return changed ? {...current, posts} : current;
+  });
+  const newsImages = store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage);
+  return {changed, images: newsImages};
 }
 
 async function validateImage(url: string) {
@@ -219,7 +292,8 @@ export async function publishNextAutomatedNews() {
   const store = await readAdminStore();
   const publishedSlugs = new Set(store.posts.map((post) => post.slug));
   const publishedTopics = new Set(store.posts.map((post) => topicKey(post)));
-  const candidate = nextCandidate(publishedSlugs, publishedTopics);
+  const usedImages = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
+  const candidate = nextCandidate(publishedSlugs, publishedTopics, usedImages);
   if (!candidate) {
     return {published: false, reason: 'No unpublished automated candidate could be generated.'};
   }
