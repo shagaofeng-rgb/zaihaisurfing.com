@@ -1,4 +1,5 @@
 import {readAdminStore, writeAdminStore, type ContentPost} from '@/lib/backendStore';
+import {recordPublishedAutomatedNews, selectNextAutomatedNews} from '@/lib/newsIntelligence';
 import {siteUrl} from '@/lib/site';
 
 type Candidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
@@ -290,12 +291,9 @@ async function validateImage(url: string) {
 
 export async function publishNextAutomatedNews() {
   const store = await readAdminStore();
-  const publishedSlugs = new Set(store.posts.map((post) => post.slug));
-  const publishedTopics = new Set(store.posts.map((post) => topicKey(post)));
-  const usedImages = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
-  const candidate = nextCandidate(publishedSlugs, publishedTopics, usedImages);
+  const {candidate, diagnostics} = await selectNextAutomatedNews(store.posts);
   if (!candidate) {
-    return {published: false, reason: 'No unpublished automated candidate could be generated.'};
+    return {published: false, reason: diagnostics.reason || 'No qualified non-duplicate news candidate was found.', diagnostics};
   }
 
   const image = await validateImage(candidate.coverImage);
@@ -316,5 +314,7 @@ export async function publishNextAutomatedNews() {
     posts: [post, ...current.posts.filter((item) => item.slug !== post.slug)]
   }));
 
-  return {published: true, slug: post.slug, title: post.title, image};
+  await recordPublishedAutomatedNews(candidate);
+
+  return {published: true, slug: post.slug, title: post.title, image, diagnostics};
 }
