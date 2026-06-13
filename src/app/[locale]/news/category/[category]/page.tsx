@@ -3,6 +3,7 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
+import {NewsArticleGrid} from '@/components/NewsArticleGrid';
 import {localizedMetadata} from '@/lib/metadata';
 import {getNewsCategories, getNewsCategory} from '@/lib/newsFeed';
 
@@ -29,11 +30,14 @@ export async function generateMetadata({
 }
 
 export default async function NewsCategoryPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{locale: Locale; category: string}>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const {locale, category} = await params;
+  const query = await searchParams;
   const group = await getNewsCategory(category);
   if (!group) notFound();
   setRequestLocale(locale);
@@ -53,19 +57,7 @@ export default async function NewsCategoryPage({
           <p className="eyebrow">Articles</p>
           <h2 id="category-news-title">{group.name} Articles</h2>
         </div>
-        <div className="news-grid">
-          {group.articles.map((article) => (
-            <Link href={`/news/${article.slug}`} className="news-card" key={article.slug}>
-              <img src={article.hero} alt={article.heroAlt} />
-              <div>
-                <time dateTime={article.date}>{article.date}</time>
-                <h3>{article.title}</h3>
-                <p>{article.excerpt}</p>
-                <span>{article.category} | {article.readTime} | {article.sources.length} cited sources</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <NewsArticleGrid articles={group.articles} basePath={`/news/category/${category}`} searchParams={query} />
       </section>
     </main>
   );
