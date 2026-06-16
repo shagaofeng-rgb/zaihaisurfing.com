@@ -56,20 +56,6 @@ export async function POST(request: Request) {
         ? 'Oceanpayment request generated. Waiting for buyer payment result.'
         : 'Oceanpayment credentials are not configured yet.'
     });
-    console.log('[oceanpayment-create] request prepared', {
-      orderId: order.id,
-      method,
-      scene,
-      configured: oceanpayment.configured,
-      endpoint: oceanpayment.gatewayUrl,
-      signStructure: oceanpayment.signature?.structure,
-      signSourceLength: oceanpayment.signature?.sourceLength,
-      secureCodeLength: oceanpayment.signature?.secureCodeLength,
-      accountLength: oceanpayment.fields.account?.length || 0,
-      terminalLength: oceanpayment.fields.terminal?.length || 0,
-      orderAmount: oceanpayment.fields.order_amount,
-      orderCurrency: oceanpayment.fields.order_currency
-    });
 
     await appendAnalyticsEvent({
       id: `${Date.now()}-oceanpayment-create`,
@@ -102,7 +88,13 @@ export async function POST(request: Request) {
       ok: true,
       status: oceanpayment.configured ? 'ready_to_submit' : 'waiting_for_credentials',
       order: updated || order,
-      oceanpayment
+      oceanpayment: {
+        configured: oceanpayment.configured,
+        testMode: oceanpayment.testMode,
+        gatewayUrl: oceanpayment.gatewayUrl,
+        fields: oceanpayment.fields,
+        billing: oceanpayment.billing
+      }
     });
   } catch (error) {
     console.error('Oceanpayment create failed', error);

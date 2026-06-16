@@ -5,14 +5,10 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-qianhai-signature') || request.headers.get('signature') || '';
 
-  console.log('[qianhai-notify] received payment callback placeholder', {
-    hasSignature: Boolean(signature),
-    length: rawBody.length
-  });
-
   return Response.json({
     ok: true,
-    status: 'callback_received_placeholder',
+    status: 'callback_received',
+    received: Boolean(rawBody || signature),
     message: 'Verify Qianhai signature and update order status here after gateway documentation is available.'
   });
 }
