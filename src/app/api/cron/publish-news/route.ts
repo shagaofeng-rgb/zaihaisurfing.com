@@ -1,4 +1,4 @@
-import {publishNextAutomatedNews, repairNewsImageDiversity} from '@/lib/newsPublisher';
+import {publishDailyAutomatedNews, publishNextAutomatedNews, repairNewsImageDiversity} from '@/lib/newsPublisher';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,11 @@ export async function GET(request: Request) {
       const result = await repairNewsImageDiversity();
       return Response.json({ok: true, repaired: true, ...result});
     }
-    const result = await publishNextAutomatedNews();
+    if (url.searchParams.get('single') === '1') {
+      const result = await publishNextAutomatedNews();
+      return Response.json({ok: true, ...result});
+    }
+    const result = await publishDailyAutomatedNews();
     return Response.json({ok: true, ...result});
   } catch (error) {
     return Response.json({

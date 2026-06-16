@@ -345,3 +345,25 @@ export async function publishNextAutomatedNews() {
 
   return {published: true, slug: post.slug, title: post.title, image, diagnostics};
 }
+
+export async function publishDailyAutomatedNews(target = 4) {
+  const results = [];
+  let publishedCount = 0;
+
+  for (let index = 0; index < target; index += 1) {
+    const result = await publishNextAutomatedNews();
+    results.push(result);
+    if (!result.published) {
+      break;
+    }
+    publishedCount += 1;
+  }
+
+  return {
+    mode: 'daily_batch',
+    target,
+    publishedCount,
+    results,
+    completed: publishedCount >= target
+  };
+}
