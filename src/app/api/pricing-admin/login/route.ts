@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     return Response.redirect(new URL('/pricing-admin/login?error=rate-limit', request.url), 303);
   }
   const formData = await request.formData();
-  const email = String(formData.get('email') || '').trim().toLowerCase();
+  const email = String(formData.get('email') || formData.get('account') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
   if (!verifyPricingAdminCredentials(email, password)) {
     return Response.redirect(new URL('/pricing-admin/login?error=1', request.url), 303);

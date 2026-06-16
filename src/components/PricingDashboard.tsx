@@ -14,7 +14,8 @@ export default function PricingDashboard({
   exchangeRate,
   exchangeSource,
   exchangeUpdatedAt,
-  exchangeFallback
+  exchangeFallback,
+  currentAccount
 }: {
   products: PricingProduct[];
   orders: PricingOrder[];
@@ -22,6 +23,7 @@ export default function PricingDashboard({
   exchangeSource: string;
   exchangeUpdatedAt: string;
   exchangeFallback: boolean;
+  currentAccount: string;
 }) {
   const [productId, setProductId] = useState(products[0]?.id || 'x1');
   const [quantity, setQuantity] = useState(1);
@@ -67,7 +69,7 @@ export default function PricingDashboard({
         <div>
           <p className="pricing-kicker">独立计价后台</p>
           <h1>冲浪板价格、汇率、佣金与成交订单计算</h1>
-          <p>按当日 USD/CNY 汇率计算单台利润、整单利润和销售提成，并保留成交订单记录。</p>
+          <p>当前账号：{currentAccount}。按当日 USD/CNY 汇率计算单台利润、整单利润和销售提成，并保留成交订单记录。</p>
         </div>
         <form action="/api/pricing-admin/logout" method="post">
           <button className="pricing-ghost-button" type="submit">退出</button>
@@ -162,7 +164,7 @@ export default function PricingDashboard({
           </div>
           <label>
             销售人员
-            <input name="salesperson" placeholder="销售姓名" />
+            <input name="salesperson" placeholder="销售姓名" defaultValue={currentAccount} />
           </label>
           <label>
             备注

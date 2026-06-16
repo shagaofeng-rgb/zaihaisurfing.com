@@ -4,6 +4,10 @@ import {redirect} from 'next/navigation';
 
 export const PRICING_ADMIN_COOKIE = 'zaihai_pricing_admin_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+const pricingSalesUsers = [
+  {account: 'cowin202601', password: process.env.PRICING_SALES_PASSWORD_202601 || 'hello123456', label: '业务员 01'},
+  {account: 'cowin202602', password: process.env.PRICING_SALES_PASSWORD_202602 || 'hello123456', label: '业务员 02'}
+];
 
 function secret() {
   const value = process.env.PRICING_ADMIN_SESSION_SECRET || process.env.ADMIN_JWT_SECRET || process.env.SESSION_SECRET || '';
@@ -31,10 +35,18 @@ function verifyHash(password: string, storedHash: string) {
   return digest.length === expected.length && crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(expected));
 }
 
+export function pricingAccountLabel(account: string) {
+  const user = pricingSalesUsers.find((item) => item.account === account);
+  return user?.label || account;
+}
+
 export function verifyPricingAdminCredentials(email: string, password: string) {
   const adminEmail = (process.env.PRICING_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'davidsha@zaihaisurfing.com').trim().toLowerCase();
   const normalizedEmail = String(email || '').trim().toLowerCase();
-  if (!normalizedEmail || normalizedEmail !== adminEmail || !password) return false;
+  if (!normalizedEmail || !password) return false;
+  const salesUser = pricingSalesUsers.find((user) => user.account === normalizedEmail);
+  if (salesUser) return password === salesUser.password;
+  if (normalizedEmail !== adminEmail) return false;
   if (process.env.PRICING_ADMIN_PASSWORD_HASH) return verifyHash(password, process.env.PRICING_ADMIN_PASSWORD_HASH);
   if (process.env.PRICING_ADMIN_PASSWORD) return password === process.env.PRICING_ADMIN_PASSWORD;
   if (process.env.ADMIN_PASSWORD_HASH) return verifyHash(password, process.env.ADMIN_PASSWORD_HASH);

@@ -5776,6 +5776,24 @@ html[dir="rtl"] .catalog-product-card dd {
   padding: 10px 12px;
 }
 
+.pricing-login-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pricing-login-links a {
+  border: 1px solid rgba(40, 215, 239, 0.22);
+  border-radius: 8px;
+  color: #d7f7ff;
+  background: rgba(40, 215, 239, 0.08);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 12px;
+  text-align: center;
+  text-decoration: none;
+}
+
 .pricing-primary-button,
 .pricing-secondary-button,
 .pricing-ghost-button {
