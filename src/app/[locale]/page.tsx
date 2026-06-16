@@ -22,6 +22,21 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
   return (
     <main>
       <Hero locale={locale} />
+      <section className="home-discount-strip" aria-labelledby="exclusive-discount-title">
+        <div>
+          <p className="eyebrow">Exclusive offer</p>
+          <h2 id="exclusive-discount-title">Contact our support team to receive your dedicated discount</h2>
+          <p>For resort projects, rental fleets and distributor orders, ZAIHAI can prepare a tailored quotation with model recommendations, shipping support and limited-time purchase benefits.</p>
+        </div>
+        <a
+          className="button primary"
+          href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Claim Exclusive Discount
+        </a>
+      </section>
       <section className="video-showcase" id="riding-video" aria-labelledby="video-showcase-title">
         <div className="video-copy">
           <p className="eyebrow">{copy.homeSections.videoEyebrow}</p>

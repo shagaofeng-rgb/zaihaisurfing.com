@@ -138,10 +138,46 @@ function cents(amount: number) {
 
 export async function readAdminStore() {
   const stored = await readStoreObject<AdminStore>(STORE_FILE);
-  if (stored) return stored;
+  if (stored) {
+    const synced = syncCatalogPrices(stored);
+    if (synced.changed) {
+      await writeStoreObject(STORE_FILE, synced.store);
+      return synced.store;
+    }
+    return stored;
+  }
   const seeded = createSeedStore();
   await writeStoreObject(STORE_FILE, seeded);
   return seeded;
+}
+
+function syncCatalogPrices(store: AdminStore) {
+  let changed = false;
+  const timestamp = now();
+  const legacyPriceCents: Partial<Record<ProductSlug, number>> = {
+    x1: cents(3200),
+    'x1-pro': cents(3600),
+    'rage-shark-x': cents(4000),
+    p1: cents(5800),
+    'p1-pro': cents(6499)
+  };
+  const updatedProducts = store.products.map((product) => {
+    if (!productSlugs.includes(product.slug as ProductSlug)) return product;
+    const slug = product.slug as ProductSlug;
+    const siteProduct = products[slug];
+    const nextPriceCents = cents(siteProduct.priceAmount);
+    if (product.priceCents === nextPriceCents && product.salePriceCents === 0) return product;
+    const legacyPrice = legacyPriceCents[slug];
+    if (product.priceCents !== legacyPrice && product.salePriceCents !== legacyPrice) return product;
+    changed = true;
+    return {
+      ...product,
+      priceCents: nextPriceCents,
+      salePriceCents: 0,
+      updatedAt: timestamp
+    };
+  });
+  return {changed, store: changed ? {...store, products: updatedProducts} : store};
 }
 
 export async function writeAdminStore(updater: (store: AdminStore) => AdminStore) {

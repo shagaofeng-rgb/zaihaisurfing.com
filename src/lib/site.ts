@@ -20,8 +20,8 @@ export const products = {
     image: '/assets/catalog/optimized/x1.jpg',
     thumbnail: '/assets/catalog/thumbs/x1.jpg',
     category: 'Electric Surfboards',
-    price: 'USD 3,200',
-    priceAmount: 3200,
+    price: 'USD 3,699',
+    priceAmount: 3699,
     specs: ['10 kW', '72 V', '0-51 km/h', '60-80 min']
   },
   'x1-pro': {
@@ -29,8 +29,8 @@ export const products = {
     image: '/assets/catalog/optimized/x1-pro.jpg',
     thumbnail: '/assets/catalog/thumbs/x1-pro.jpg',
     category: 'Electric Surfboards',
-    price: 'USD 3,600',
-    priceAmount: 3600,
+    price: 'USD 4,099',
+    priceAmount: 4099,
     specs: ['12 kW', '72 V', '0-61 km/h', 'IP67']
   },
   'rage-shark-x': {
@@ -38,8 +38,8 @@ export const products = {
     image: '/assets/catalog/optimized/rage-shark-x.jpg',
     thumbnail: '/assets/catalog/thumbs/rage-shark-x.jpg',
     category: 'Electric Go-Kart Boats',
-    price: 'USD 4,000',
-    priceAmount: 4000,
+    price: 'USD 4,300',
+    priceAmount: 4300,
     specs: ['15 kW', '76 Ah', '0-51 km/h', '60-80 min']
   },
   p1: {
@@ -47,8 +47,8 @@ export const products = {
     image: '/assets/catalog/optimized/p1.jpg',
     thumbnail: '/assets/catalog/thumbs/p1.jpg',
     category: 'Fuel-Powered Surfboards',
-    price: 'USD 5,800',
-    priceAmount: 5800,
+    price: 'USD 5,999',
+    priceAmount: 5999,
     specs: ['10.5 kW', '62 km/h', '110 cc', '3.5 L']
   },
   'p1-pro': {
@@ -56,8 +56,8 @@ export const products = {
     image: '/assets/catalog/optimized/p1-pro.jpg',
     thumbnail: '/assets/catalog/thumbs/p1-pro.jpg',
     category: 'Fuel-Powered Surfboards',
-    price: 'USD 6,499',
-    priceAmount: 6499,
+    price: 'USD 6,799',
+    priceAmount: 6799,
     specs: ['10.5 kW', '64 km/h', '110 cc', '3.5 L']
   },
   'payment-test': {
