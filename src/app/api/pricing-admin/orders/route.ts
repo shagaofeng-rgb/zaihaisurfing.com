@@ -27,9 +27,17 @@ export async function POST(request: Request) {
   const saleUnitUsd = Math.max(0, numberValue(formData, 'saleUnitUsd', product.retailUsd));
   const costUnitUsd = Math.max(0, numberValue(formData, 'costUnitUsd', 0));
   const extraCostUsd = Math.max(0, numberValue(formData, 'extraCostUsd', 0));
-  const commissionRate = Math.min(100, Math.max(0, numberValue(formData, 'commissionRate', 0)));
   const exchangeRate = Math.max(0.0001, numberValue(formData, 'exchangeRate', 7.2));
-  const calculated = calculatePricing({quantity, saleUnitUsd, costUnitUsd, extraCostUsd, commissionRate, exchangeRate});
+  const calculated = calculatePricing({
+    productId,
+    quantity,
+    saleUnitUsd,
+    costUnitUsd,
+    extraCostUsd,
+    exchangeRate,
+    floorUnitUsd: product.tiers.tier4,
+    fivePlusUnitUsd: product.tiers.tier2
+  });
   const now = new Date().toISOString();
   const order: PricingOrder = {
     id: `price-${Date.now()}`,
@@ -44,7 +52,13 @@ export async function POST(request: Request) {
     saleUnitUsd,
     costUnitUsd,
     extraCostUsd,
-    commissionRate,
+    commissionRate: calculated.baseRate,
+    commissionFloorUnitUsd: calculated.floorUnitUsd,
+    commissionFivePlusUnitUsd: calculated.fivePlusUnitUsd,
+    commissionPerUnitUsd: calculated.commissionPerUnit,
+    baseCommissionPerUnitUsd: calculated.baseCommissionPerUnit,
+    midCommissionPerUnitUsd: calculated.midCommissionPerUnit,
+    topCommissionPerUnitUsd: calculated.topCommissionPerUnit,
     exchangeRate,
     grossProfitUsd: calculated.grossProfitUsd,
     grossProfitCny: calculated.grossProfitCny,

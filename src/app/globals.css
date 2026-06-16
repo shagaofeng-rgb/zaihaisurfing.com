@@ -5949,6 +5949,26 @@ html[dir="rtl"] .catalog-product-card dd {
   font-size: clamp(20px, 2vw, 28px);
 }
 
+.pricing-commission-box {
+  border: 1px solid rgba(156, 226, 15, 0.24);
+  border-radius: 12px;
+  background: rgba(156, 226, 15, 0.08);
+  color: #dce8f5;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.pricing-commission-box strong {
+  color: #ffffff;
+}
+
+.pricing-commission-box p {
+  margin: 0;
+  color: #b9c8d9;
+  font-size: 13px;
+}
+
 .pricing-table-wrap {
   width: 100%;
   overflow-x: auto;

@@ -24,6 +24,12 @@ export type PricingOrder = {
   costUnitUsd: number;
   extraCostUsd: number;
   commissionRate: number;
+  commissionFloorUnitUsd?: number;
+  commissionFivePlusUnitUsd?: number;
+  commissionPerUnitUsd?: number;
+  baseCommissionPerUnitUsd?: number;
+  midCommissionPerUnitUsd?: number;
+  topCommissionPerUnitUsd?: number;
   exchangeRate: number;
   grossProfitUsd: number;
   grossProfitCny: number;
@@ -65,7 +71,9 @@ function mergeProducts(products: PricingProduct[]) {
       changed = true;
       return product;
     }
-    return existing;
+    const hasCurrentDefaults = existing.name === product.name && existing.retailUsd === product.retailUsd;
+    if (!hasCurrentDefaults) changed = true;
+    return {...existing, name: product.name, retailUsd: product.retailUsd};
   });
   return {changed, products: merged};
 }

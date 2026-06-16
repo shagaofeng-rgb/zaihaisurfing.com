@@ -2,7 +2,7 @@
 
 import {useMemo, useState} from 'react';
 import type {PricingOrder, PricingProduct} from '@/lib/pricingStore';
-import {tierForQuantity, tierLabels} from '@/lib/pricingMath';
+import {calculatePricing, tierForQuantity, tierLabels} from '@/lib/pricingMath';
 
 function money(value: number, currency = 'USD') {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, {maximumFractionDigits: 2})}`;
@@ -30,22 +30,41 @@ export default function PricingDashboard({
   const [saleUnitUsd, setSaleUnitUsd] = useState(products[0]?.retailUsd || 0);
   const [costUnitUsd, setCostUnitUsd] = useState(products[0]?.tiers.tier1 || 0);
   const [extraCostUsd, setExtraCostUsd] = useState(0);
-  const [commissionRate, setCommissionRate] = useState(10);
 
   const product = products.find((item) => item.id === productId) || products[0];
   const activeTier = tierForQuantity(quantity);
 
   const totals = useMemo(() => {
-    const grossProfitUsd = (saleUnitUsd - costUnitUsd) * Math.max(1, quantity) - extraCostUsd;
-    const commissionUsd = Math.max(0, grossProfitUsd) * Math.max(0, commissionRate) / 100;
-    return {
-      grossProfitUsd,
-      grossProfitCny: grossProfitUsd * exchangeRate,
-      perUnitProfitUsd: saleUnitUsd - costUnitUsd - extraCostUsd / Math.max(1, quantity),
-      commissionUsd,
-      commissionCny: commissionUsd * exchangeRate
-    };
-  }, [saleUnitUsd, costUnitUsd, extraCostUsd, commissionRate, quantity, exchangeRate]);
+    if (!product) {
+      return {
+        grossProfitUsd: 0,
+        grossProfitCny: 0,
+        salespersonCommissionUsd: 0,
+        salespersonCommissionCny: 0,
+        commissionPerUnit: 0,
+        baseRate: 0,
+        baseCommissionPerUnit: 0,
+        midCommissionPerUnit: 0,
+        topCommissionPerUnit: 0,
+        midSpreadPerUnit: 0,
+        topSpreadPerUnit: 0,
+        floorUnitUsd: 0,
+        fivePlusUnitUsd: 0
+      };
+    }
+    return calculatePricing({
+      productId,
+      quantity,
+      saleUnitUsd,
+      costUnitUsd,
+      extraCostUsd,
+      exchangeRate,
+      floorUnitUsd: product.tiers.tier4,
+      fivePlusUnitUsd: product.tiers.tier2
+    });
+  }, [product, productId, saleUnitUsd, costUnitUsd, extraCostUsd, quantity, exchangeRate]);
+
+  const perUnitProfitUsd = saleUnitUsd - costUnitUsd - extraCostUsd / Math.max(1, quantity);
 
   function selectProduct(nextId: string) {
     const next = products.find((item) => item.id === nextId);
@@ -69,7 +88,7 @@ export default function PricingDashboard({
         <div>
           <p className="pricing-kicker">独立计价后台</p>
           <h1>冲浪板价格、汇率、佣金与成交订单计算</h1>
-          <p>当前账号：{currentAccount}。按当日 USD/CNY 汇率计算单台利润、整单利润和销售提成，并保留成交订单记录。</p>
+          <p>当前账号：{currentAccount}。佣金按 30 台以上最低底价基础佣金，加售价差额阶梯佣金自动计算。</p>
         </div>
         <form action="/api/pricing-admin/logout" method="post">
           <button className="pricing-ghost-button" type="submit">退出</button>
@@ -93,9 +112,9 @@ export default function PricingDashboard({
           <small>约 CNY {(orders.reduce((sum, order) => sum + order.grossProfitCny, 0)).toLocaleString(undefined, {maximumFractionDigits: 0})}</small>
         </article>
         <article>
-          <span>销售提成</span>
+          <span>销售佣金</span>
           <strong>{money(orders.reduce((sum, order) => sum + order.salespersonCommissionUsd, 0))}</strong>
-          <small>按每单录入比例计算</small>
+          <small>X1/X1 PRO/卡丁船基础 1%，P1/P1 PRO 基础 2%</small>
         </article>
       </section>
 
@@ -125,31 +144,34 @@ export default function PricingDashboard({
               <input name="quantity" type="number" min="1" value={quantity} onChange={(event) => updateQuantity(Number(event.target.value))} />
             </label>
             <label>
-              销售提成 %
-              <input name="commissionRate" type="number" min="0" max="100" step="0.1" value={commissionRate} onChange={(event) => setCommissionRate(Number(event.target.value))} />
+              成交单价 USD
+              <input name="saleUnitUsd" type="number" min="0" step="0.01" value={saleUnitUsd} onChange={(event) => setSaleUnitUsd(Number(event.target.value))} />
             </label>
           </div>
 
           <div className="pricing-form-row">
             <label>
-              成交单价 USD
-              <input name="saleUnitUsd" type="number" min="0" step="0.01" value={saleUnitUsd} onChange={(event) => setSaleUnitUsd(Number(event.target.value))} />
-            </label>
-            <label>
               成本单价 USD
               <input name="costUnitUsd" type="number" min="0" step="0.01" value={costUnitUsd} onChange={(event) => setCostUnitUsd(Number(event.target.value))} />
             </label>
+            <label>
+              额外成本 USD
+              <input name="extraCostUsd" type="number" min="0" step="0.01" value={extraCostUsd} onChange={(event) => setExtraCostUsd(Number(event.target.value))} />
+            </label>
           </div>
 
-          <label>
-            额外成本 USD（运费补贴、手续费、包装等整单成本）
-            <input name="extraCostUsd" type="number" min="0" step="0.01" value={extraCostUsd} onChange={(event) => setExtraCostUsd(Number(event.target.value))} />
-          </label>
-
           <div className="pricing-result-panel">
-            <div><span>单台毛利</span><strong>{money(totals.perUnitProfitUsd)}</strong></div>
+            <div><span>单台毛利</span><strong>{money(perUnitProfitUsd)}</strong></div>
             <div><span>整单毛利</span><strong>{money(totals.grossProfitUsd)}</strong><small>CNY {totals.grossProfitCny.toLocaleString(undefined, {maximumFractionDigits: 0})}</small></div>
-            <div><span>销售提成</span><strong>{money(totals.commissionUsd)}</strong><small>CNY {totals.commissionCny.toLocaleString(undefined, {maximumFractionDigits: 0})}</small></div>
+            <div><span>实际销售佣金</span><strong>{money(totals.salespersonCommissionUsd)}</strong><small>CNY {totals.salespersonCommissionCny.toLocaleString(undefined, {maximumFractionDigits: 0})}</small></div>
+          </div>
+
+          <div className="pricing-commission-box">
+            <strong>佣金拆分</strong>
+            <p>基础佣金：{money(totals.floorUnitUsd)} × {totals.baseRate}% = {money(totals.baseCommissionPerUnit)} / 台</p>
+            <p>底价到 5 台以上价差：{money(totals.midSpreadPerUnit)} × 10% = {money(totals.midCommissionPerUnit)} / 台</p>
+            <p>超过 5 台以上底价部分：{money(totals.topSpreadPerUnit)} × 20% = {money(totals.topCommissionPerUnit)} / 台</p>
+            <p>合计：{money(totals.commissionPerUnit)} / 台 × {quantity} 台 = {money(totals.salespersonCommissionUsd)}</p>
           </div>
 
           <div className="pricing-form-row">
@@ -222,7 +244,7 @@ export default function PricingDashboard({
           <table className="pricing-table">
             <thead>
               <tr>
-                <th>时间</th><th>客户</th><th>国家</th><th>产品</th><th>数量</th><th>成交单价</th><th>成本单价</th><th>整单毛利</th><th>销售提成</th><th>销售</th>
+                <th>时间</th><th>客户</th><th>国家</th><th>产品</th><th>数量</th><th>成交单价</th><th>成本单价</th><th>整单毛利</th><th>销售佣金</th><th>销售</th>
               </tr>
             </thead>
             <tbody>
