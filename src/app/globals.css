@@ -5688,3 +5688,316 @@ html[dir="rtl"] .catalog-product-card dd {
     max-width: 100%;
   }
 }
+
+.pricing-login-page,
+.pricing-admin-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(31, 199, 214, 0.2), transparent 34rem),
+    linear-gradient(135deg, #061018 0%, #0d1724 45%, #111827 100%);
+  color: #eef7ff;
+}
+
+.pricing-login-page {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.pricing-login-card,
+.pricing-card,
+.pricing-admin-hero,
+.pricing-admin-metrics article {
+  border: 1px solid rgba(146, 234, 43, 0.22);
+  background: rgba(9, 16, 24, 0.88);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.pricing-login-card {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 16px;
+  padding: 30px;
+  border-radius: 14px;
+}
+
+.pricing-login-card h1,
+.pricing-admin-hero h1,
+.pricing-card h2 {
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.pricing-login-card p,
+.pricing-admin-hero p,
+.pricing-card small,
+.pricing-admin-metrics small {
+  color: #aebccc;
+}
+
+.pricing-kicker {
+  margin: 0 0 8px;
+  color: #28d7ef;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pricing-login-card label,
+.pricing-calculator label,
+.pricing-rate-form label {
+  display: grid;
+  gap: 7px;
+  color: #cbd8e8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pricing-login-card input,
+.pricing-calculator input,
+.pricing-calculator select,
+.pricing-calculator textarea,
+.pricing-rate-form input {
+  width: 100%;
+  border: 1px solid rgba(195, 213, 235, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #101827;
+  font: inherit;
+  padding: 12px 13px;
+}
+
+.pricing-login-error {
+  border-radius: 8px;
+  background: rgba(238, 47, 47, 0.16);
+  color: #ff8a8a;
+  padding: 10px 12px;
+}
+
+.pricing-primary-button,
+.pricing-secondary-button,
+.pricing-ghost-button {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 44px;
+  padding: 12px 18px;
+}
+
+.pricing-primary-button {
+  background: #ee2f2f;
+  color: #ffffff;
+}
+
+.pricing-secondary-button {
+  background: #9ce20f;
+  color: #071018;
+}
+
+.pricing-ghost-button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.pricing-admin-page {
+  padding: 24px;
+}
+
+.pricing-admin-hero {
+  width: min(100%, 1480px);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-radius: 14px;
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.pricing-admin-hero h1 {
+  max-width: 920px;
+  font-size: clamp(28px, 3.6vw, 54px);
+  line-height: 1.03;
+}
+
+.pricing-admin-hero p {
+  max-width: 760px;
+  margin: 12px 0 0;
+}
+
+.pricing-admin-metrics,
+.pricing-admin-grid,
+.pricing-admin-page > .pricing-card {
+  width: min(100%, 1480px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pricing-admin-metrics article {
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.pricing-admin-metrics span {
+  display: block;
+  color: #9fb2c7;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pricing-admin-metrics strong {
+  display: block;
+  margin: 8px 0 4px;
+  color: #ffffff;
+  font-size: clamp(24px, 2.6vw, 36px);
+}
+
+.pricing-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.pricing-card {
+  border-radius: 14px;
+  padding: clamp(18px, 2.4vw, 28px);
+}
+
+.pricing-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pricing-badge {
+  border-radius: 999px;
+  background: rgba(156, 226, 15, 0.16);
+  color: #c6ff55;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.pricing-calculator,
+.pricing-rate-form {
+  display: grid;
+  gap: 15px;
+}
+
+.pricing-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pricing-result-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pricing-result-panel div {
+  border: 1px solid rgba(40, 215, 239, 0.2);
+  border-radius: 12px;
+  background: rgba(40, 215, 239, 0.08);
+  padding: 15px;
+}
+
+.pricing-result-panel span,
+.pricing-result-panel small {
+  display: block;
+  color: #aebccc;
+}
+
+.pricing-result-panel strong {
+  display: block;
+  margin: 6px 0 2px;
+  color: #ffffff;
+  font-size: clamp(20px, 2vw, 28px);
+}
+
+.pricing-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pricing-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.pricing-table th,
+.pricing-table td {
+  border-bottom: 1px solid rgba(195, 213, 235, 0.12);
+  padding: 13px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.pricing-table th {
+  color: #9fb2c7;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.pricing-table td {
+  color: #eef7ff;
+  font-size: 14px;
+}
+
+.pricing-rate-form {
+  margin-top: 18px;
+}
+
+.pricing-admin-page > .pricing-card {
+  margin-top: 18px;
+}
+
+@media (max-width: 1020px) {
+  .pricing-admin-metrics,
+  .pricing-admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pricing-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .pricing-admin-page {
+    padding: 12px;
+  }
+
+  .pricing-admin-hero,
+  .pricing-card-head,
+  .pricing-form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-admin-metrics,
+  .pricing-result-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-admin-hero h1 {
+    font-size: 30px;
+  }
+}
