@@ -37,6 +37,7 @@ type RawCandidate = {
   domain: string;
   tier: SourceTier;
   summary: string;
+  imageUrl?: string;
   publishedAt?: string;
   query?: string;
   feedUrl?: string;
@@ -85,11 +86,6 @@ const articleImagePool = [
   '/assets/news/shoremaster-dock-bench.jpg',
   '/assets/news/shoremaster-dock-ipe.jpg',
   '/assets/news/claritas-electric-surfboard-market.webp',
-  '/assets/catalog/optimized/x1-pro.jpg',
-  '/assets/catalog/optimized/x1.jpg',
-  '/assets/catalog/optimized/rage-shark-x.jpg',
-  '/assets/catalog/optimized/p1.jpg',
-  '/assets/catalog/optimized/p1-pro.jpg',
   '/assets/banners/market-middle-east-optimized.jpg',
   '/assets/banners/market-north-america-optimized.jpg',
   '/assets/banners/market-europe-optimized.jpg',
@@ -97,31 +93,7 @@ const articleImagePool = [
   '/assets/banners/zaihai-video-poster-optimized.jpg',
   '/assets/banners/surfing-rider-01.png',
   '/assets/banners/surfing-rider-02.png',
-  '/assets/banners/surfing-rider-03.png',
-  '/assets/catalog/collection-electric-surfboard.png',
-  '/assets/catalog/collection-fuel-surfboard.png',
-  '/assets/catalog/collection-go-kart-boat.png',
-  '/assets/catalog/collection-oem-support.png',
-  '/assets/catalog/x1/hero-angle.png',
-  '/assets/catalog/x1/side-view.png',
-  '/assets/catalog/x1/rear-view.png',
-  '/assets/catalog/x1/top-view.png',
-  '/assets/catalog/x1-pro/hero-angle.png',
-  '/assets/catalog/x1-pro/side-view.png',
-  '/assets/catalog/x1-pro/rear-view.png',
-  '/assets/catalog/x1-pro/top-view.png',
-  '/assets/catalog/rage-shark-x/hero-angle.png',
-  '/assets/catalog/rage-shark-x/side-view.png',
-  '/assets/catalog/rage-shark-x/top-view.png',
-  '/assets/catalog/rage-shark-x/front-view.png',
-  '/assets/catalog/p1/hero-angle.png',
-  '/assets/catalog/p1/side-view.png',
-  '/assets/catalog/p1/rear-view.png',
-  '/assets/catalog/p1/detail-view.png',
-  '/assets/catalog/p1-pro/product.png',
-  '/assets/catalog/p1-pro/scene-01.png',
-  '/assets/catalog/p1-pro/scene-02.png',
-  '/assets/catalog/p1-pro/scene-03.png'
+  '/assets/banners/surfing-rider-03.png'
 ];
 
 const sources: CandidateSource[] = [
@@ -399,6 +371,7 @@ function trimAtWord(value: string, maxLength: number) {
 
 function chooseImage(posts: ContentPost[], candidate: ScoredCandidate) {
   const used = new Set(posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
+  if (candidate.imageUrl && isUsableFeedImage(candidate.imageUrl) && !used.has(candidate.imageUrl)) return candidate.imageUrl;
   const offset = Math.abs(hash(`${candidate.domain}-${candidate.productCategory}-${candidate.country}`).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % articleImagePool.length;
   const rotated = [...articleImagePool.slice(offset), ...articleImagePool.slice(0, offset)];
   return rotated.find((image) => !used.has(image)) || rotated[0];
@@ -528,6 +501,55 @@ function linkFrom(block: string) {
   return decodeEntities(href || direct);
 }
 
+function attrFrom(block: string, tagName: string, attrName: string) {
+  const match = block.match(new RegExp(`<${tagName}\\b[^>]*\\s${attrName}=["']([^"']+)["'][^>]*>`, 'i'));
+  return decodeEntities(match?.[1] || '');
+}
+
+function toAbsoluteImageUrl(value: string, baseUrl: string) {
+  const raw = decodeEntities(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw, baseUrl);
+    if (!/^https?:$/.test(url.protocol)) return '';
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
+function isProductImage(url: string) {
+  return /\/assets\/catalog\//i.test(url);
+}
+
+function isUsableFeedImage(url: string) {
+  if (!url || isProductImage(url)) return false;
+  try {
+    const parsed = new URL(url);
+    if (!/^https?:$/.test(parsed.protocol)) return false;
+    const imageLikePath = /\.(avif|webp|png|jpe?g)(?:[?#].*)?$/i.test(parsed.pathname + parsed.search);
+    const imageHostOrPath = /image|media|cdn|wp-content|uploads|cloudinary|akamai|imgix/i.test(url);
+    return imageLikePath || imageHostOrPath;
+  } catch {
+    return false;
+  }
+}
+
+function extractFeedImage(block: string, baseUrl: string) {
+  const candidates = [
+    attrFrom(block, 'media:content', 'url'),
+    attrFrom(block, 'media:thumbnail', 'url'),
+    attrFrom(block, 'enclosure', 'url'),
+    attrFrom(block, 'itunes:image', 'href'),
+    attrFrom(block, 'img', 'src')
+  ];
+  for (const candidate of candidates) {
+    const imageUrl = toAbsoluteImageUrl(candidate, baseUrl);
+    if (isUsableFeedImage(imageUrl)) return imageUrl;
+  }
+  return '';
+}
+
 function parseFeed(xml: string, source: CandidateSource, feedUrl: string, query?: string): RawCandidate[] {
   const itemBlocks = [...xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/gi)].map((match) => match[0]).slice(0, 10);
   return itemBlocks
@@ -543,6 +565,7 @@ function parseFeed(xml: string, source: CandidateSource, feedUrl: string, query?
         domain,
         tier: source.tier,
         summary: tag(block, ['description', 'summary', 'content:encoded', 'content']).slice(0, 420),
+        imageUrl: extractFeedImage(block, url || feedUrl),
         publishedAt: tag(block, ['pubDate', 'published', 'updated', 'dc:date']),
         query,
         feedUrl

@@ -41,9 +41,8 @@ const sourceBriefs: SourceBrief[] = [
     url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
     images: [
       '/assets/news/claritas-electric-surfboard-market.webp',
-      '/assets/catalog/optimized/x1-pro.jpg',
-      '/assets/catalog/optimized/x1.jpg',
-      '/assets/catalog/optimized/rage-shark-x.jpg'
+      '/assets/banners/market-north-america-optimized.jpg',
+      '/assets/banners/market-europe-optimized.jpg'
     ],
     category: 'Electric Surfboards',
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
@@ -224,11 +223,6 @@ const repairImagePool = [
   '/assets/news/shoremaster-dock-bench.jpg',
   '/assets/news/shoremaster-dock-ipe.jpg',
   '/assets/news/claritas-electric-surfboard-market.webp',
-  '/assets/catalog/optimized/x1-pro.jpg',
-  '/assets/catalog/optimized/x1.jpg',
-  '/assets/catalog/optimized/rage-shark-x.jpg',
-  '/assets/catalog/optimized/p1.jpg',
-  '/assets/catalog/optimized/p1-pro.jpg',
   '/assets/banners/market-middle-east-optimized.jpg',
   '/assets/banners/market-north-america-optimized.jpg',
   '/assets/banners/market-europe-optimized.jpg',
@@ -241,53 +235,27 @@ const repairImagePool = [
   '/assets/banners/zaihai-main-banner-mobile-optimized.jpg',
   '/assets/banners/zaihai-video-poster-card.jpg',
   '/assets/banners/zaihai-video-poster-optimized.jpg',
-  '/assets/catalog/x1-pro/product-mega-thumb.jpg',
   '/assets/banners/surfing-rider-01.png',
   '/assets/banners/surfing-rider-02.png',
-  '/assets/banners/surfing-rider-03.png',
-  '/assets/catalog/collection-electric-surfboard.png',
-  '/assets/catalog/collection-fuel-surfboard.png',
-  '/assets/catalog/collection-go-kart-boat.png',
-  '/assets/catalog/collection-oem-support.png',
-  '/assets/catalog/x1/hero-angle.png',
-  '/assets/catalog/x1/side-view.png',
-  '/assets/catalog/x1/rear-view.png',
-  '/assets/catalog/x1/top-view.png',
-  '/assets/catalog/x1-pro/hero-angle.png',
-  '/assets/catalog/x1-pro/side-view.png',
-  '/assets/catalog/x1-pro/rear-view.png',
-  '/assets/catalog/x1-pro/top-view.png',
-  '/assets/catalog/rage-shark-x/hero-angle.png',
-  '/assets/catalog/rage-shark-x/side-view.png',
-  '/assets/catalog/rage-shark-x/top-view.png',
-  '/assets/catalog/rage-shark-x/front-view.png',
-  '/assets/catalog/p1/hero-angle.png',
-  '/assets/catalog/p1/side-view.png',
-  '/assets/catalog/p1/rear-view.png',
-  '/assets/catalog/p1/detail-view.png',
-  '/assets/catalog/p1-pro/product.png',
-  '/assets/catalog/p1-pro/scene-01.png',
-  '/assets/catalog/p1-pro/scene-02.png',
-  '/assets/catalog/p1-pro/scene-03.png'
+  '/assets/banners/surfing-rider-03.png'
 ];
 
 function replacementImage(used: Set<string>) {
   return repairImagePool.find((image) => !used.has(image));
 }
 
+function isProductNewsImage(image: string) {
+  return /\/assets\/catalog\//i.test(image);
+}
+
 export async function repairNewsImageDiversity() {
   const now = new Date().toISOString();
   let changed = 0;
   const store = await writeAdminStore((current) => {
-    const used = new Set(
-      current.posts
-        .filter((post) => post.type === 'news' && post.status === 'published' && !post.slug.startsWith('auto-'))
-        .map((post) => post.coverImage)
-    );
+    const used = new Set<string>();
     const posts = current.posts.map((post) => {
       if (post.type !== 'news' || post.status !== 'published') return post;
-      if (!post.slug.startsWith('auto-')) return post;
-      if (!used.has(post.coverImage)) {
+      if (!isProductNewsImage(post.coverImage) && !used.has(post.coverImage)) {
         used.add(post.coverImage);
         return post;
       }
@@ -316,6 +284,19 @@ async function validateImage(url: string) {
   return {absolute, type, size: bytes.length};
 }
 
+async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType<typeof readAdminStore>>) {
+  try {
+    const image = await validateImage(candidate.coverImage);
+    return {coverImage: candidate.coverImage, image};
+  } catch (error) {
+    const used = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
+    const fallback = replacementImage(used);
+    if (!candidate.coverImage.startsWith('http') || !fallback) throw error;
+    const image = await validateImage(fallback);
+    return {coverImage: fallback, image};
+  }
+}
+
 export async function publishNextAutomatedNews() {
   const store = await readAdminStore();
   const {candidate, diagnostics} = await selectNextAutomatedNews(store.posts);
@@ -323,11 +304,12 @@ export async function publishNextAutomatedNews() {
     return {published: false, reason: diagnostics.reason || 'No qualified non-duplicate news candidate was found.', diagnostics};
   }
 
-  const image = await validateImage(candidate.coverImage);
+  const {coverImage, image} = await validateNewsCover(candidate, store);
   const now = new Date().toISOString();
   const publishDate = now.slice(0, 10);
   const post: ContentPost = {
     ...candidate,
+    coverImage,
     id: `post-${candidate.slug}`,
     type: 'news',
     publishDate,
