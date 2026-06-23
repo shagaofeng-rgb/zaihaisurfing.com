@@ -240,8 +240,8 @@ const repairImagePool = [
   '/assets/banners/surfing-rider-03.png'
 ];
 
-function replacementImage(used: Set<string>) {
-  return repairImagePool.find((image) => !used.has(image));
+function replacementImage(used: Set<string>, fallbackIndex = 0) {
+  return repairImagePool.find((image) => !used.has(image)) || repairImagePool[fallbackIndex % repairImagePool.length];
 }
 
 function isProductNewsImage(image: string) {
@@ -253,13 +253,13 @@ export async function repairNewsImageDiversity() {
   let changed = 0;
   const store = await writeAdminStore((current) => {
     const used = new Set<string>();
-    const posts = current.posts.map((post) => {
+    const posts = current.posts.map((post, index) => {
       if (post.type !== 'news' || post.status !== 'published') return post;
       if (!isProductNewsImage(post.coverImage) && !used.has(post.coverImage)) {
         used.add(post.coverImage);
         return post;
       }
-      const coverImage = replacementImage(used);
+      const coverImage = replacementImage(used, index);
       if (!coverImage) return post;
       used.add(coverImage);
       changed += 1;
