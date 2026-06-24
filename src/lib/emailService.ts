@@ -10,6 +10,7 @@ type MailPayload = {
 
 const DEFAULT_SMTP_HOST = 'smtp.exmail.qq.com';
 const DEFAULT_SENDER_EMAIL = 'davidsha@zaihaisurfing.com';
+const ADMIN_NOTIFICATION_EMAIL = 'davidsha@zaihaisurfing.com';
 
 function smtpConfig() {
   return {
@@ -33,6 +34,45 @@ function escapeHtml(value: unknown) {
     '"': '&quot;',
     "'": '&#39;'
   })[char] || char);
+}
+
+function adminNotificationEmail() {
+  return ADMIN_NOTIFICATION_EMAIL;
+}
+
+function orderRows(order: StoreOrder) {
+  return [
+    ['Order ID', order.id],
+    ['Status', order.status],
+    ['Gateway status', order.gatewayStatus],
+    ['Payment gateway', order.paymentGateway],
+    ['Payment method', order.paymentMethod],
+    ['Payment ID', order.paymentId || order.transactionId],
+    ['Product', `${order.productName} x ${order.quantity}`],
+    ['Amount', `${order.currency} ${order.total.toLocaleString()}`],
+    ['Customer', order.customer.name],
+    ['Email', order.customer.email],
+    ['Phone', order.customer.phone],
+    ['Company', order.customer.company],
+    ['Country', order.customer.country],
+    ['Address', order.customer.address],
+    ['Checkout city/state/zip', [order.checkout.city, order.checkout.state, order.checkout.zip].filter(Boolean).join(', ')],
+    ['Shipping method', order.checkout.shippingMethod],
+    ['Card', [order.checkout.cardBrand, order.checkout.cardLast4 ? `**** ${order.checkout.cardLast4}` : ''].filter(Boolean).join(' ')],
+    ['Customer note', order.customer.message],
+    ['Created at', order.createdAt],
+    ['Updated at', order.updatedAt]
+  ];
+}
+
+function rowsText(rows: string[][]) {
+  return rows.map(([label, value]) => `${label}: ${value || '-'}`).join('\n');
+}
+
+function rowsHtml(rows: string[][]) {
+  return rows
+    .map(([label, value]) => `<tr><td style="padding:7px 10px;border:1px solid #d8ddd9;vertical-align:top"><b>${escapeHtml(label)}</b></td><td style="padding:7px 10px;border:1px solid #d8ddd9">${escapeHtml(value || '-')}</td></tr>`)
+    .join('');
 }
 
 async function sendSmtpMail(message: MailPayload) {
@@ -183,6 +223,98 @@ export async function sendOrderSuccessEmailOnce(order: StoreOrder) {
   }
 }
 
+export async function sendAdminOrderNotice(order: StoreOrder, reason = 'order_submitted') {
+  const adminEmail = adminNotificationEmail();
+  const subject = `[ZAIHAI Order] ${reason}: ${order.id} - ${order.currency} ${order.total.toLocaleString()}`;
+  const rows = [['Notice type', reason], ...orderRows(order)];
+  const text = rowsText(rows);
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111318;line-height:1.6">
+      <h2>ZAIHAI order notification</h2>
+      <p>A customer order event was recorded on zaihaisurfing.com.</p>
+      <table style="border-collapse:collapse;width:100%;max-width:780px">${rowsHtml(rows)}</table>
+    </div>
+  `;
+
+  try {
+    const result = await sendSmtpMail({to: adminEmail, subject, text, html});
+    await appendEmailLog({
+      orderId: order.id,
+      customerEmail: order.customer.email,
+      templateType: 'admin_order_notice',
+      status: result.skipped ? 'skipped' : 'sent',
+      providerMessageId: result.message,
+      errorMessage: '',
+      sentAt: result.skipped ? '' : new Date().toISOString()
+    });
+    return result;
+  } catch (error) {
+    await appendEmailLog({
+      orderId: order.id,
+      customerEmail: order.customer.email,
+      templateType: 'admin_order_notice',
+      status: 'failed',
+      providerMessageId: '',
+      errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
+      sentAt: ''
+    });
+    return {ok: false, skipped: false, message: error instanceof Error ? error.message : 'Unknown SMTP error'};
+  }
+}
+
+export async function sendAdminPaymentNotice(order: StoreOrder, input: {
+  source: string;
+  verified?: boolean;
+  paymentStatus?: string;
+  paymentId?: string;
+  detail?: string;
+}) {
+  const adminEmail = adminNotificationEmail();
+  const statusLabel = input.paymentStatus || order.status || order.gatewayStatus || 'unknown';
+  const subject = `[ZAIHAI Payment] ${statusLabel}: ${order.id}`;
+  const rows = [
+    ['Notice source', input.source],
+    ['Verified', typeof input.verified === 'boolean' ? String(input.verified) : ''],
+    ['Gateway payment status', input.paymentStatus || ''],
+    ['Payment ID', input.paymentId || order.paymentId || order.transactionId],
+    ['Detail', input.detail || ''],
+    ...orderRows(order)
+  ];
+  const text = rowsText(rows);
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111318;line-height:1.6">
+      <h2>ZAIHAI payment notification</h2>
+      <p>A payment update was received. This notice is sent whether the payment succeeded, failed, is processing, or could not be verified.</p>
+      <table style="border-collapse:collapse;width:100%;max-width:780px">${rowsHtml(rows)}</table>
+    </div>
+  `;
+
+  try {
+    const result = await sendSmtpMail({to: adminEmail, subject, text, html});
+    await appendEmailLog({
+      orderId: order.id,
+      customerEmail: order.customer.email,
+      templateType: 'admin_payment_notice',
+      status: result.skipped ? 'skipped' : 'sent',
+      providerMessageId: result.message,
+      errorMessage: '',
+      sentAt: result.skipped ? '' : new Date().toISOString()
+    });
+    return result;
+  } catch (error) {
+    await appendEmailLog({
+      orderId: order.id,
+      customerEmail: order.customer.email,
+      templateType: 'admin_payment_notice',
+      status: 'failed',
+      providerMessageId: '',
+      errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
+      sentAt: ''
+    });
+    return {ok: false, skipped: false, message: error instanceof Error ? error.message : 'Unknown SMTP error'};
+  }
+}
+
 export async function sendAccountActivationEmail(order: StoreOrder, setupUrl: string) {
   const alreadySent = await hasSentEmail(order.id, 'account_activation');
   if (alreadySent) return;
@@ -317,7 +449,7 @@ export async function sendContactInquiryEmail(input: {
   destinationPort: string;
   message: string;
 }) {
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.CONTACT_NOTIFICATION_EMAIL || DEFAULT_SENDER_EMAIL;
+  const adminEmail = adminNotificationEmail();
   const subject = `New ZAIHAI inquiry from ${input.email}`;
   const rows = [
     ['Name', input.name],

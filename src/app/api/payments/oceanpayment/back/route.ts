@@ -1,4 +1,5 @@
 import {appendAnalyticsEvent, findStoreOrder, updateStoreOrderPayment} from '@/lib/commerceStore';
+import {sendAdminPaymentNotice} from '@/lib/emailService';
 import {oceanpaymentStatusToOrder, parseGatewayPayload, verifyOceanpaymentReturn} from '@/lib/oceanpayment';
 
 export const runtime = 'nodejs';
@@ -15,7 +16,7 @@ async function handleBack(request: Request) {
   if (orderId && verified) {
     const existingOrder = await findStoreOrder(orderId);
     if (existingOrder?.status !== 'paid') {
-      await updateStoreOrderPayment(orderId, {
+      const updatedOrder = await updateStoreOrderPayment(orderId, {
         paymentGateway: 'oceanpayment',
         paymentId,
         transactionId: paymentId,
@@ -26,6 +27,34 @@ async function handleBack(request: Request) {
               logisticsStatus: 'Payment return verified. Waiting for Oceanpayment async notice before marking the order as paid.'
             }
           : paymentPatch)
+      });
+      if (updatedOrder) {
+        await sendAdminPaymentNotice(updatedOrder, {
+          source: 'oceanpayment_return',
+          verified,
+          paymentStatus: fields.payment_status || fields.status || paymentPatch.status,
+          paymentId,
+          detail: 'Buyer returned from Oceanpayment payment page.'
+        });
+      }
+    } else if (existingOrder) {
+      await sendAdminPaymentNotice(existingOrder, {
+        source: 'oceanpayment_return',
+        verified,
+        paymentStatus: fields.payment_status || fields.status || paymentPatch.status,
+        paymentId,
+        detail: 'Buyer returned from Oceanpayment payment page. Order was already marked paid or finalized.'
+      });
+    }
+  } else if (orderId) {
+    const existingOrder = await findStoreOrder(orderId);
+    if (existingOrder) {
+      await sendAdminPaymentNotice(existingOrder, {
+        source: 'oceanpayment_return',
+        verified,
+        paymentStatus: fields.payment_status || fields.status || (paymentPatch.status === 'failed' ? 'failed' : 'unverified'),
+        paymentId,
+        detail: 'Buyer returned from Oceanpayment but the payment response was failed or unverified.'
       });
     }
   }

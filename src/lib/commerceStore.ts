@@ -126,7 +126,14 @@ export type EmailLog = {
   id: string;
   orderId: string;
   customerEmail: string;
-  templateType: 'order_success' | 'account_activation' | 'password_reset' | 'account_registration' | 'contact_inquiry';
+  templateType:
+    | 'order_success'
+    | 'account_activation'
+    | 'password_reset'
+    | 'account_registration'
+    | 'contact_inquiry'
+    | 'admin_order_notice'
+    | 'admin_payment_notice';
   status: 'pending' | 'sent' | 'failed' | 'skipped';
   providerMessageId: string;
   errorMessage: string;

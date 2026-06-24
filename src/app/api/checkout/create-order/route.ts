@@ -2,7 +2,7 @@ import {cookies} from 'next/headers';
 import {checkoutProductSlugs, oneTimePaymentSlug, type CheckoutProductSlug} from '@/lib/site';
 import {createStoreOrder, appendAnalyticsEvent} from '@/lib/commerceStore';
 import {bindOrdersToCustomer, createCustomerSession, createOrUpdateCustomerUser, customerCookieOptions, findCustomerUserByEmail, getCustomerSession} from '@/lib/customerAuth';
-import {sendRegistrationWelcomeEmail} from '@/lib/emailService';
+import {sendAdminOrderNotice, sendRegistrationWelcomeEmail} from '@/lib/emailService';
 import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
@@ -79,6 +79,7 @@ export async function POST(request: Request) {
         cardholderName: clean(payload.checkout?.cardholderName, 120)
       }
     });
+    await sendAdminOrderNotice(order, 'order_submitted');
     await bindOrdersToCustomer(normalizedEmail, accountUser.id);
     if (!existingUser) await sendRegistrationWelcomeEmail(accountUser.email, accountUser.name);
     if (!session || session.email?.toLowerCase() !== normalizedEmail) {

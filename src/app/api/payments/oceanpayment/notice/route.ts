@@ -1,6 +1,6 @@
 import {appendAnalyticsEvent, appendPaymentNotification, findStoreOrder, readStoreOrders, updateStoreOrderPayment} from '@/lib/commerceStore';
 import {createCustomerToken, ensureCustomerAccountForOrder} from '@/lib/customerAuth';
-import {sendAccountActivationEmail, sendOrderSuccessEmailOnce} from '@/lib/emailService';
+import {sendAccountActivationEmail, sendAdminPaymentNotice, sendOrderSuccessEmailOnce} from '@/lib/emailService';
 import {
   oceanpaymentStatusToOrder,
   parseGatewayPayload,
@@ -37,6 +37,13 @@ export async function POST(request: Request) {
         paymentId: fields.payment_id || fields.transaction_id || fields.trade_no || '',
         raw: sanitizeOceanpaymentFields(fields)
       });
+      await sendAdminPaymentNotice(previousOrder, {
+        source: 'oceanpayment_notice',
+        verified: false,
+        paymentStatus: fields.payment_status || fields.status || 'callback_mismatch',
+        paymentId: fields.payment_id || fields.transaction_id || fields.trade_no || '',
+        detail: `Callback data mismatch: ${validation.errors.join('; ')}`
+      });
       return new Response('callback-mismatch', {status: 400});
     }
     const paymentId = fields.payment_id || fields.transaction_id || fields.trade_no || '';
@@ -66,6 +73,15 @@ export async function POST(request: Request) {
       transactionId: paymentId,
       ...paymentPatch
     });
+    if (order) {
+      await sendAdminPaymentNotice(order, {
+        source: 'oceanpayment_notice',
+        verified,
+        paymentStatus: fields.payment_status || fields.status || paymentPatch.status,
+        paymentId,
+        detail: paymentPatch.status === 'paid' ? 'Payment confirmed by Oceanpayment async notice.' : 'Payment notice received and order status updated.'
+      });
+    }
     if (order && paymentPatch.status === 'paid' && previousOrder?.status !== 'paid') {
       const user = await ensureCustomerAccountForOrder(order);
       const token = await createCustomerToken(user, user.status === 'active' ? 'password_reset' : 'password_setup');
