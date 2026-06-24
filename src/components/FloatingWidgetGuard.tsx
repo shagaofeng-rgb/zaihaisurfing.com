@@ -15,6 +15,8 @@ const OWN_FLOATING_SELECTORS = [
 export default function FloatingWidgetGuard() {
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
+    let startTimer: ReturnType<typeof setTimeout> | undefined;
+    let observer: MutationObserver | undefined;
 
     const protectBottomCta = () => {
       if (window.innerWidth > 660) return;
@@ -43,19 +45,24 @@ export default function FloatingWidgetGuard() {
       });
     };
 
-    protectBottomCta();
-    timer = setInterval(protectBottomCta, 1200);
-    window.addEventListener('resize', protectBottomCta);
-    window.addEventListener('scroll', protectBottomCta, {passive: true});
+    const startGuard = () => {
+      protectBottomCta();
+      timer = setInterval(protectBottomCta, 1600);
+      window.addEventListener('resize', protectBottomCta);
+      window.addEventListener('scroll', protectBottomCta, {passive: true});
 
-    const observer = new MutationObserver(protectBottomCta);
-    observer.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+      observer = new MutationObserver(protectBottomCta);
+      observer.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+    };
+
+    startTimer = setTimeout(startGuard, 6000);
 
     return () => {
       if (timer) clearInterval(timer);
+      if (startTimer) clearTimeout(startTimer);
       window.removeEventListener('resize', protectBottomCta);
       window.removeEventListener('scroll', protectBottomCta);
-      observer.disconnect();
+      observer?.disconnect();
     };
   }, []);
 

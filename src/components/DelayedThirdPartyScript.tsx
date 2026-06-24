@@ -22,10 +22,10 @@ export default function DelayedThirdPartyScript() {
 
     const scheduleIdleLoad = () => {
       if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(loadScript, {timeout: 9000});
+        window.requestIdleCallback(loadScript, {timeout: 18000});
         return;
       }
-      timer = setTimeout(loadScript, 9000);
+      timer = setTimeout(loadScript, 18000);
     };
 
     const interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];

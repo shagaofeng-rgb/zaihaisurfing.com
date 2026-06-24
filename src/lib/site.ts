@@ -1,7 +1,8 @@
 import type {Locale} from '@/i18n/routing';
 import {locales} from '@/i18n/routing';
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfing.com';
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfing.com';
+export const siteUrl = configuredSiteUrl.replace(/^https:\/\/www\./, 'https://').replace(/\/$/, '');
 
 export const productSlugs = ['x1', 'x1-pro', 'rage-shark-x', 'p1', 'p1-pro'] as const;
 export type ProductSlug = (typeof productSlugs)[number];

@@ -25,7 +25,7 @@ export default function HomeRecommendedProducts() {
           return (
             <article className="home-recommend-card" key={slug}>
               <Link className="home-recommend-image" href={`/products/${slug}`} aria-label={`View ${product.name}`}>
-                <img src={product.thumbnail} alt={`${product.name} recommended product`} loading="lazy" />
+                <img src={product.thumbnail} alt={`${product.name} recommended product`} loading="lazy" decoding="async" width="352" height="352" />
               </Link>
               <div className="home-recommend-body">
                 <span className="tag">{product.category}</span>

@@ -29,7 +29,7 @@ export default async function Header({locale}: {locale: Locale}) {
   return (
     <header className="site-header">
       <Link className="brand" href="/">
-        <img src="/assets/logo-small.jpg" alt="ZAIHAI SURFING" />
+        <img src="/assets/logo-small.jpg" alt="ZAIHAI SURFING" width="126" height="76" decoding="async" />
         <span>ZAIHAI SURFING</span>
       </Link>
       <MobileMenu items={mobileNavItems} />

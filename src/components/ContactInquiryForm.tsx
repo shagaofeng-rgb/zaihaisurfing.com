@@ -105,67 +105,72 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
   }
 
   return (
-    <form className="inquiry-form" onSubmit={handleSubmit}>
+    <form
+      className="inquiry-form"
+      onSubmit={handleSubmit}
+      toolname="submit_zaihai_project_inquiry"
+      tooldescription="Send a commercial inquiry to ZAIHAI SURFING for electric surfboards, fuel surfboards, go-kart boats, distributor projects or resort rental fleets."
+    >
       <label>
         <span>{copy.fields.name}</span>
-        <input name="name" required placeholder="Your name" autoComplete="name" />
+        <input name="name" required placeholder="Your name" autoComplete="name" toolparamdescription="Buyer's full name." />
       </label>
       <label>
         <span>{copy.fields.email}</span>
-        <input name="email" required type="email" placeholder="name@company.com" autoComplete="email" />
+        <input name="email" required type="email" placeholder="name@company.com" autoComplete="email" toolparamdescription="Buyer's email address for the quotation reply." />
       </label>
       <label>
         <span>{copy.fields.phone}</span>
-        <input name="phone" required type="tel" placeholder="+1 555 000 0000" autoComplete="tel" />
+        <input name="phone" required type="tel" placeholder="+1 555 000 0000" autoComplete="tel" toolparamdescription="Phone or WhatsApp number for sales follow-up." />
       </label>
       <label>
         <span>{copy.fields.country}</span>
-        <input name="country" required placeholder="UAE, United States, Spain..." autoComplete="country-name" />
+        <input name="country" required placeholder="UAE, United States, Spain..." autoComplete="country-name" toolparamdescription="Destination country or region for the project." />
       </label>
       <label>
         <span>{copy.fields.buyerType}</span>
-        <select name="buyerType" required defaultValue="">
+        <select name="buyerType" required defaultValue="" toolparamdescription="Buyer type, such as resort, distributor, rental fleet, yacht club or water park.">
           <option value="" disabled>Select buyer type</option>
           {copy.buyerTypes.map((item) => <option value={item} key={item}>{item}</option>)}
         </select>
       </label>
       <label>
         <span>{copy.fields.product}</span>
-        <select name="product" required defaultValue="">
+        <select name="product" required defaultValue="" toolparamdescription="Interested ZAIHAI product line or model.">
           <option value="" disabled>Select product</option>
           {copy.productOptions.map((item) => <option value={item} key={item}>{item}</option>)}
         </select>
       </label>
       <label className="full">
         <span>{copy.fields.message}</span>
-        <textarea name="message" required rows={5} placeholder="Quantity, application scenario, shipment plan, branding needs..." />
+        <textarea name="message" required rows={5} placeholder="Quantity, application scenario, shipment plan, branding needs..." toolparamdescription="Project details including quantity, application scenario, shipment plan, branding or customization needs." />
       </label>
       <details className="form-more full">
         <summary>More Project Details</summary>
         <div className="advanced-fields">
           <label>
             <span>{copy.fields.company}</span>
-            <input name="company" placeholder="Company name" autoComplete="organization" />
+            <input name="company" placeholder="Company name" autoComplete="organization" toolparamdescription="Company or organization name." />
           </label>
           <label>
             <span>{copy.fields.quantity}</span>
-            <input name="quantity" placeholder="1 sample / 5 units / 20 units..." />
+            <input name="quantity" placeholder="1 sample / 5 units / 20 units..." toolparamdescription="Expected order quantity or sample quantity." />
           </label>
           <label>
             <span>{copy.fields.market}</span>
-            <input name="targetMarket" placeholder="GCC, USA, Europe, island resort..." />
+            <input name="targetMarket" placeholder="GCC, USA, Europe, island resort..." toolparamdescription="Target sales market or operating region." />
           </label>
           <label>
             <span>Water area type</span>
-            <input name="waterArea" placeholder="Beach / lake / lagoon / water park..." />
+            <input name="waterArea" placeholder="Beach / lake / lagoon / water park..." toolparamdescription="Water area type, such as beach, lake, lagoon, marina or water park." />
           </label>
           <label>
             <span>OEM/ODM requirement</span>
-            <input name="oem" placeholder="Logo, color, packaging..." />
+            <input name="oem" placeholder="Logo, color, packaging..." toolparamdescription="OEM or ODM requirements such as logo, color, package or custom configuration." />
           </label>
           <label>
             <span>Shipping destination port</span>
-            <input name="destinationPort" placeholder="Los Angeles / Jebel Ali / Barcelona..." />
+            <input name="destinationPort" placeholder="Los Angeles / Jebel Ali / Barcelona..." toolparamdescription="Preferred shipping destination port or delivery city." />
           </label>
         </div>
       </details>

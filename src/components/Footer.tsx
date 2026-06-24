@@ -11,7 +11,7 @@ export default async function Footer({locale}: {locale: Locale}) {
     <footer className="site-footer footer-upgraded">
       <div className="footer-brand">
         <Link className="brand" href="/">
-          <img src="/assets/logo-small.jpg" alt="ZAIHAI SURFING" />
+          <img src="/assets/logo-small.jpg" alt="ZAIHAI SURFING" width="126" height="76" loading="lazy" decoding="async" />
           <span>ZAIHAI SURFING</span>
         </Link>
         <p>{copy.footer.brandText}</p>
@@ -50,7 +50,7 @@ export default async function Footer({locale}: {locale: Locale}) {
         <SocialLinks />
       </div>
       <div className="footer-bottom">
-        <span>© {copy.footer.copyright}</span>
+        <span>&copy; {copy.footer.copyright}</span>
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>
         <Link href="/contact">{copy.nav.contact}</Link>

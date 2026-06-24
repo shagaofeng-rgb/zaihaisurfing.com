@@ -47,7 +47,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
           return (
             <article className="catalog-product-card ecommerce-card" key={slug}>
               <Link className="catalog-image-wrap" href={`/products/${slug}`}>
-                <img src={product.thumbnail} alt={alt(slug)} />
+                <img src={product.thumbnail} alt={alt(slug)} loading="lazy" decoding="async" width="352" height="352" />
               </Link>
               <div>
                 <p className="tag">{product.category}</p>
