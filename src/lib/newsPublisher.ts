@@ -4,6 +4,9 @@ import {siteUrl} from '@/lib/site';
 
 type Candidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
 
+const DAILY_MIN_NEWS = 3;
+const DAILY_MAX_NEWS = 4;
+
 type SourceBrief = {
   key: string;
   name: string;
@@ -160,11 +163,32 @@ function slotDate(base: Date, offset: number) {
   return date;
 }
 
-function rollingCandidate(base: Date, offset: number, usedImages: Set<string>): Candidate | null {
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function isTodayPost(post: ContentPost, date = new Date()) {
+  return post.type === 'news' && post.status === 'published' && post.publishDate === todayKey(date);
+}
+
+function sourceUrl(candidate: Pick<Candidate, 'source'>) {
+  return candidate.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || '';
+}
+
+function sourceDomain(candidate: Pick<Candidate, 'source'>) {
+  try {
+    return new URL(sourceUrl(candidate)).hostname.replace(/^www\./, '').toLowerCase();
+  } catch {
+    return candidate.source.split(':')[0]?.trim().toLowerCase() || '';
+  }
+}
+
+function rollingCandidate(base: Date, offset: number, usedImages: Set<string>, usedDomains = new Set<string>()): Candidate | null {
   const slot = slotDate(base, offset);
   const slotId = slot.toISOString().slice(0, 13).replace(/[-T:]/g, '');
   const angle = rollingAngles[offset % rollingAngles.length];
-  const source = sourceBriefs[Math.floor(offset / rollingAngles.length) % sourceBriefs.length];
+  const rotatedSources = [...sourceBriefs.slice(offset % sourceBriefs.length), ...sourceBriefs.slice(0, offset % sourceBriefs.length)];
+  const source = rotatedSources.find((item) => !usedDomains.has(new URL(item.url).hostname.replace(/^www\./, '').toLowerCase())) || rotatedSources[0];
   const coverImage = source.images.find((image) => !usedImages.has(image));
   if (!coverImage) return null;
   const title = `${angle.title} for ${source.category}`;
@@ -207,6 +231,39 @@ function nextCandidate(publishedSlugs: Set<string>, publishedTopics: Set<string>
     if (!candidate) continue;
     const key = topicKey(candidate);
     if (!publishedSlugs.has(candidate.slug) && !publishedTopics.has(key)) return candidate;
+  }
+  return null;
+}
+
+function fallbackDailyCandidate(posts: ContentPost[], batchCandidates: Candidate[] = []): Candidate | null {
+  const now = new Date();
+  const todayPosts = posts.filter((post) => isTodayPost(post, now));
+  if (todayPosts.length + batchCandidates.length >= DAILY_MAX_NEWS) return null;
+  const publishedSlugs = new Set(posts.map((post) => post.slug));
+  const publishedTopics = new Set(posts.map((post) => topicKey(post)));
+  const usedTodayImages = new Set([
+    ...todayPosts.map((post) => post.coverImage),
+    ...batchCandidates.map((candidate) => candidate.coverImage)
+  ]);
+  const usedTodayDomains = new Set([
+    ...todayPosts.map((post) => sourceDomain(post)),
+    ...batchCandidates.map((candidate) => sourceDomain(candidate))
+  ]);
+  const baseOffset = todayPosts.length + batchCandidates.length;
+
+  for (let offset = baseOffset; offset < baseOffset + 120; offset += 1) {
+    const candidate = rollingCandidate(now, offset, usedTodayImages, usedTodayDomains);
+    if (!candidate) continue;
+    const key = topicKey(candidate);
+    if (publishedSlugs.has(candidate.slug) || publishedTopics.has(key)) continue;
+    usedTodayImages.add(candidate.coverImage);
+    usedTodayDomains.add(sourceDomain(candidate));
+    return {
+      ...candidate,
+      seoTitle: `${candidate.title} | Source-Based Water Sports SEO Update`,
+      seoDescription: `${candidate.excerpt} Includes source attribution, regional buyer context and ZAIHAI GEO-friendly commercial analysis.`.slice(0, 155),
+      content: `${candidate.content}\n\nSEO and GEO note: this article is structured around a distinct source, buyer intent, regional context, product category and source attribution so it can support independent search indexing and answer-engine citation.`
+    };
   }
   return null;
 }
@@ -309,24 +366,70 @@ export async function publishNextAutomatedNews() {
   return {published: true, slug: post.slug, title: post.title, image, diagnostics};
 }
 
-export async function publishDailyAutomatedNews(target = 4) {
+async function publishCandidate(candidate: Candidate, diagnostics: Record<string, unknown>) {
+  const store = await readAdminStore();
+  const {coverImage, image} = await validateNewsCover(candidate, store);
+  const now = new Date().toISOString();
+  const publishDate = todayKey();
+  const post: ContentPost = {
+    ...candidate,
+    coverImage,
+    id: `post-${candidate.slug}`,
+    type: 'news',
+    publishDate,
+    status: 'published',
+    createdAt: now,
+    updatedAt: now
+  };
+
+  await writeAdminStore((current) => ({
+    ...current,
+    posts: [post, ...current.posts.filter((item) => item.slug !== post.slug)]
+  }));
+
+  return {published: true, slug: post.slug, title: post.title, image, diagnostics};
+}
+
+export async function publishDailyAutomatedNews(target = DAILY_MIN_NEWS) {
+  const requestedTarget = Math.max(DAILY_MIN_NEWS, Math.min(DAILY_MAX_NEWS, Number(target || DAILY_MIN_NEWS)));
+  const initialStore = await readAdminStore();
+  const alreadyPublishedToday = initialStore.posts.filter((post) => isTodayPost(post)).length;
+  const remainingTarget = Math.max(0, requestedTarget - alreadyPublishedToday);
   const results = [];
   let publishedCount = 0;
+  const fallbackBatch: Candidate[] = [];
 
-  for (let index = 0; index < target; index += 1) {
+  for (let index = 0; index < remainingTarget; index += 1) {
     const result = await publishNextAutomatedNews();
-    results.push(result);
-    if (!result.published) {
+    if (result.published) {
+      results.push(result);
+      publishedCount += 1;
+      continue;
+    }
+
+    const latestStore = await readAdminStore();
+    const fallback = fallbackDailyCandidate(latestStore.posts, fallbackBatch);
+    if (!fallback) {
+      results.push(result);
       break;
     }
+    const fallbackResult = await publishCandidate(fallback, {
+      mode: 'seo_geo_fallback',
+      reason: result.reason || 'Dynamic candidate unavailable; source-attributed fallback used to satisfy the daily minimum.',
+      previousDiagnostics: result.diagnostics || null
+    });
+    fallbackBatch.push(fallback);
+    results.push(fallbackResult);
     publishedCount += 1;
   }
 
   return {
     mode: 'daily_batch',
-    target,
+    target: requestedTarget,
+    alreadyPublishedToday,
     publishedCount,
+    totalPublishedToday: alreadyPublishedToday + publishedCount,
     results,
-    completed: publishedCount >= target
+    completed: alreadyPublishedToday + publishedCount >= requestedTarget
   };
 }
