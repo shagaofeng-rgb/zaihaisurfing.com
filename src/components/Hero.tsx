@@ -11,10 +11,12 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-mobile-optimized.jpg" media="(max-width: 720px)" />
-      <link rel="preload" as="image" href="/assets/banners/zaihai-main-banner-desktop-optimized.jpg" media="(min-width: 721px)" />
+      <link rel="preload" as="image" href="/assets/banners/generated/zaihai-main-banner-mobile-480.webp" type="image/webp" media="(max-width: 720px)" />
+      <link rel="preload" as="image" href="/assets/banners/generated/zaihai-main-banner-desktop.webp" type="image/webp" media="(min-width: 721px)" />
       <picture className="hero-media">
-        <source media="(max-width: 720px)" srcSet="/assets/banners/zaihai-main-banner-mobile-optimized.jpg" />
+        <source media="(max-width: 720px)" type="image/webp" srcSet="/assets/banners/generated/zaihai-main-banner-mobile-480.webp" />
+        <source media="(max-width: 720px)" srcSet="/assets/banners/generated/zaihai-main-banner-mobile-480.jpg" />
+        <source media="(min-width: 721px)" type="image/webp" srcSet="/assets/banners/generated/zaihai-main-banner-desktop.webp" />
         <img
           src="/assets/banners/zaihai-main-banner-desktop-optimized.jpg"
           alt={copy.title}
@@ -45,7 +47,7 @@ export default function Hero({locale}: HeroProps) {
         </div>
         <div className="hero-showcase" role="navigation" aria-label="Featured product lines">
           {copy.cards.map((card) => (
-            <Link className="hero-product-card" href={card.href} key={card.title}>
+            <Link className="hero-product-card" href={card.href} key={card.title} prefetch={false}>
               <span>{card.label}</span>
               <strong>{card.title}</strong>
               <em>{card.text}</em>

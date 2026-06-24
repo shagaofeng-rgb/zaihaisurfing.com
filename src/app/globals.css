@@ -5,8 +5,8 @@
   --white: #ffffff;
   --line: #d8ddd9;
   --lime: #9bdc18;
-  --aqua: #00a8d8;
-  --red: #ee2f2f;
+  --aqua: #005f73;
+  --red: #c91f1f;
   --charcoal: #171a1f;
   --shadow: 0 18px 50px rgba(15, 24, 34, 0.16);
   --font-body: var(--font-manrope), Inter, "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
@@ -4745,7 +4745,7 @@ div[class*="salesmartly" i] {
   place-items: center;
   min-height: 44px;
   color: var(--white);
-  background: #128c4a;
+  background: #087f3f;
   border-radius: 10px;
   font-weight: 950;
 }
@@ -5068,7 +5068,7 @@ html[dir="rtl"] .catalog-product-card dd {
     justify-content: center;
     padding: 0;
     color: var(--white);
-    background: #19a958;
+    background: #087f3f;
     border-radius: 999px;
     font-size: 11px;
     font-weight: 950;

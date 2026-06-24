@@ -10,6 +10,13 @@ const productHighlights: Record<ProductSlug, string> = {
 };
 
 const recommendedSlugs = productSlugs.slice(0, 8);
+const homeThumbs: Record<ProductSlug, string> = {
+  x1: '/assets/catalog/home-thumbs/x1.webp',
+  'x1-pro': '/assets/catalog/home-thumbs/x1-pro.webp',
+  'rage-shark-x': '/assets/catalog/home-thumbs/rage-shark-x.webp',
+  p1: '/assets/catalog/home-thumbs/p1.webp',
+  'p1-pro': '/assets/catalog/home-thumbs/p1-pro.webp'
+};
 
 export default function HomeRecommendedProducts() {
   return (
@@ -24,18 +31,18 @@ export default function HomeRecommendedProducts() {
           const product = products[slug];
           return (
             <article className="home-recommend-card" key={slug}>
-              <Link className="home-recommend-image" href={`/products/${slug}`} aria-label={`View ${product.name}`}>
-                <img src={product.thumbnail} alt={`${product.name} recommended product`} loading="lazy" decoding="async" width="352" height="352" />
+              <Link className="home-recommend-image" href={`/products/${slug}`} aria-label={`View ${product.name}`} prefetch={false}>
+                <img src={homeThumbs[slug]} alt={`${product.name} recommended product`} loading="lazy" decoding="async" width="220" height="220" />
               </Link>
               <div className="home-recommend-body">
                 <span className="tag">{product.category}</span>
-                <Link className="home-recommend-title" href={`/products/${slug}`}>{product.name}</Link>
+                <Link className="home-recommend-title" href={`/products/${slug}`} prefetch={false}>{product.name}</Link>
                 <em>{product.specs.slice(0, 3).join(' / ')}</em>
                 <strong className="home-recommend-price">{product.price}</strong>
                 <span>{productHighlights[slug]}</span>
                 <div className="home-recommend-actions">
-                  <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`}>Buy Now</Link>
-                  <Link className="button dark small" href={`/products/${slug}`}>View Details</Link>
+                  <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`} prefetch={false}>Buy Now</Link>
+                  <Link className="button dark small" href={`/products/${slug}`} prefetch={false}>View Details</Link>
                 </div>
               </div>
             </article>

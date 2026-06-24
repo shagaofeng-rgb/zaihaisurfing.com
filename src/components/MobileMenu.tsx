@@ -23,7 +23,7 @@ export default function MobileMenu({items}: MobileMenuProps) {
               {item.label}
             </a>
           ) : (
-            <Link href={item.href} key={`${item.href}-${item.label}`} onClick={() => setOpen(false)}>
+            <Link href={item.href} key={`${item.href}-${item.label}`} onClick={() => setOpen(false)} prefetch={false}>
               {item.label}
             </Link>
           )

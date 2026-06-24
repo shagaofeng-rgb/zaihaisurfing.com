@@ -7,11 +7,11 @@ import {uiCopy} from '@/lib/uiCopy';
 
 const scenarioImages = [
   '/assets/banners/zaihai-main-banner-desktop-optimized.jpg',
-  '/assets/catalog/x1/product.png',
-  '/assets/catalog/rage-shark-x/main-boat.png',
-  '/assets/catalog/x1-pro/product.png',
-  '/assets/catalog/p1-pro/scene-01.png',
-  '/assets/catalog/p1/hero.png'
+  '/assets/catalog/optimized/x1.jpg',
+  '/assets/catalog/optimized/rage-shark-x.jpg',
+  '/assets/catalog/optimized/x1-pro.jpg',
+  '/assets/catalog/optimized/p1-pro.jpg',
+  '/assets/catalog/optimized/p1.jpg'
 ];
 
 const solutionSections = [
@@ -102,12 +102,12 @@ export default async function ApplicationsPage({params}: {params: Promise<{local
         <div className="application-scenario-grid">
           {copy.scenarios.map((scenario, index) => (
             <article className="application-card" key={scenario.title}>
-              <img src={scenarioImages[index]} alt={`${scenario.title} ZAIHAI water sports application`} />
+              <img src={scenarioImages[index]} alt={`${scenario.title} ZAIHAI water sports application`} loading="lazy" decoding="async" width="1100" height="733" />
               <span>{scenario.label}</span>
               <h3>{scenario.title}</h3>
               <p>{scenario.text}</p>
               <strong>{scenario.products}</strong>
-              <Link className="text-link" href={scenario.href}>
+              <Link className="text-link" href={scenario.href} prefetch={false}>
                 {scenario.cta}
               </Link>
             </article>
@@ -128,7 +128,7 @@ export default async function ApplicationsPage({params}: {params: Promise<{local
               <div>
                 <strong>{section.quantity}</strong>
                 <p>Key operation considerations: {section.considerations.join(' / ')}.</p>
-                <Link className="button primary small" href="/contact">Request Project Recommendation</Link>
+                <Link className="button primary small" href="/contact" prefetch={false}>Request Project Recommendation</Link>
               </div>
             </article>
           ))}

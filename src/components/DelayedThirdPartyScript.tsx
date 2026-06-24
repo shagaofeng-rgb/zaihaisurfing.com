@@ -20,17 +20,16 @@ export default function DelayedThirdPartyScript() {
       document.body.appendChild(script);
     };
 
-    const scheduleIdleLoad = () => {
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(loadScript, {timeout: 18000});
-        return;
-      }
-      timer = setTimeout(loadScript, 18000);
+    const scheduleFallbackLoad = () => {
+      timer = setTimeout(() => {
+        const hasRealEngagement = document.visibilityState === 'visible' && (window.scrollY > 1200 || document.activeElement?.tagName === 'INPUT');
+        if (hasRealEngagement) loadScript();
+      }, 45000);
     };
 
-    const interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+    const interactionEvents = ['pointerdown', 'keydown', 'touchstart'];
     interactionEvents.forEach((eventName) => window.addEventListener(eventName, loadScript, {once: true, passive: true}));
-    scheduleIdleLoad();
+    scheduleFallbackLoad();
 
     return () => {
       if (timer) clearTimeout(timer);

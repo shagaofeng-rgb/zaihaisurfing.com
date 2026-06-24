@@ -26,7 +26,7 @@ export default function LanguageSwitcher({locale}: {locale: Locale}) {
 
   return (
     <div className="language-switcher">
-      <button className="language-trigger" type="button" aria-label="Change language">
+      <button className="language-trigger" type="button" title="Change language">
         <span>{locale.toUpperCase()}</span>
       </button>
       <div className="language-menu">
