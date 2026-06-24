@@ -1,6 +1,13 @@
 import type {Metadata} from 'next';
 import type {Locale} from '@/i18n/routing';
-import {alternatesFor, canonicalFor} from './site';
+import {alternatesFor, canonicalFor, siteUrl} from './site';
+
+const defaultOgImage = {
+  url: `${siteUrl}/assets/banners/zaihai-main-banner-desktop-optimized.jpg`,
+  width: 1200,
+  height: 630,
+  alt: 'ZAIHAI electric surfboards and go-kart boats for resorts and distributors'
+};
 
 export function localizedMetadata(locale: Locale, path: string, title: string, description: string): Metadata {
   return {
@@ -18,7 +25,7 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       description,
       url: canonicalFor(locale, path),
       siteName: 'ZAIHAI SURFING',
-      images: ['/assets/banners/zaihai-main-banner.png'],
+      images: [defaultOgImage],
       type: 'website',
       locale
     },
@@ -26,7 +33,7 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       card: 'summary_large_image',
       title,
       description,
-      images: ['/assets/banners/zaihai-main-banner.png']
+      images: [defaultOgImage.url]
     }
   };
 }

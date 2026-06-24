@@ -87,7 +87,29 @@ export default async function LocaleLayout({
     '@type': 'WebSite',
     name: 'ZAIHAI SURFING',
     url: siteUrl,
-    inLanguage: locale
+    inLanguage: locale,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${siteUrl}/${locale}/products?query={search_term_string}`,
+      'query-input': 'required name=search_term_string'
+    },
+    hasPart: [
+      {
+        '@type': 'WebPage',
+        name: 'Electric surfboards and go-kart boats',
+        url: `${siteUrl}/${locale}/products`
+      },
+      {
+        '@type': 'WebPage',
+        name: 'Water sports industry news and buyer insights',
+        url: `${siteUrl}/${locale}/news`
+      },
+      {
+        '@type': 'WebPage',
+        name: 'Project quotation and distributor contact',
+        url: `${siteUrl}/${locale}/contact`
+      }
+    ]
   };
 
   return (
