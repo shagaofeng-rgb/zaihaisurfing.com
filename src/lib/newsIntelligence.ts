@@ -85,15 +85,7 @@ const articleImagePool = [
   '/assets/news/shoremaster-vertical-lift-sunset.jpg',
   '/assets/news/shoremaster-dock-bench.jpg',
   '/assets/news/shoremaster-dock-ipe.jpg',
-  '/assets/news/claritas-electric-surfboard-market.webp',
-  '/assets/banners/market-middle-east-optimized.jpg',
-  '/assets/banners/market-north-america-optimized.jpg',
-  '/assets/banners/market-europe-optimized.jpg',
-  '/assets/banners/market-asia-optimized.jpg',
-  '/assets/banners/zaihai-video-poster-optimized.jpg',
-  '/assets/banners/surfing-rider-01.png',
-  '/assets/banners/surfing-rider-02.png',
-  '/assets/banners/surfing-rider-03.png'
+  '/assets/news/claritas-electric-surfboard-market.webp'
 ];
 
 const sources: CandidateSource[] = [

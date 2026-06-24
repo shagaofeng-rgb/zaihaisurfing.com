@@ -39,11 +39,7 @@ const sourceBriefs: SourceBrief[] = [
     key: 'electric-surfboards',
     name: 'Claritas Intelligence electric surfboard market release',
     url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
-    images: [
-      '/assets/news/claritas-electric-surfboard-market.webp',
-      '/assets/banners/market-north-america-optimized.jpg',
-      '/assets/banners/market-europe-optimized.jpg'
-    ],
+    images: ['/assets/news/claritas-electric-surfboard-market.webp'],
     category: 'Electric Surfboards',
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
   }
@@ -222,30 +218,15 @@ const repairImagePool = [
   '/assets/news/shoremaster-vertical-lift-sunset.jpg',
   '/assets/news/shoremaster-dock-bench.jpg',
   '/assets/news/shoremaster-dock-ipe.jpg',
-  '/assets/news/claritas-electric-surfboard-market.webp',
-  '/assets/banners/market-middle-east-optimized.jpg',
-  '/assets/banners/market-north-america-optimized.jpg',
-  '/assets/banners/market-europe-optimized.jpg',
-  '/assets/banners/market-asia-optimized.jpg',
-  '/assets/banners/market-middle-east-mobile.jpg',
-  '/assets/banners/market-north-america-mobile.jpg',
-  '/assets/banners/market-europe-mobile.jpg',
-  '/assets/banners/market-asia-mobile.jpg',
-  '/assets/banners/zaihai-main-banner-desktop-optimized.jpg',
-  '/assets/banners/zaihai-main-banner-mobile-optimized.jpg',
-  '/assets/banners/zaihai-video-poster-card.jpg',
-  '/assets/banners/zaihai-video-poster-optimized.jpg',
-  '/assets/banners/surfing-rider-01.png',
-  '/assets/banners/surfing-rider-02.png',
-  '/assets/banners/surfing-rider-03.png'
+  '/assets/news/claritas-electric-surfboard-market.webp'
 ];
 
 function replacementImage(used: Set<string>, fallbackIndex = 0, allowReuse = false) {
   return repairImagePool.find((image) => !used.has(image)) || (allowReuse ? repairImagePool[fallbackIndex % repairImagePool.length] : undefined);
 }
 
-function isProductNewsImage(image: string) {
-  return /\/assets\/catalog\//i.test(image);
+function isOwnSiteNewsImage(image: string) {
+  return /\/assets\/(catalog|banners)\//i.test(image);
 }
 
 export async function repairNewsImageDiversity() {
@@ -255,11 +236,11 @@ export async function repairNewsImageDiversity() {
     const used = new Set<string>();
     const posts = current.posts.map((post, index) => {
       if (post.type !== 'news' || post.status !== 'published') return post;
-      if (!isProductNewsImage(post.coverImage) && !used.has(post.coverImage)) {
+      if (!isOwnSiteNewsImage(post.coverImage) && !used.has(post.coverImage)) {
         used.add(post.coverImage);
         return post;
       }
-      const coverImage = replacementImage(used, index, isProductNewsImage(post.coverImage));
+      const coverImage = replacementImage(used, index, isOwnSiteNewsImage(post.coverImage));
       if (!coverImage) return post;
       used.add(coverImage);
       changed += 1;
