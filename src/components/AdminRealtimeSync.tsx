@@ -79,9 +79,9 @@ export default function AdminRealtimeSync() {
       <div>
         <strong>{status === 'updated' ? '数据已同步' : status === 'offline' ? '同步中断' : status === 'syncing' ? '正在同步' : '实时同步中'}</strong>
         <small>
-          订单 {payload?.state.orders ?? 0} · 线索 {payload?.state.leads ?? 0} · 事件 {payload?.state.events ?? 0}
-          {' '}· {payload?.store?.configured ? '稳定存储' : '临时存储'}
-          {' '}· 最近 {timeLabel(payload?.state.latestOrder || payload?.state.latestEvent || payload?.generatedAt || '')}
+          订单 {payload?.state.orders ?? 0} / 线索 {payload?.state.leads ?? 0} / 事件 {payload?.state.events ?? 0}
+          {' '} / {payload?.store?.configured ? '稳定存储' : '临时存储'}
+          {' '} / 最近 {timeLabel(payload?.state.latestOrder || payload?.state.latestEvent || payload?.generatedAt || '')}
         </small>
       </div>
     </div>

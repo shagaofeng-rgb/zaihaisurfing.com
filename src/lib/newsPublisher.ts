@@ -240,8 +240,8 @@ const repairImagePool = [
   '/assets/banners/surfing-rider-03.png'
 ];
 
-function replacementImage(used: Set<string>, fallbackIndex = 0) {
-  return repairImagePool.find((image) => !used.has(image)) || repairImagePool[fallbackIndex % repairImagePool.length];
+function replacementImage(used: Set<string>, fallbackIndex = 0, allowReuse = false) {
+  return repairImagePool.find((image) => !used.has(image)) || (allowReuse ? repairImagePool[fallbackIndex % repairImagePool.length] : undefined);
 }
 
 function isProductNewsImage(image: string) {
@@ -259,7 +259,7 @@ export async function repairNewsImageDiversity() {
         used.add(post.coverImage);
         return post;
       }
-      const coverImage = replacementImage(used, index);
+      const coverImage = replacementImage(used, index, isProductNewsImage(post.coverImage));
       if (!coverImage) return post;
       used.add(coverImage);
       changed += 1;

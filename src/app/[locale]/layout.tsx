@@ -13,6 +13,7 @@ import MobileBottomCta from '@/components/MobileBottomCta';
 import BackToTopButton from '@/components/BackToTopButton';
 import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
 import DelayedThirdPartyScript from '@/components/DelayedThirdPartyScript';
+import {siteUrl} from '@/lib/site';
 import '../globals.css';
 
 const manrope = Manrope({
@@ -56,10 +57,44 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages({locale});
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'ZAIHAI SURFING',
+    url: siteUrl,
+    logo: `${siteUrl}/assets/logo-small.jpg`,
+    email: 'davidsha@zaihaisurfing.com',
+    telephone: '+86 17621485205',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District',
+      addressLocality: 'Quzhou',
+      addressRegion: 'Zhejiang',
+      addressCountry: 'CN'
+    },
+    sameAs: [
+      'https://zaihaisurfing.com/en/contact'
+    ],
+    makesOffer: [
+      'Electric surfboards',
+      'Fuel-powered surfboards',
+      'Electric go-kart boats',
+      'OEM and distributor water sports equipment support'
+    ]
+  };
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'ZAIHAI SURFING',
+    url: siteUrl,
+    inLanguage: locale
+  };
 
   return (
     <html lang={locale} dir={dir} className={`${manrope.variable} ${sora.variable} ${oxanium.variable}`}>
       <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(organizationSchema)}} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(websiteSchema)}} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Header locale={locale as Locale} />
           {children}
