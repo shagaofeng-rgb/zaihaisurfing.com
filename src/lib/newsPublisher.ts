@@ -237,6 +237,7 @@ function nextCandidate(publishedSlugs: Set<string>, publishedTopics: Set<string>
 
 function fallbackDailyCandidate(posts: ContentPost[], batchCandidates: Candidate[] = []): Candidate | null {
   const now = new Date();
+  const day = todayKey(now);
   const todayPosts = posts.filter((post) => isTodayPost(post, now));
   if (todayPosts.length + batchCandidates.length >= DAILY_MAX_NEWS) return null;
   const publishedSlugs = new Set(posts.map((post) => post.slug));
@@ -254,16 +255,21 @@ function fallbackDailyCandidate(posts: ContentPost[], batchCandidates: Candidate
   for (let offset = baseOffset; offset < baseOffset + 120; offset += 1) {
     const candidate = rollingCandidate(now, offset, usedTodayImages, usedTodayDomains);
     if (!candidate) continue;
-    const key = topicKey(candidate);
-    if (publishedSlugs.has(candidate.slug) || publishedTopics.has(key)) continue;
-    usedTodayImages.add(candidate.coverImage);
-    usedTodayDomains.add(sourceDomain(candidate));
-    return {
+    const sequence = todayPosts.length + batchCandidates.length + 1;
+    const dailyCandidate = {
       ...candidate,
-      seoTitle: `${candidate.title} | Source-Based Water Sports SEO Update`,
+      slug: `${candidate.slug}-${day.replace(/-/g, '')}-${sequence}`,
+      title: `${candidate.title} - ${day} Buyer Brief ${sequence}`,
+      excerpt: `${candidate.excerpt} Daily SEO/GEO buyer brief for ${day}, source ${sequence}.`,
+      seoTitle: `${candidate.title} | ${day} Water Sports SEO GEO Buyer Brief`,
       seoDescription: `${candidate.excerpt} Includes source attribution, regional buyer context and ZAIHAI GEO-friendly commercial analysis.`.slice(0, 155),
-      content: `${candidate.content}\n\nSEO and GEO note: this article is structured around a distinct source, buyer intent, regional context, product category and source attribution so it can support independent search indexing and answer-engine citation.`
+      content: `${candidate.content}\n\nSEO and GEO note: this ${day} buyer brief is structured around a distinct source, buyer intent, regional context, product category and source attribution so it can support independent search indexing and answer-engine citation.`
     };
+    const key = topicKey(dailyCandidate);
+    if (publishedSlugs.has(dailyCandidate.slug) || publishedTopics.has(key)) continue;
+    usedTodayImages.add(dailyCandidate.coverImage);
+    usedTodayDomains.add(sourceDomain(dailyCandidate));
+    return dailyCandidate;
   }
   return null;
 }
