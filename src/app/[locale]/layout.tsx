@@ -41,8 +41,6 @@ export function generateStaticParams() {
   return locales.map((locale) => ({locale}));
 }
 
-export const dynamicParams = false;
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfing.com')
 };
