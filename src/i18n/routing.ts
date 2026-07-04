@@ -31,7 +31,6 @@ export const pathnames = [
   '/about',
   '/factory',
   '/projects',
-  '/blog',
   '/contact',
   '/faq',
   '/shipping',

@@ -8,14 +8,29 @@ import {getAllNewsArticles} from '@/lib/newsFeed';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
+function hasListParams(searchParams?: Record<string, string | string[] | undefined>) {
+  return Boolean(searchParams?.page || searchParams?.perPage);
+}
+
+export async function generateMetadata({
+  params,
+  searchParams
+}: {
+  params: Promise<{locale: Locale}>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
   const {locale} = await params;
-  return localizedMetadata(
+  const query = await searchParams;
+  const metadata = localizedMetadata(
     locale,
     '/news',
     'News & Insights | ZAIHAI SURFING',
     'Water sports equipment news, electric surfboard market analysis, resort operation insights and cited industry sources from ZAIHAI SURFING.'
   );
+  if (hasListParams(query)) {
+    metadata.robots = {index: false, follow: true};
+  }
+  return metadata;
 }
 
 export default async function NewsPage({

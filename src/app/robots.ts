@@ -2,7 +2,18 @@ import type {MetadataRoute} from 'next';
 import {siteUrl} from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
-  const sharedDisallow = ['/admin/', '/pricing-admin/', '/api/'];
+  const sharedDisallow = [
+    '/admin/',
+    '/pricing-admin/',
+    '/api/',
+    '/account/',
+    '/*/account/',
+    '/*/checkout',
+    '/*/checkout/',
+    '/*?*payment=',
+    '/*?*order=',
+    '/*?*token='
+  ];
 
   return {
     rules: [

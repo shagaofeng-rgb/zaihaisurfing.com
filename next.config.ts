@@ -19,6 +19,35 @@ const nextConfig: NextConfig = {
         ]
       }
     ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/sitemap_products_1.xml',
+        destination: '/sitemap.xml',
+        permanent: true
+      },
+      {
+        source: '/sitemap_pages_1.xml',
+        destination: '/sitemap.xml',
+        permanent: true
+      },
+      {
+        source: '/sitemap_collections_1.xml',
+        destination: '/sitemap.xml',
+        permanent: true
+      },
+      {
+        source: '/sitemap_blogs_1.xml',
+        destination: '/news-sitemap.xml',
+        permanent: true
+      },
+      {
+        source: '/sitemap_articles_1.xml',
+        destination: '/news-sitemap.xml',
+        permanent: true
+      }
+    ];
   }
 };
 

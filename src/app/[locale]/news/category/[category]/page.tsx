@@ -14,19 +14,26 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{locale: Locale; category: string}>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const {locale, category} = await params;
+  const query = await searchParams;
   const group = await getNewsCategory(category);
   if (!group) notFound();
-  return localizedMetadata(
+  const metadata = localizedMetadata(
     locale,
     `/news/category/${category}`,
     `${group.name} News | ZAIHAI SURFING`,
     `Latest ZAIHAI news and sourced water sports insights for ${group.name}.`
   );
+  if (query?.page || query?.perPage) {
+    metadata.robots = {index: false, follow: true};
+  }
+  return metadata;
 }
 
 export default async function NewsCategoryPage({
