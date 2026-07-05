@@ -34,6 +34,7 @@ export default async function NewsArticlePage({
   if (!article) notFound();
   setRequestLocale(locale);
 
+  const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -41,7 +42,7 @@ export default async function NewsArticlePage({
     description: article.excerpt,
     datePublished: article.date,
     dateModified: article.updatedAt,
-    image: [article.hero],
+    image: [imageUrl],
     author: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
     publisher: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
     mainEntityOfPage: `${siteUrl}/${locale}/news/${article.slug}`,

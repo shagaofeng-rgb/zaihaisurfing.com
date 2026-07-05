@@ -33,9 +33,9 @@ export default async function AdminNewsPage() {
           <input name="category" placeholder="分类，例如 Market News / Company News" />
           <input name="author" placeholder="作者，例如 ZAIHAI Editorial Team" />
           <input name="source" placeholder="来源名称 / URL，多个来源可换行写在正文中" />
-          <input name="coverImage" placeholder="/assets/banners/surfing-rider-01.png" />
+          <input name="coverImage" placeholder="/assets/news/example.webp" />
           <input name="tags" placeholder="标签，用英文逗号分隔" />
-          <textarea name="excerpt" placeholder="新闻摘要，说明事实背景和与产品/客户的关系" />
+          <textarea name="excerpt" placeholder="新闻摘要，说明事实背景和与产品、客户的关系" />
           <textarea name="content" placeholder="新闻正文，可用 Markdown：背景、事实、对水上娱乐采购的影响、ZAIHAI 观点" />
           <input name="seoTitle" placeholder="SEO Title" />
           <textarea name="seoDescription" placeholder="Meta Description" />

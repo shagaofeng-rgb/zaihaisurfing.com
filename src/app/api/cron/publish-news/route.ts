@@ -24,7 +24,10 @@ export async function GET(request: Request) {
       const result = await publishNextAutomatedNews();
       return Response.json({ok: true, ...result});
     }
-    const result = await publishDailyAutomatedNews();
+    const target = url.searchParams.has('target')
+      ? Number(url.searchParams.get('target'))
+      : Number(process.env.NEWS_DAILY_TARGET || '');
+    const result = Number.isFinite(target) ? await publishDailyAutomatedNews(target) : await publishDailyAutomatedNews();
     return Response.json({ok: true, ...result});
   } catch (error) {
     return Response.json({

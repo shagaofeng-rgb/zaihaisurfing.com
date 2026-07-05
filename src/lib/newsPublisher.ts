@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {readAdminStore, writeAdminStore, type ContentPost} from '@/lib/backendStore';
 import {recordPublishedAutomatedNews, selectNextAutomatedNews} from '@/lib/newsIntelligence';
 import {siteUrl} from '@/lib/site';
@@ -316,6 +318,12 @@ export async function repairNewsImageDiversity() {
 }
 
 async function validateImage(url: string) {
+  if (url.startsWith('/')) {
+    const filePath = path.join(process.cwd(), 'public', url);
+    const bytes = await fs.readFile(filePath);
+    if (!bytes.length) throw new Error(`Image is empty: ${url}`);
+    return {absolute: `${siteUrl}${url}`, type: 'local/public', size: bytes.length};
+  }
   const absolute = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const response = await fetch(absolute, {method: 'GET', cache: 'no-store'});
   if (!response.ok) throw new Error(`Image failed ${response.status}: ${absolute}`);
@@ -397,7 +405,8 @@ async function publishCandidate(candidate: Candidate, diagnostics: Record<string
 }
 
 export async function publishDailyAutomatedNews(target = DAILY_MIN_NEWS) {
-  const requestedTarget = Math.max(DAILY_MIN_NEWS, Math.min(DAILY_MAX_NEWS, Number(target || DAILY_MIN_NEWS)));
+  const parsedTarget = Number.isFinite(Number(target)) ? Number(target) : DAILY_MIN_NEWS;
+  const requestedTarget = Math.max(0, Math.min(DAILY_MAX_NEWS, parsedTarget));
   const initialStore = await readAdminStore();
   const alreadyPublishedToday = initialStore.posts.filter((post) => isTodayPost(post)).length;
   const remainingTarget = Math.max(0, requestedTarget - alreadyPublishedToday);

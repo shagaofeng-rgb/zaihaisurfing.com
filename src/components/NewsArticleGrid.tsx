@@ -30,6 +30,10 @@ function hrefFor(basePath: string, page: number, perPage: number) {
   return query ? `${basePath}?${query}` : basePath;
 }
 
+function articleHref(basePath: string, slug: string) {
+  return `${basePath.replace(/\/$/, '')}/${slug}`;
+}
+
 export function NewsArticleGrid({articles, basePath, searchParams}: NewsArticleGridProps) {
   const perPage = pageSizeFrom(searchParams);
   const totalPages = Math.max(1, Math.ceil(articles.length / perPage));
@@ -52,7 +56,7 @@ export function NewsArticleGrid({articles, basePath, searchParams}: NewsArticleG
       </div>
       <div className="news-grid">
         {visibleArticles.map((article) => (
-          <Link href={`/news/${article.slug}`} className="news-card" key={article.slug}>
+          <Link href={articleHref(basePath, article.slug)} className="news-card" key={article.slug}>
             <img src={article.hero} alt={article.heroAlt} loading="lazy" />
             <div>
               <time dateTime={article.date}>{article.date}</time>

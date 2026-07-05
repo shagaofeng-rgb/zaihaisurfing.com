@@ -32,7 +32,8 @@ export default async function AdminBlogPage() {
           <input name="publishDate" type="date" />
           <input name="category" placeholder="分类，例如 Buying Guide / Product Knowledge" />
           <input name="author" placeholder="作者，例如 ZAIHAI Editorial Team" />
-          <input name="coverImage" placeholder="/assets/banners/surfing-rider-01.png" />
+          <input name="source" placeholder="来源名称 / URL" />
+          <input name="coverImage" placeholder="/assets/news/example.webp" />
           <input name="tags" placeholder="标签，用英文逗号分隔" />
           <textarea name="excerpt" placeholder="SEO 摘要" />
           <textarea name="content" placeholder="博客正文，可用 Markdown 编写 H2/H3、FAQ、CTA 等内容" />

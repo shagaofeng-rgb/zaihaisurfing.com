@@ -5,6 +5,10 @@
       "schedule": "0 1 * * *"
     },
     {
+      "path": "/api/cron/publish-blog",
+      "schedule": "20 1 * * *"
+    },
+    {
       "path": "/api/cron/sync-google-seo",
       "schedule": "30 2 * * *"
     },

@@ -12,6 +12,10 @@ function xmlEscape(value: string) {
     .replace(/'/g, '&apos;');
 }
 
+function absoluteUrl(value: string) {
+  return value.startsWith('http') ? value : `${siteUrl}${value}`;
+}
+
 export async function GET() {
   const newsArticles = await getAllNewsArticles();
   const items = newsArticles.map((article) => `
@@ -22,7 +26,7 @@ export async function GET() {
       <description>${xmlEscape(article.excerpt)}</description>
       <pubDate>${new Date(article.date).toUTCString()}</pubDate>
       <category>${xmlEscape(article.category)}</category>
-      <enclosure url="${xmlEscape(article.hero)}" type="image/jpeg" />
+      <enclosure url="${xmlEscape(absoluteUrl(article.hero))}" type="image/jpeg" />
       <source url="${xmlEscape(article.imageCredit.sourceUrl)}">${xmlEscape(article.imageCredit.publisher)}</source>
     </item>`).join('');
 
