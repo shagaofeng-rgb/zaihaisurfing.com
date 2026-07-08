@@ -1,4 +1,4 @@
-import {publishDailyAutomatedBlog} from '@/lib/blogPublisher';
+import {publishDailyAutomatedBlog, repairBlogImageDiversity} from '@/lib/blogPublisher';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,9 +16,14 @@ export async function GET(request: Request) {
   }
   try {
     const url = new URL(request.url);
+    if (url.searchParams.get('repair') === '1') {
+      const result = await repairBlogImageDiversity();
+      return Response.json({ok: true, repaired: true, ...result});
+    }
+    const imageRepair = await repairBlogImageDiversity();
     const target = Number(url.searchParams.get('target') || process.env.BLOG_DAILY_TARGET || 1);
     const result = await publishDailyAutomatedBlog(target);
-    return Response.json({ok: true, ...result});
+    return Response.json({ok: true, imageRepair, ...result});
   } catch (error) {
     return Response.json({
       ok: false,

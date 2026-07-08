@@ -1,8 +1,6 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import {readAdminStore, writeAdminStore, type ContentPost} from '@/lib/backendStore';
 import {recordPublishedAutomatedNews, selectNextAutomatedNews} from '@/lib/newsIntelligence';
-import {siteUrl} from '@/lib/site';
+import {isOwnSiteImage, resolveSourceImage, type SourceImageResult} from '@/lib/sourceImages';
 
 type Candidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
 
@@ -23,7 +21,7 @@ const sourceBriefs: SourceBrief[] = [
     key: 'red-sea',
     name: 'NEOM Sindalah newsroom',
     url: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
-    images: ['/assets/news/neom-sindalah.webp', '/assets/news/neom-sindalah-marina-detail.jpg'],
+    images: ['https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg'],
     category: 'Water Sports Destinations',
     tags: ['Middle East', 'Resorts', 'Yacht Clubs']
   },
@@ -32,10 +30,7 @@ const sourceBriefs: SourceBrief[] = [
     name: 'ShoreMaster waterfront industry report',
     url: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
     images: [
-      '/assets/news/shoremaster-waterfront-trends.webp',
-      '/assets/news/shoremaster-vertical-lift-sunset.jpg',
-      '/assets/news/shoremaster-dock-bench.jpg',
-      '/assets/news/shoremaster-dock-ipe.jpg'
+      'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg'
     ],
     category: 'Resort & Rental Operations',
     tags: ['Electric Boating', 'Rentals', 'Marinas']
@@ -44,7 +39,7 @@ const sourceBriefs: SourceBrief[] = [
     key: 'electric-surfboards',
     name: 'Claritas Intelligence electric surfboard market release',
     url: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
-    images: ['/assets/news/claritas-electric-surfboard-market.webp'],
+    images: ['https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation'],
     category: 'Electric Surfboards',
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
   }
@@ -118,7 +113,7 @@ const candidates: Candidate[] = [
     slug: 'auto-red-sea-waterfront-experiences',
     title: 'Red Sea Waterfront Projects Keep Raising the Bar for Guest Water Experiences',
     excerpt: 'Luxury coastal projects continue to show why resorts and marinas need memorable, easy-to-operate water sports attractions.',
-    coverImage: '/assets/news/neom-sindalah.webp',
+    coverImage: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg',
     category: 'Water Sports Destinations',
     content: 'Luxury waterfront development is increasingly built around marinas, visual guest experiences and differentiated leisure activities.\n\nFor water sports buyers, this makes equipment planning part of destination design rather than a simple rental add-on.\n\nElectric surfboards and go-kart boats can support resort demos, yacht club activation and family-friendly attraction programs.',
     publishDate: '',
@@ -132,7 +127,7 @@ const candidates: Candidate[] = [
     slug: 'auto-marina-rental-fleet-electrification',
     title: 'Marina Rental Fleets Are Moving Toward Cleaner Electric Water Attractions',
     excerpt: 'Waterfront operators are looking for compact electric equipment that can create short, repeatable and easy-to-supervise guest sessions.',
-    coverImage: '/assets/news/shoremaster-waterfront-trends.webp',
+    coverImage: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
     category: 'Resort & Rental Operations',
     content: 'Marina and dock operators are paying more attention to clean, compact and easy-to-manage waterfront recreation.\n\nFor rental fleets, the buying decision should include charging workflow, rider onboarding, spare parts and daily inspection.\n\nSmall electric watercraft can help operators add paid experiences without the complexity of full-size boat programs.',
     publishDate: '',
@@ -146,7 +141,7 @@ const candidates: Candidate[] = [
     slug: 'auto-electric-surfboard-commercial-use',
     title: 'Electric Surfboards Continue to Gain Commercial Resort Relevance',
     excerpt: 'Market commentary points to electric surfboards becoming more relevant for resorts, rental operators and coastal leisure businesses.',
-    coverImage: '/assets/news/claritas-electric-surfboard-market.webp',
+    coverImage: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
     category: 'Electric Surfboards',
     content: 'Electric surfboards are increasingly discussed as commercial assets, not only enthusiast products.\n\nFor commercial buyers, speed is only one part of the decision. Battery workflow, waterproof structure, training, support and spare parts planning matter just as much.\n\nDistributors can package premium boards with beginner-friendly water attractions to serve more visitor types.',
     publishDate: '',
@@ -276,77 +271,55 @@ function fallbackDailyCandidate(posts: ContentPost[], batchCandidates: Candidate
   return null;
 }
 
-const repairImagePool = [
-  '/assets/news/neom-sindalah.webp',
-  '/assets/news/neom-sindalah-marina-detail.jpg',
-  '/assets/news/shoremaster-waterfront-trends.webp',
-  '/assets/news/shoremaster-vertical-lift-sunset.jpg',
-  '/assets/news/shoremaster-dock-bench.jpg',
-  '/assets/news/shoremaster-dock-ipe.jpg',
-  '/assets/news/claritas-electric-surfboard-market.webp'
-];
-
-function replacementImage(used: Set<string>, fallbackIndex = 0, allowReuse = false) {
-  return repairImagePool.find((image) => !used.has(image)) || (allowReuse ? repairImagePool[fallbackIndex % repairImagePool.length] : undefined);
-}
-
 function isOwnSiteNewsImage(image: string) {
-  return /\/assets\/(catalog|banners)\//i.test(image);
+  return isOwnSiteImage(image);
 }
 
 export async function repairNewsImageDiversity() {
   const now = new Date().toISOString();
   let changed = 0;
-  const store = await writeAdminStore((current) => {
-    const used = new Set<string>();
-    const posts = current.posts.map((post, index) => {
-      if (post.type !== 'news' || post.status !== 'published') return post;
-      if (!isOwnSiteNewsImage(post.coverImage) && !used.has(post.coverImage)) {
-        used.add(post.coverImage);
-        return post;
-      }
-      const coverImage = replacementImage(used, index, isOwnSiteNewsImage(post.coverImage));
-      if (!coverImage) return post;
-      used.add(coverImage);
-      changed += 1;
-      return {...post, coverImage, updatedAt: now};
+  const current = await readAdminStore();
+  const used = new Set<string>();
+  const posts: ContentPost[] = [];
+  for (const post of current.posts) {
+    if (post.type !== 'news' || post.status !== 'published') {
+      posts.push(post);
+      continue;
+    }
+    if (!isOwnSiteNewsImage(post.coverImage) && !used.has(post.coverImage)) {
+      used.add(post.coverImage);
+      posts.push(post);
+      continue;
+    }
+    const sourcePage = sourceUrl(post) || post.coverImagePageUrl || post.coverImageSourceUrl || '';
+    const image = await resolveSourceImage({pageUrl: sourcePage, title: post.title, usedImages: used});
+    used.add(image.url);
+    changed += 1;
+    posts.push({
+      ...post,
+      coverImage: image.url,
+      coverImageSourceUrl: image.sourceUrl,
+      coverImagePageUrl: image.pageUrl,
+      coverImageAlt: image.alt,
+      coverImageFetchedAt: image.fetchedAt,
+      coverImageStatus: image.status,
+      updatedAt: now
     });
-    return changed ? {...current, posts} : current;
-  });
+  }
+  const store = changed ? await writeAdminStore((latest) => ({...latest, posts})) : current;
   const newsImages = store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage);
   return {changed, images: newsImages};
 }
 
-async function validateImage(url: string) {
-  if (url.startsWith('/')) {
-    const filePath = path.join(process.cwd(), 'public', url);
-    const bytes = await fs.readFile(filePath);
-    if (!bytes.length) throw new Error(`Image is empty: ${url}`);
-    return {absolute: `${siteUrl}${url}`, type: 'local/public', size: bytes.length};
-  }
-  const absolute = url.startsWith('http') ? url : `${siteUrl}${url}`;
-  const response = await fetch(absolute, {method: 'GET', cache: 'no-store'});
-  if (!response.ok) throw new Error(`Image failed ${response.status}: ${absolute}`);
-  const type = response.headers.get('content-type') || '';
-  if (!/^image\/(avif|webp|png|jpe?g)/i.test(type)) throw new Error(`Invalid image content-type ${type}: ${absolute}`);
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  const signature = Array.from(bytes.slice(0, 12)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
-  const valid = signature.startsWith('ffd8ff') || signature.startsWith('89504e47') || signature.includes('57454250') || signature.startsWith('000000') && signature.includes('6674797061766966');
-  if (!valid) throw new Error(`Invalid image signature ${signature}: ${absolute}`);
-  return {absolute, type, size: bytes.length};
-}
-
 async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType<typeof readAdminStore>>) {
-  try {
-    const image = await validateImage(candidate.coverImage);
-    return {coverImage: candidate.coverImage, image};
-  } catch (error) {
-    const used = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
-    const fallback = replacementImage(used);
-    if (!candidate.coverImage.startsWith('http') || !fallback) throw error;
-    const image = await validateImage(fallback);
-    return {coverImage: fallback, image};
-  }
+  const used = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
+  const image = await resolveSourceImage({
+    pageUrl: sourceUrl(candidate),
+    title: candidate.title,
+    usedImages: used,
+    preferredImages: [candidate.coverImage]
+  });
+  return {coverImage: image.url, image};
 }
 
 export async function publishNextAutomatedNews() {
@@ -362,6 +335,11 @@ export async function publishNextAutomatedNews() {
   const post: ContentPost = {
     ...candidate,
     coverImage,
+    coverImageSourceUrl: image.sourceUrl,
+    coverImagePageUrl: image.pageUrl,
+    coverImageAlt: image.alt,
+    coverImageFetchedAt: image.fetchedAt,
+    coverImageStatus: image.status,
     id: `post-${candidate.slug}`,
     type: 'news',
     publishDate,
@@ -388,6 +366,11 @@ async function publishCandidate(candidate: Candidate, diagnostics: Record<string
   const post: ContentPost = {
     ...candidate,
     coverImage,
+    coverImageSourceUrl: image.sourceUrl,
+    coverImagePageUrl: image.pageUrl,
+    coverImageAlt: image.alt,
+    coverImageFetchedAt: image.fetchedAt,
+    coverImageStatus: image.status,
     id: `post-${candidate.slug}`,
     type: 'news',
     publishDate,

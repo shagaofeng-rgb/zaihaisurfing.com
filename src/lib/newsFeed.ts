@@ -20,13 +20,9 @@ function sourceUrlFrom(post: ContentPost) {
 }
 
 const displayImagePool = [
-  {url: '/assets/news/neom-sindalah.webp', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses a stable ZAIHAI-hosted copy of public NEOM Sindalah newsroom material.'},
-  {url: '/assets/news/neom-sindalah-marina-detail.jpg', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses a cropped ZAIHAI-hosted copy of public NEOM Sindalah newsroom material.'},
-  {url: '/assets/news/shoremaster-waterfront-trends.webp', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses a stable ZAIHAI-hosted copy of public ShoreMaster waterfront industry material.'},
-  {url: '/assets/news/shoremaster-vertical-lift-sunset.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster waterfront equipment material saved as a stable ZAIHAI-hosted copy.'},
-  {url: '/assets/news/shoremaster-dock-bench.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster dock material saved as a stable ZAIHAI-hosted copy.'},
-  {url: '/assets/news/shoremaster-dock-ipe.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster dock material saved as a stable ZAIHAI-hosted copy.'},
-  {url: '/assets/news/claritas-electric-surfboard-market.webp', publisher: 'Claritas Intelligence', sourceUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market', note: 'Feature image uses a stable ZAIHAI-hosted preview image associated with the public Claritas market release.'}
+  {url: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses the public NEOM Sindalah newsroom image URL.'},
+  {url: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster waterfront industry material.'},
+  {url: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation', publisher: 'Claritas Intelligence', sourceUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market', note: 'Feature image uses the public Claritas market release Open Graph image.'}
 ];
 
 function postToArticle(post: ContentPost): NewsArticle {
@@ -97,7 +93,7 @@ function diversifyArticleImages(articles: NewsArticle[]) {
       imageCredit: {
         publisher: replacement.publisher,
         sourceUrl: replacement.sourceUrl,
-        imageUrl: `${siteUrl}${replacement.url}`,
+        imageUrl: replacement.url,
         note: replacement.note,
         accessedDate: article.updatedAt
       }

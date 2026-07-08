@@ -9,7 +9,20 @@ const defaultOgImage = {
   alt: 'ZAIHAI electric surfboards and go-kart boats for resorts and distributors'
 };
 
-export function localizedMetadata(locale: Locale, path: string, title: string, description: string): Metadata {
+type MetadataImage = {
+  url: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+};
+
+export function localizedMetadata(
+  locale: Locale,
+  path: string,
+  title: string,
+  description: string,
+  image: MetadataImage = defaultOgImage
+): Metadata {
   return {
     title,
     description,
@@ -25,7 +38,7 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       description,
       url: canonicalFor(locale, path),
       siteName: 'ZAIHAI SURFING',
-      images: [defaultOgImage],
+      images: [image],
       type: 'website',
       locale
     },
@@ -33,7 +46,7 @@ export function localizedMetadata(locale: Locale, path: string, title: string, d
       card: 'summary_large_image',
       title,
       description,
-      images: [defaultOgImage.url]
+      images: [image.url]
     }
   };
 }

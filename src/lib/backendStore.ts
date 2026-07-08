@@ -74,6 +74,11 @@ export type ContentPost = {
   title: string;
   excerpt: string;
   coverImage: string;
+  coverImageSourceUrl?: string;
+  coverImagePageUrl?: string;
+  coverImageAlt?: string;
+  coverImageFetchedAt?: string;
+  coverImageStatus?: 'validated' | 'failed' | 'pending';
   category: string;
   content: string;
   publishDate: string;

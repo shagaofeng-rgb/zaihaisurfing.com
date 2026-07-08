@@ -30,7 +30,7 @@ export const newsArticles: NewsArticle[] = [
     title: 'Middle East Luxury Tourism Growth Creates Demand for Premium Water Attractions',
     excerpt:
       'WTTC reports strong regional travel growth, while Red Sea yacht destinations such as Sindalah show why resorts and marinas need memorable water experiences.',
-    hero: '/assets/news/neom-sindalah.webp',
+    hero: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg',
     heroAlt: 'Sindalah coastal luxury island visual from NEOM official newsroom',
     imageCredit: {
       publisher: 'NEOM',
@@ -97,7 +97,7 @@ export const newsArticles: NewsArticle[] = [
     title: 'Electric Boating Growth Points to a Bigger Rental Fleet Opportunity',
     excerpt:
       'Electric boats and smaller electric watercraft are gaining attention as lakes, marinas and rental operators look for cleaner and easier guest experiences.',
-    hero: '/assets/news/shoremaster-waterfront-trends.webp',
+    hero: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
     heroAlt: 'Waterfront dock and marina equipment image from ShoreMaster industry report page',
     imageCredit: {
       publisher: 'ShoreMaster',
@@ -164,7 +164,7 @@ export const newsArticles: NewsArticle[] = [
     title: 'Electric Surfboards Are Moving From Niche Toys to Commercial Resort Assets',
     excerpt:
       'New market commentary shows electric surfboards gaining commercial relevance as resorts, rentals and coastal projects look for premium water sports products.',
-    hero: '/assets/news/claritas-electric-surfboard-market.webp',
+    hero: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
     heroAlt: 'Electric surfboard market report preview image from Claritas Intelligence',
     imageCredit: {
       publisher: 'Claritas Intelligence',

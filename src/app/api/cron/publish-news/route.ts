@@ -20,15 +20,16 @@ export async function GET(request: Request) {
       const result = await repairNewsImageDiversity();
       return Response.json({ok: true, repaired: true, ...result});
     }
+    const imageRepair = await repairNewsImageDiversity();
     if (url.searchParams.get('single') === '1') {
       const result = await publishNextAutomatedNews();
-      return Response.json({ok: true, ...result});
+      return Response.json({ok: true, imageRepair, ...result});
     }
     const target = url.searchParams.has('target')
       ? Number(url.searchParams.get('target'))
       : Number(process.env.NEWS_DAILY_TARGET || '');
     const result = Number.isFinite(target) ? await publishDailyAutomatedNews(target) : await publishDailyAutomatedNews();
-    return Response.json({ok: true, ...result});
+    return Response.json({ok: true, imageRepair, ...result});
   } catch (error) {
     return Response.json({
       ok: false,

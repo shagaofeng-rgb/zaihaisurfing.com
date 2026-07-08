@@ -21,7 +21,13 @@ export async function generateMetadata({
   const {locale, slug} = await params;
   const article = await getBlogArticleBySlug(slug);
   if (!article) notFound();
-  return localizedMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI Guide`, article.excerpt);
+  const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
+  return localizedMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI Guide`, article.excerpt, {
+    url: imageUrl,
+    width: 1200,
+    height: 630,
+    alt: article.heroAlt
+  });
 }
 
 export default async function BlogArticlePage({
