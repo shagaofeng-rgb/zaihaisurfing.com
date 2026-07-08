@@ -3641,12 +3641,31 @@ a {
 .admin-sidebar nav {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.admin-nav-section {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-nav-section small {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .admin-sidebar nav a {
-  padding: 10px 12px;
+  padding: 9px 11px;
   border-radius: 8px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 850;
 }
 
 .admin-sidebar nav a:hover,
@@ -3674,6 +3693,7 @@ a {
   display: grid;
   gap: 20px;
   padding: clamp(22px, 4vw, 42px);
+  min-width: 0;
 }
 
 .account-page {

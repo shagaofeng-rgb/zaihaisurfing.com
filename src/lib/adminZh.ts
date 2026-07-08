@@ -28,7 +28,7 @@ export function zhOrderStatus(status: string) {
 export function zhPaymentStatus(status: string) {
   const map: Record<string, string> = {
     not_submitted: '未提交支付',
-    pending: '支付处理中',
+    pending: '待处理',
     processing: '网关处理中',
     success: '支付成功',
     failed: '支付失败',
@@ -40,7 +40,7 @@ export function zhPaymentStatus(status: string) {
 
 export function zhPaymentMethod(method: string) {
   const map: Record<string, string> = {
-    qianhai_card: '前海信用卡',
+    qianhai_card: '钱海信用卡',
     oceanpayment_card: 'Oceanpayment 信用卡',
     oceanpayment_google_pay: 'Oceanpayment Google Pay',
     oceanpayment_apple_pay: 'Oceanpayment Apple Pay',
@@ -48,6 +48,17 @@ export function zhPaymentMethod(method: string) {
     manual_quote: '人工报价'
   };
   return map[method] || method || '未知';
+}
+
+export function zhShipmentStatus(status: string) {
+  const map: Record<string, string> = {
+    unshipped: '未发货',
+    shipped: '已发货',
+    in_transit: '运输中',
+    delivered: '已送达',
+    returned: '已退回'
+  };
+  return map[status] || status || '未知';
 }
 
 export function zhLeadStatus(status: string) {
@@ -74,6 +85,8 @@ export function zhEventType(type: string) {
     order_created: '创建订单',
     payment_started: '发起支付',
     payment_request_create: '生成支付请求',
+    payment_notice: '支付通知',
+    payment_return: '支付返回',
     payment_success: '支付成功',
     payment_failed: '支付失败',
     shipment_saved: '物流保存',
@@ -93,4 +106,21 @@ export function zhDevice(device: string) {
     Unknown: '未知'
   };
   return map[device] || device || '未知';
+}
+
+export function zhCountry(country: string) {
+  const map: Record<string, string> = {
+    US: '美国',
+    USA: '美国',
+    'United States': '美国',
+    PH: '菲律宾',
+    Philippines: '菲律宾',
+    ES: '西班牙',
+    Spain: '西班牙',
+    ZA: '南非',
+    'South Africa': '南非',
+    CN: '中国',
+    IN: '印度'
+  };
+  return map[country] || country || '未知';
 }
