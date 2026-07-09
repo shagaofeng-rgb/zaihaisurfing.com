@@ -108,7 +108,8 @@ export async function publishDailyAutomatedBlog(target = DAILY_BLOG_TARGET) {
       pageUrl: sourceUrlFrom(candidate.source),
       title: candidate.title,
       usedImages,
-      preferredImages: [candidate.coverImage]
+      preferredImages: [candidate.coverImage],
+      allowReuseAfterExhausted: true
     });
     const now = new Date().toISOString();
     const post: ContentPost = {
@@ -151,6 +152,7 @@ export async function repairBlogImageDiversity() {
   const used = new Set<string>();
   const posts: ContentPost[] = [];
   let changed = 0;
+  const errors: {slug: string; error: string}[] = [];
 
   for (const post of current.posts) {
     if (post.type !== 'blog' || post.status !== 'published') {
@@ -163,21 +165,26 @@ export async function repairBlogImageDiversity() {
       continue;
     }
     const sourceUrl = sourceUrlFrom(post.source) || post.coverImagePageUrl || post.coverImageSourceUrl || '';
-    const image = await resolveSourceImage({pageUrl: sourceUrl, title: post.title, usedImages: used});
-    used.add(image.url);
-    changed += 1;
-    posts.push({
-      ...post,
-      coverImage: image.url,
-      coverImageSourceUrl: image.sourceUrl,
-      coverImagePageUrl: image.pageUrl,
-      coverImageAlt: image.alt,
-      coverImageFetchedAt: image.fetchedAt,
-      coverImageStatus: image.status,
-      updatedAt: now
-    });
+    try {
+      const image = await resolveSourceImage({pageUrl: sourceUrl, title: post.title, usedImages: used, allowReuseAfterExhausted: true});
+      used.add(image.url);
+      changed += 1;
+      posts.push({
+        ...post,
+        coverImage: image.url,
+        coverImageSourceUrl: image.sourceUrl,
+        coverImagePageUrl: image.pageUrl,
+        coverImageAlt: image.alt,
+        coverImageFetchedAt: image.fetchedAt,
+        coverImageStatus: image.status,
+        updatedAt: now
+      });
+    } catch (error) {
+      errors.push({slug: post.slug, error: error instanceof Error ? error.message : String(error)});
+      posts.push(post);
+    }
   }
 
   if (changed) await writeAdminStore((latest) => ({...latest, posts}));
-  return {changed, images: posts.filter((post) => post.type === 'blog' && post.status === 'published').map((post) => post.coverImage)};
+  return {changed, errors, images: posts.filter((post) => post.type === 'blog' && post.status === 'published').map((post) => post.coverImage)};
 }

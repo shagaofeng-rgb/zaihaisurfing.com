@@ -75,17 +75,15 @@ type NewsIntelligenceState = {
 
 const STATE_FILE = 'news-intelligence-state.json';
 const MIN_SOURCE_SCORE = 10;
-const MAX_FETCHES_PER_RUN = 24;
-const FETCH_TIMEOUT_MS = 5200;
+const MAX_FETCHES_PER_RUN = 8;
+const FETCH_TIMEOUT_MS = 2500;
 
 const articleImagePool = [
-  '/assets/news/neom-sindalah.webp',
-  '/assets/news/neom-sindalah-marina-detail.jpg',
-  '/assets/news/shoremaster-waterfront-trends.webp',
-  '/assets/news/shoremaster-vertical-lift-sunset.jpg',
-  '/assets/news/shoremaster-dock-bench.jpg',
-  '/assets/news/shoremaster-dock-ipe.jpg',
-  '/assets/news/claritas-electric-surfboard-market.webp'
+  'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg',
+  'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
+  'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80',
+  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80'
 ];
 
 const sources: CandidateSource[] = [

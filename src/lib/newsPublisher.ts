@@ -238,7 +238,10 @@ function fallbackDailyCandidate(posts: ContentPost[], batchCandidates: Candidate
   const todayPosts = posts.filter((post) => isTodayPost(post, now));
   if (todayPosts.length + batchCandidates.length >= DAILY_MAX_NEWS) return null;
   const publishedSlugs = new Set(posts.map((post) => post.slug));
-  const publishedTopics = new Set(posts.map((post) => topicKey(post)));
+  const publishedTopics = new Set([
+    ...todayPosts.map((post) => topicKey(post)),
+    ...batchCandidates.map((candidate) => topicKey(candidate))
+  ]);
   const usedTodayImages = new Set([
     ...todayPosts.map((post) => post.coverImage),
     ...batchCandidates.map((candidate) => candidate.coverImage)
@@ -281,6 +284,7 @@ export async function repairNewsImageDiversity() {
   const current = await readAdminStore();
   const used = new Set<string>();
   const posts: ContentPost[] = [];
+  const errors: {slug: string; error: string}[] = [];
   for (const post of current.posts) {
     if (post.type !== 'news' || post.status !== 'published') {
       posts.push(post);
@@ -292,23 +296,28 @@ export async function repairNewsImageDiversity() {
       continue;
     }
     const sourcePage = sourceUrl(post) || post.coverImagePageUrl || post.coverImageSourceUrl || '';
-    const image = await resolveSourceImage({pageUrl: sourcePage, title: post.title, usedImages: used});
-    used.add(image.url);
-    changed += 1;
-    posts.push({
-      ...post,
-      coverImage: image.url,
-      coverImageSourceUrl: image.sourceUrl,
-      coverImagePageUrl: image.pageUrl,
-      coverImageAlt: image.alt,
-      coverImageFetchedAt: image.fetchedAt,
-      coverImageStatus: image.status,
-      updatedAt: now
-    });
+    try {
+      const image = await resolveSourceImage({pageUrl: sourcePage, title: post.title, usedImages: used, allowReuseAfterExhausted: true});
+      used.add(image.url);
+      changed += 1;
+      posts.push({
+        ...post,
+        coverImage: image.url,
+        coverImageSourceUrl: image.sourceUrl,
+        coverImagePageUrl: image.pageUrl,
+        coverImageAlt: image.alt,
+        coverImageFetchedAt: image.fetchedAt,
+        coverImageStatus: image.status,
+        updatedAt: now
+      });
+    } catch (error) {
+      errors.push({slug: post.slug, error: error instanceof Error ? error.message : String(error)});
+      posts.push(post);
+    }
   }
   const store = changed ? await writeAdminStore((latest) => ({...latest, posts})) : current;
   const newsImages = store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage);
-  return {changed, images: newsImages};
+  return {changed, errors, images: newsImages};
 }
 
 async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType<typeof readAdminStore>>) {
@@ -317,7 +326,8 @@ async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType
     pageUrl: sourceUrl(candidate),
     title: candidate.title,
     usedImages: used,
-    preferredImages: [candidate.coverImage]
+    preferredImages: [candidate.coverImage],
+    allowReuseAfterExhausted: true
   });
   return {coverImage: image.url, image};
 }

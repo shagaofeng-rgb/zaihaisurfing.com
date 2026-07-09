@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       const result = await repairBlogImageDiversity();
       return Response.json({ok: true, repaired: true, ...result});
     }
-    const imageRepair = await repairBlogImageDiversity();
+    const imageRepair = {skipped: true, reason: 'Image repair runs only with repair=1 so daily publishing cannot be blocked by historical media repair.'};
     const target = Number(url.searchParams.get('target') || process.env.BLOG_DAILY_TARGET || 1);
     const result = await publishDailyAutomatedBlog(target);
     return Response.json({ok: true, imageRepair, ...result});

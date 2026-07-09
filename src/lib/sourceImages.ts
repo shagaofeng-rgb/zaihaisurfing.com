@@ -39,6 +39,16 @@ const externalFallbackImages = [
   }
 ];
 
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 4000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {...init, signal: controller.signal});
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export function isOwnSiteImage(url: string) {
   if (!url) return true;
   if (url.startsWith('/')) return true;
@@ -90,7 +100,7 @@ function extractCandidates(html: string, pageUrl: string) {
 
 async function validateExternalImage(url: string, pageUrl: string, alt: string): Promise<SourceImageResult> {
   if (isOwnSiteImage(url)) throw new Error(`Own-site images are not allowed for automated article covers: ${url}`);
-  const response = await fetch(url, {method: 'GET', cache: 'no-store'});
+  const response = await fetchWithTimeout(url, {method: 'GET', cache: 'no-store'});
   if (!response.ok) throw new Error(`Image failed ${response.status}: ${url}`);
   const contentType = response.headers.get('content-type') || '';
   if (!/^image\/(avif|webp|png|jpe?g)/i.test(contentType)) throw new Error(`Invalid image content-type ${contentType}: ${url}`);
@@ -116,12 +126,13 @@ export async function resolveSourceImage(input: {
   title: string;
   usedImages?: Set<string>;
   preferredImages?: string[];
+  allowReuseAfterExhausted?: boolean;
 }) {
   const used = input.usedImages || new Set<string>();
   const preferred = (input.preferredImages || []).filter((url) => url && !isOwnSiteImage(url));
   const candidates = [...preferred];
   try {
-    const response = await fetch(input.pageUrl, {
+    const response = await fetchWithTimeout(input.pageUrl, {
       headers: {'User-Agent': 'ZAIHAI-SourceImageValidator/1.0'},
       cache: 'no-store'
     });
@@ -134,13 +145,24 @@ export async function resolveSourceImage(input: {
   candidates.push(...externalFallbackImages.map((item) => item.url));
 
   const errors: string[] = [];
-  for (const candidate of candidates) {
-    if (!candidate || used.has(candidate)) continue;
+  const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  for (const candidate of uniqueCandidates) {
+    if (used.has(candidate)) continue;
     const fallbackMeta = externalFallbackImages.find((item) => item.url === candidate);
     try {
       return await validateExternalImage(candidate, fallbackMeta?.pageUrl || input.pageUrl, `${input.title} source image`);
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+  if (input.allowReuseAfterExhausted) {
+    for (const candidate of uniqueCandidates) {
+      const fallbackMeta = externalFallbackImages.find((item) => item.url === candidate);
+      try {
+        return await validateExternalImage(candidate, fallbackMeta?.pageUrl || input.pageUrl, `${input.title} source image`);
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : String(error));
+      }
     }
   }
   throw new Error(`No valid external source image available. ${errors.slice(0, 3).join(' | ')}`);

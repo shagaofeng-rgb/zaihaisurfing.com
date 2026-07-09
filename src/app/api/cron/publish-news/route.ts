@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       const result = await repairNewsImageDiversity();
       return Response.json({ok: true, repaired: true, ...result});
     }
-    const imageRepair = await repairNewsImageDiversity();
+    const imageRepair = {skipped: true, reason: 'Image repair runs only with repair=1 so daily publishing cannot be blocked by historical media repair.'};
     if (url.searchParams.get('single') === '1') {
       const result = await publishNextAutomatedNews();
       return Response.json({ok: true, imageRepair, ...result});
