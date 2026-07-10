@@ -1,6 +1,7 @@
 import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
 import {shippingEstimateFor} from '@/lib/shipping';
-import {oneTimePaymentSlug, products, type CheckoutProductSlug} from '@/lib/site';
+import {oneTimePaymentSlug, type CheckoutProductSlug} from '@/lib/site';
+import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
 import type {AttributionSnapshot} from '@/lib/trafficAttribution';
 
 const ORDERS_FILE = 'orders.jsonl';
@@ -293,7 +294,10 @@ export async function createStoreOrder(input: {
     throw new Error('ONE_TIME_PAYMENT_UNAVAILABLE');
   }
 
-  const product = products[input.productSlug];
+  const product = await getRuntimeCatalogProduct(input.productSlug);
+  if (!product || !product.allowDirectOrder || (product.stock !== null && product.stock <= 0)) {
+    throw new Error('PRODUCT_UNAVAILABLE');
+  }
   const subtotal = product.priceAmount * quantity;
   const shippingEstimate = shippingEstimateFor(input.productSlug, input.customer.country);
   const now = new Date().toISOString();

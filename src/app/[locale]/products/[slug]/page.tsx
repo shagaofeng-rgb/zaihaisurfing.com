@@ -7,8 +7,9 @@ import ProductGallery from '@/components/ProductGallery';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
-import {productDetailedSpecs, productSlugs, products, siteUrl, type ProductSlug} from '@/lib/site';
+import {productDetailedSpecs, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
 import {uiCopy} from '@/lib/uiCopy';
+import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
 
 const productGalleries: Record<ProductSlug, string[]> = {
   x1: ['/assets/catalog/x1/hero-angle.png', '/assets/catalog/x1/side-view.png', '/assets/catalog/x1/rear-view.png', '/assets/catalog/x1/tail-closeup.png', '/assets/catalog/x1/top-view.png'],
@@ -93,6 +94,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale, slug} = await params;
   if (!productSlugs.includes(slug as ProductSlug)) notFound();
+  const runtimeProduct = await getRuntimeCatalogProduct(slug as ProductSlug);
+  if (!runtimeProduct) notFound();
   const names = await getTranslations({locale, namespace: 'productNames'});
   const seo = await getTranslations({locale, namespace: 'seo'});
   const title = `${names(slug as ProductSlug)} for Commercial Water Sports Projects | ZAIHAI SURFING`;
@@ -107,9 +110,10 @@ export default async function ProductDetailPage({
   const {locale, slug} = await params;
   if (!productSlugs.includes(slug as ProductSlug)) notFound();
   setRequestLocale(locale);
-  const product = products[slug as ProductSlug];
   const productSlug = slug as ProductSlug;
-  const gallery = productGalleries[productSlug];
+  const product = await getRuntimeCatalogProduct(productSlug);
+  if (!product) notFound();
+  const gallery = product.galleryImages.length ? product.galleryImages : productGalleries[productSlug];
   const content = productContent[productSlug];
   const names = await getTranslations({locale, namespace: 'productNames'});
   const alt = await getTranslations({locale, namespace: 'alt'});
@@ -135,7 +139,7 @@ export default async function ProductDetailPage({
       '@type': 'Offer',
       price: product.priceAmount,
       priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
+      availability: product.stock !== null && product.stock <= 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
       url: productUrl
     },
     url: productUrl
@@ -195,9 +199,11 @@ export default async function ProductDetailPage({
             ))}
           </dl>
           <div className="product-buy-form b2b-actions">
-            <a className="button primary" href={`/${locale}/checkout?product=${productSlug}&qty=1`}>
-              Buy Now
-            </a>
+            {product.allowDirectOrder && (product.stock === null || product.stock > 0) ? (
+              <a className="button primary" href={`/${locale}/checkout?product=${productSlug}&qty=1`}>
+                Buy Now
+              </a>
+            ) : null}
             <a className="button dark" href={`/${locale}/contact`}>
               {copy.requestQuote}
             </a>
@@ -300,7 +306,9 @@ export default async function ProductDetailPage({
           <h3>Need distributor price, shipping cost or a rental fleet package?</h3>
           <p>Send your buyer type, destination country, preferred model and expected quantity. ZAIHAI will recommend suitable models, accessories and export support options.</p>
           <div className="cta-actions">
-            <Link className="button primary" href={`/checkout?product=${productSlug}&qty=1`}>Buy Now</Link>
+            {product.allowDirectOrder && (product.stock === null || product.stock > 0) ? (
+              <Link className="button primary" href={`/checkout?product=${productSlug}&qty=1`}>Buy Now</Link>
+            ) : null}
             <Link className="button dark" href="/contact">Request Quote</Link>
           </div>
         </section>

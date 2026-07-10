@@ -4,14 +4,14 @@ import {routing} from './src/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 const blockedCountries = new Set(['CN', 'IN']);
-const crawlerUserAgentPattern = /\b(Googlebot|Google-InspectionTool|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
+const crawlerUserAgentPattern = /\b(Googlebot(?:-Image|-News|-Video)?|GoogleOther(?:-Image|-Video)?|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
 
 export default function middleware(request: NextRequest) {
   const host = request.headers.get('host')?.toLowerCase() || '';
-  if (host === 'www.zaihaisurfing.com') {
+  if (host === 'zaihaisurfing.com') {
     const url = request.nextUrl.clone();
     url.protocol = 'https';
-    url.hostname = 'zaihaisurfing.com';
+    url.hostname = 'www.zaihaisurfing.com';
     url.port = '';
     return NextResponse.redirect(url, 301);
   }

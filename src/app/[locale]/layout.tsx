@@ -42,7 +42,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfing.com')
+  metadataBase: new URL(siteUrl)
 };
 
 export default async function LocaleLayout({

@@ -2,7 +2,8 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
 import {uiCopy} from '@/lib/uiCopy';
-import {products, productSlugs, type ProductSlug} from '@/lib/site';
+import {productSlugs, type ProductSlug} from '@/lib/site';
+import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
 
 const bestFor: Record<string, string[]> = {
   x1: ['Rentals', 'Resorts', 'Distributors'],
@@ -29,9 +30,14 @@ const comparisonRows = [
 ];
 
 export default async function ProductGrid({locale}: {locale: Locale}) {
-  const names = await getTranslations({locale, namespace: 'productNames'});
-  const alt = await getTranslations({locale, namespace: 'alt'});
+  const [names, alt, runtimeProducts] = await Promise.all([
+    getTranslations({locale, namespace: 'productNames'}),
+    getTranslations({locale, namespace: 'alt'}),
+    listRuntimeCatalogProducts(productSlugs)
+  ]);
   const copy = uiCopy[locale].products;
+  const runtimeBySlug = new Map(runtimeProducts.map((product) => [product.slug, product]));
+  const visibleSlugs = productSlugs.filter((slug) => runtimeBySlug.has(slug));
 
   return (
     <>
@@ -42,8 +48,8 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
       </div>
 
       <div className="catalog-product-grid">
-        {productSlugs.map((slug) => {
-          const product = products[slug];
+        {visibleSlugs.map((slug) => {
+          const product = runtimeBySlug.get(slug)!;
           return (
             <article className="catalog-product-card ecommerce-card" key={slug}>
               <Link className="catalog-image-wrap" href={`/products/${slug}`}>
@@ -74,9 +80,11 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
                   <Link className="button dark small" href={`/products/${slug}`}>
                     {copy.viewDetails}
                   </Link>
-                  <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`}>
-                    Buy Now
-                  </Link>
+                  {product.allowDirectOrder ? (
+                    <Link className="button primary small" href={`/checkout?product=${slug}&qty=1`}>
+                      Buy Now
+                    </Link>
+                  ) : null}
                   <Link className="button ghost small" href="/contact">
                     Request Quote
                   </Link>
@@ -109,7 +117,7 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
             </tr>
           </thead>
           <tbody>
-            {comparisonRows.map((row) => (
+            {comparisonRows.filter((_, index) => visibleSlugs.includes(productSlugs[index])).map((row) => (
               <tr key={row[0]}>
                 {row.map((cell) => <td key={cell}>{cell}</td>)}
               </tr>

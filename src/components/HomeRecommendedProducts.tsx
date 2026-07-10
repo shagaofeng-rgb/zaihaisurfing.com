@@ -1,5 +1,6 @@
 import {Link} from '@/i18n/navigation';
-import {products, productSlugs, type ProductSlug} from '@/lib/site';
+import {productSlugs, type ProductSlug} from '@/lib/site';
+import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
 
 const productHighlights: Record<ProductSlug, string> = {
   x1: 'Balanced commercial electric surfboard for resort demos, lake rentals and distributors.',
@@ -18,7 +19,8 @@ const homeThumbs: Record<ProductSlug, string> = {
   'p1-pro': '/assets/catalog/home-thumbs/p1-pro.webp'
 };
 
-export default function HomeRecommendedProducts() {
+export default async function HomeRecommendedProducts() {
+  const runtimeProducts = (await listRuntimeCatalogProducts(recommendedSlugs)).filter((product) => product.showOnHome);
   return (
     <section className="home-recommend-products" aria-labelledby="home-recommend-products-title">
       <div className="section-heading centered">
@@ -27,12 +29,12 @@ export default function HomeRecommendedProducts() {
         <p>Explore our main electric surfboards, electric go-kart boat and fuel-powered surfboard models for commercial buyers.</p>
       </div>
       <div className="home-recommend-grid">
-        {recommendedSlugs.map((slug) => {
-          const product = products[slug];
+        {runtimeProducts.map((product) => {
+          const slug = product.slug as ProductSlug;
           return (
             <article className="home-recommend-card" key={slug}>
               <Link className="home-recommend-image" href={`/products/${slug}`} aria-label={`View ${product.name}`} prefetch={false}>
-                <img src={homeThumbs[slug]} alt={`${product.name} recommended product`} loading="lazy" decoding="async" width="220" height="220" />
+                <img src={homeThumbs[slug] || product.thumbnail} alt={`${product.name} recommended product`} loading="lazy" decoding="async" width="220" height="220" />
               </Link>
               <div className="home-recommend-body">
                 <span className="tag">{product.category}</span>

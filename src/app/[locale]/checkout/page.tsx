@@ -4,7 +4,8 @@ import {setRequestLocale} from 'next-intl/server';
 import CheckoutForm from '@/components/CheckoutForm';
 import type {Locale} from '@/i18n/routing';
 import {localizedMetadata} from '@/lib/metadata';
-import {checkoutProductSlugs, products, type CheckoutProductSlug} from '@/lib/site';
+import {checkoutProductSlugs, type CheckoutProductSlug} from '@/lib/site';
+import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
 import {shippingEstimateFor} from '@/lib/shipping';
 import {isOneTimePaymentUnavailable} from '@/lib/commerceStore';
 
@@ -25,7 +26,8 @@ export default async function CheckoutPage({
   setRequestLocale(locale);
   const productSlug = (query.product || 'x1-pro') as CheckoutProductSlug;
   if (!checkoutProductSlugs.includes(productSlug)) notFound();
-  const product = products[productSlug];
+  const product = await getRuntimeCatalogProduct(productSlug);
+  if (!product || !product.allowDirectOrder || (product.stock !== null && product.stock <= 0)) notFound();
   const isOneTimePayment = productSlug === 'one-time-35';
   const quantity = isOneTimePayment ? 1 : Math.max(1, Math.min(99, Number(query.qty || 1)));
   const shippingEstimate = shippingEstimateFor(productSlug, query.country || '');

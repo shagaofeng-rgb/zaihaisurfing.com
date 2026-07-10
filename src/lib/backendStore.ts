@@ -1,8 +1,10 @@
 import path from 'node:path';
+import {revalidatePath} from 'next/cache';
 import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
 import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
 import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {markSitemapDirty} from '@/lib/sitemapState';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
 
 const STORE_FILE = 'admin-store.json';
@@ -189,7 +191,19 @@ export async function writeAdminStore(updater: (store: AdminStore) => AdminStore
   const current = await readAdminStore();
   const next = updater(current);
   await writeStoreObject(STORE_FILE, next);
+  if (sitemapFingerprint(current) !== sitemapFingerprint(next)) {
+    await markSitemapDirty('Published catalog or editorial content changed.').catch(() => undefined);
+    revalidatePath('/', 'layout');
+  }
   return next;
+}
+
+function sitemapFingerprint(store: AdminStore) {
+  return JSON.stringify({
+    categories: store.categories.map(({slug, status, updatedAt}) => ({slug, status, updatedAt})),
+    products: store.products.map(({slug, status, updatedAt}) => ({slug, status, updatedAt})),
+    posts: store.posts.map(({type, slug, status, publishDate, updatedAt}) => ({type, slug, status, publishDate, updatedAt}))
+  });
 }
 
 export async function listAdminProducts() {

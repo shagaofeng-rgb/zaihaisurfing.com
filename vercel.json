@@ -13,6 +13,10 @@
       "schedule": "30 2 * * *"
     },
     {
+      "path": "/api/cron/sitemap-health",
+      "schedule": "10 3 * * *"
+    },
+    {
       "path": "/api/cron/test-contact-form",
       "schedule": "0 2 1 * *"
     }

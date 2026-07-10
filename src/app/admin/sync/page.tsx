@@ -1,19 +1,24 @@
 import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, getRetailAdminHealth} from '@/lib/adminDataViews';
 import {readGoogleSeoSnapshot} from '@/lib/googleSeo';
+import {readSitemapState} from '@/lib/sitemapState';
 
 export const dynamic = 'force-dynamic';
 
-function envReady(keys: string[]) {
-  return keys.every((key) => Boolean(process.env[key]));
+function googleSeoReady() {
+  return Boolean(
+    process.env.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON ||
+    (process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL && process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY)
+  );
 }
 
 export default async function AdminSyncPage() {
-  const [health, seo] = await Promise.all([getRetailAdminHealth(), readGoogleSeoSnapshot()]);
+  const [health, seo, sitemap] = await Promise.all([getRetailAdminHealth(), readGoogleSeoSnapshot(), readSitemapState()]);
   const cronJobs = [
+    {name: '站点地图健康检查', path: '/api/cron/sitemap-health', status: sitemap.lastRun?.success ? `正常，最近处理 ${sitemap.lastRun.processedUrls} 个 URL` : '等待首次检查或需要处理'},
     {name: '新闻自动发布', path: '/api/cron/publish-news', status: '按 Vercel Cron 配置执行，每天补足至少 3 篇'},
     {name: '月度表单测试', path: '/api/cron/test-contact-form', status: '每月 1 日测试表单邮件发送'},
-    {name: 'Google SEO 同步', path: '/api/admin/google-seo/sync', status: envReady(['GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY']) ? '服务账号已配置' : '等待 Google 服务账号环境变量'}
+    {name: 'Google SEO 同步', path: '/api/admin/google-seo/sync', status: googleSeoReady() ? '服务账号已配置' : '等待 Google 服务账号环境变量'}
   ];
 
   return (

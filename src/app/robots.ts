@@ -28,7 +28,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: sharedDisallow
       }
     ],
-    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/news-sitemap.xml`, `${siteUrl}/news/rss.xml`],
+    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/news-sitemap.xml`],
     host: siteUrl
   };
 }

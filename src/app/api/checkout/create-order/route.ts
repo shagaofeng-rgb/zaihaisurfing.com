@@ -115,6 +115,9 @@ export async function POST(request: Request) {
     if (error instanceof Error && error.message === 'ONE_TIME_PAYMENT_UNAVAILABLE') {
       return Response.json({message: 'This one-time payment link is no longer available.'}, {status: 409});
     }
+    if (error instanceof Error && error.message === 'PRODUCT_UNAVAILABLE') {
+      return Response.json({message: 'This product is currently unavailable for direct online ordering.'}, {status: 409});
+    }
     console.error('Create order failed', error);
     return Response.json({message: 'Order submission failed'}, {status: 500});
   }

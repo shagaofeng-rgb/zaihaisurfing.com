@@ -1,27 +1,34 @@
-# ZAIHAI Surfing 主站
+# ZAIHAI Surfing Production Site
 
-这是 `zaihaisurfing.com` 的 Next.js 生产站点，包含海外零售前台、结账支付、新闻内容系统、SEO 数据同步、客户行为分析和中文管理后台。
+This is the Next.js production site for `https://www.zaihaisurfing.com`. It includes the multilingual storefront, checkout and payment flows, News and Blog automation, Google Search Console data sync, analytics, customer accounts, a Chinese retail admin, and a separate pricing admin.
 
-## 常用命令
+## Commands
 
 ```bash
-npm run lint
-npm run build
 npm run dev
+npm run lint
+npm run test
+npm run build
 ```
 
-## 后台入口
+## Admin Entrances
 
-- `/admin`：中文零售后台。
-- `/pricing-admin`：独立计价后台。
+- `/admin`: retail operations admin.
+- `/pricing-admin`: standalone quotation and commission admin.
 
-## 核心数据源
+## Durable Data
 
-- `src/lib/commerceStore.ts`：订单、支付、物流、退款、邮件和访客事件。
-- `src/lib/backendStore.ts`：商品、分类、媒体、内容和系统设置。
-- `src/lib/adminExtraStore.ts`：促销、评价和后台审计。
-- `src/lib/googleSeo.ts`：Google Search Console 数据同步。
+- `src/lib/commerceStore.ts`: orders, payments, shipping, refunds, email logs and visitor events.
+- `src/lib/backendStore.ts`: products, categories, media, News, Blog and site settings.
+- `src/lib/adminExtraStore.ts`: promotions, reviews and audit records.
+- `src/lib/googleSeo.ts`: real Google Search Console search data and sitemap submission.
 
-## 部署
+Production data is stored through the configured Vercel Blob/KV provider. Do not delete or replace the production store during deployment.
 
-生产部署在 Vercel。部署前必须通过 TypeScript 检查和生产构建，并确认没有误改 `.data` 或其他本地数据快照。
+## Sitemap
+
+The sitemap index, daily health job, content-change tracking, Search Console submission, manual commands and troubleshooting are documented in [docs/sitemap-operations.md](docs/sitemap-operations.md).
+
+## Deployment
+
+Production is deployed on Vercel. TypeScript checks, tests and the production build must pass before deployment. Verify the canonical domain, robots, sitemap, critical storefront pages, admin authentication, cron routes and production logs after release.

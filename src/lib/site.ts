@@ -1,8 +1,20 @@
 import type {Locale} from '@/i18n/routing';
 import {locales} from '@/i18n/routing';
 
-const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zaihaisurfing.com';
-export const siteUrl = configuredSiteUrl.replace(/^https:\/\/www\./, 'https://').replace(/\/$/, '');
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.zaihaisurfing.com';
+export const siteUrl = (() => {
+  try {
+    const url = new URL(configuredSiteUrl);
+    if (url.hostname === 'zaihaisurfing.com' || url.hostname === 'www.zaihaisurfing.com') {
+      url.protocol = 'https:';
+      url.hostname = 'www.zaihaisurfing.com';
+      url.port = '';
+    }
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return 'https://www.zaihaisurfing.com';
+  }
+})();
 
 export const productSlugs = ['x1', 'x1-pro', 'rage-shark-x', 'p1', 'p1-pro'] as const;
 export type ProductSlug = (typeof productSlugs)[number];

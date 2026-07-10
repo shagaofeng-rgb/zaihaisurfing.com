@@ -5134,8 +5134,8 @@ html[dir="rtl"] .catalog-product-card dd {
   }
 
   .hero-media {
-    inset: 62px 0 auto;
-    height: 230px;
+    inset: 0 0 auto;
+    height: auto;
     background-color: #62c8f4;
     transform: none;
   }
@@ -5154,7 +5154,7 @@ html[dir="rtl"] .catalog-product-card dd {
   }
 
   .hero-content {
-    padding: 310px 0 28px;
+    padding: 210px 0 28px;
   }
 
   .page-hero,
@@ -5573,12 +5573,12 @@ html[dir="rtl"] .catalog-product-card dd {
 
   .hero-content {
     width: min(calc(100vw - 36px), 100%);
-    padding: 304px 0 106px;
+    padding: 210px 0 106px;
   }
 
   .hero-media {
-    inset: 62px 0 auto;
-    height: 230px;
+    inset: 0 0 auto;
+    height: auto;
     transform: none;
   }
 

@@ -4,7 +4,7 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {NewsArticleGrid} from '@/components/NewsArticleGrid';
-import {localizedMetadata} from '@/lib/metadata';
+import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getNewsTag, getNewsTags} from '@/lib/newsFeed';
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +24,13 @@ export async function generateMetadata({
   const query = await searchParams;
   const group = await getNewsTag(tag);
   if (!group) notFound();
-  const metadata = localizedMetadata(
+  const metadata = englishOnlyEditorialMetadata(
     locale,
     `/news/tag/${tag}`,
     `${group.name} Insights | ZAIHAI SURFING`,
     `Source-attributed ZAIHAI news and buyer insight tagged ${group.name}.`
   );
-  if (query?.page || query?.perPage) {
+  if (query?.page || query?.perPage || locale !== 'en') {
     metadata.robots = {index: false, follow: true};
   }
   return metadata;
@@ -64,7 +64,7 @@ export default async function NewsTagPage({
           <p className="eyebrow">Articles</p>
           <h2 id="tag-news-title">{group.name} Articles</h2>
         </div>
-        <NewsArticleGrid articles={group.articles} basePath={`/news/tag/${tag}`} searchParams={query} />
+        <NewsArticleGrid articles={group.articles} basePath={`/news/tag/${tag}`} articleBasePath="/news" searchParams={query} />
       </section>
     </main>
   );

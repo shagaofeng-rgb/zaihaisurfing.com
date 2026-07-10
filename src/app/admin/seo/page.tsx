@@ -2,6 +2,9 @@ import {redirect} from 'next/navigation';
 import AdminShell from '@/components/AdminShell';
 import {requireAdminSession} from '@/lib/adminAuth';
 import {googleSeoConfigStatus, readGoogleSeoSnapshot, syncGoogleSeoSnapshot, type GoogleSeoMetricRow} from '@/lib/googleSeo';
+import {runSitemapMaintenance} from '@/lib/sitemapMaintenance';
+import {readSitemapState} from '@/lib/sitemapState';
+import {siteUrl} from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +13,13 @@ async function syncGoogleSeoAction() {
   await requireAdminSession();
   await syncGoogleSeoSnapshot();
   redirect('/admin/seo?synced=1');
+}
+
+async function refreshSitemapAction() {
+  'use server';
+  await requireAdminSession();
+  await runSitemapMaintenance({trigger: 'manual', origin: siteUrl, force: true, submit: true});
+  redirect('/admin/seo?sitemap=1');
 }
 
 function percent(value: number) {
@@ -63,7 +73,7 @@ export default async function AdminSeoPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const [snapshot, config] = await Promise.all([readGoogleSeoSnapshot(), googleSeoConfigStatus()]);
+  const [snapshot, config, sitemap] = await Promise.all([readGoogleSeoSnapshot(), googleSeoConfigStatus(), readSitemapState()]);
   const synced = params.synced === '1';
 
   return (
@@ -87,6 +97,22 @@ export default async function AdminSeoPage({
         </div>
         <form action={syncGoogleSeoAction} className="admin-actions">
           <button className="button primary small" type="submit">立即同步 Google 数据</button>
+        </form>
+      </section>
+
+      <section className="admin-panel">
+        <div>
+          <p className="eyebrow">Sitemap 状态</p>
+          <h2>{sitemap.lastRun?.success ? '站点地图运行正常' : sitemap.lastRun ? '站点地图需要处理' : '等待首次站点地图检查'}</h2>
+          <p>正式地址：{config.sitemapUrl}</p>
+          <p>最近检查：{sitemap.lastRun?.finishedAt ? sitemap.lastRun.finishedAt.slice(0, 19).replace('T', ' ') : '-'}</p>
+          <p>URL 数量：{sitemap.lastRun?.processedUrls || sitemap.snapshot.length}</p>
+          <p>文件数量：{sitemap.lastRun?.files.length || 0}</p>
+          <p>Google 提交：{sitemap.lastRun?.googleSubmission.success ? '已由 API 接受' : sitemap.lastRun?.googleSubmission.message || '尚未提交'}</p>
+          {sitemap.lastRun?.errors.length ? <p>错误：{sitemap.lastRun.errors.join('；')}</p> : null}
+        </div>
+        <form action={refreshSitemapAction} className="admin-actions">
+          <button className="button primary small" type="submit">检查 Sitemap 并提交 Google</button>
         </form>
       </section>
 

@@ -1,17 +1,11 @@
 import {syncGoogleSeoSnapshot} from '@/lib/googleSeo';
+import {cronAuthorized} from '@/lib/cronAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function authorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
-  const header = request.headers.get('authorization') || '';
-  return header === `Bearer ${secret}`;
-}
-
 export async function GET(request: Request) {
-  if (!authorized(request)) {
+  if (!cronAuthorized(request)) {
     return Response.json({ok: false, error: 'Unauthorized'}, {status: 401});
   }
   const snapshot = await syncGoogleSeoSnapshot();

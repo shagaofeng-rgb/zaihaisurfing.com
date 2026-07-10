@@ -23,28 +23,53 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/:locale(en|es|fr|de|it|pt|ru)/news/category/:category/:slug',
+        destination: '/:locale/news/:slug',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|it|pt|ru)/news/tag/:tag/:slug',
+        destination: '/:locale/news/:slug',
+        permanent: true
+      },
+      {
+        source: '/news/category/:category/:slug',
+        destination: '/en/news/:slug',
+        permanent: true
+      },
+      {
+        source: '/news/tag/:tag/:slug',
+        destination: '/en/news/:slug',
+        permanent: true
+      },
+      {
         source: '/sitemap_products_1.xml',
-        destination: '/sitemap.xml',
+        destination: '/sitemaps/products-1.xml',
         permanent: true
       },
       {
         source: '/sitemap_pages_1.xml',
-        destination: '/sitemap.xml',
+        destination: '/sitemaps/pages-1.xml',
         permanent: true
       },
       {
         source: '/sitemap_collections_1.xml',
-        destination: '/sitemap.xml',
+        destination: '/sitemaps/categories-1.xml',
         permanent: true
       },
       {
         source: '/sitemap_blogs_1.xml',
-        destination: '/news-sitemap.xml',
+        destination: '/sitemaps/posts-1.xml',
         permanent: true
       },
       {
         source: '/sitemap_articles_1.xml',
-        destination: '/news-sitemap.xml',
+        destination: '/sitemaps/posts-1.xml',
+        permanent: true
+      },
+      {
+        source: '/sitemap_index.xml',
+        destination: '/sitemap.xml',
         permanent: true
       }
     ];

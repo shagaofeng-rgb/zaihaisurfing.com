@@ -8,6 +8,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 type NewsArticleGridProps = {
   articles: NewsArticle[];
   basePath: string;
+  articleBasePath?: string;
   searchParams?: SearchParams;
 };
 
@@ -34,7 +35,7 @@ function articleHref(basePath: string, slug: string) {
   return `${basePath.replace(/\/$/, '')}/${slug}`;
 }
 
-export function NewsArticleGrid({articles, basePath, searchParams}: NewsArticleGridProps) {
+export function NewsArticleGrid({articles, basePath, articleBasePath = basePath, searchParams}: NewsArticleGridProps) {
   const perPage = pageSizeFrom(searchParams);
   const totalPages = Math.max(1, Math.ceil(articles.length / perPage));
   const requestedPage = numericParam(searchParams?.page, 1);
@@ -56,7 +57,7 @@ export function NewsArticleGrid({articles, basePath, searchParams}: NewsArticleG
       </div>
       <div className="news-grid">
         {visibleArticles.map((article) => (
-          <Link href={articleHref(basePath, article.slug)} className="news-card" key={article.slug}>
+          <Link href={articleHref(articleBasePath, article.slug)} className="news-card" key={article.slug}>
             <img src={article.hero} alt={article.heroAlt} loading="lazy" />
             <div>
               <time dateTime={article.date}>{article.date}</time>

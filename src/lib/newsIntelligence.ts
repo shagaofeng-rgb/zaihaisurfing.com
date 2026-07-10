@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import type {ContentPost} from '@/lib/backendStore';
 import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {isRelevantNewsText} from '@/lib/newsRelevance';
 
 export type AutomatedNewsCandidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'> & {
   intelligence: {
@@ -261,7 +262,7 @@ function topicSlot(intentValue: string): TopicSlot {
 }
 
 function buildEventKey(candidate: RawCandidate) {
-  const text = `${candidate.title} ${candidate.summary} ${candidate.query || ''}`;
+  const text = `${candidate.title} ${candidate.summary}`;
   const country = classifyCountry(text);
   const product = classifyProduct(text);
   const intentValue = classifyIntent(text);
@@ -281,7 +282,7 @@ function infoGainFlags(text: string) {
 }
 
 function scoreCandidate(candidate: RawCandidate, state: NewsIntelligenceState): ScoreBreakdown {
-  const combined = `${candidate.title} ${candidate.summary} ${candidate.query || ''}`;
+  const combined = `${candidate.title} ${candidate.summary}`;
   const authority = Math.min(5, candidate.tier === 'authority' ? 5 : candidate.tier === 'media' ? 4 : candidate.tier === 'structured' ? 3 : 2);
   const originality = Math.min(5, authorityDomains.has(candidate.domain) ? 5 : /google|bing|reddit|youtube/.test(candidate.domain) ? 2 : 4);
   const publishedTime = candidate.publishedAt ? new Date(candidate.publishedAt).getTime() : 0;
@@ -592,7 +593,8 @@ async function collectCandidates(state: NewsIntelligenceState) {
 
 function enrich(candidate: RawCandidate, state: NewsIntelligenceState): ScoredCandidate | null {
   const canonical = canonicalUrl(candidate.url);
-  const text = `${candidate.title} ${candidate.summary} ${candidate.query || ''}`;
+  const text = `${candidate.title} ${candidate.summary}`;
+  if (!isRelevantNewsText(candidate.title, candidate.summary)) return null;
   const infoGain = infoGainFlags(text);
   if (infoGain.length === 0) return null;
   const intentValue = classifyIntent(text);

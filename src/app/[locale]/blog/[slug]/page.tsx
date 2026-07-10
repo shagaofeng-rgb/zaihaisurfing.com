@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
-import {localizedMetadata} from '@/lib/metadata';
+import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllBlogSlugs, getBlogArticleBySlug} from '@/lib/blogFeed';
 import {siteUrl} from '@/lib/site';
 
@@ -22,7 +22,7 @@ export async function generateMetadata({
   const article = await getBlogArticleBySlug(slug);
   if (!article) notFound();
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
-  return localizedMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI Guide`, article.excerpt, {
+  return englishOnlyEditorialMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI Guide`, article.excerpt, {
     url: imageUrl,
     width: 1200,
     height: 630,
@@ -51,7 +51,7 @@ export default async function BlogArticlePage({
     image: [imageUrl],
     author: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
     publisher: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
-    mainEntityOfPage: `${siteUrl}/${locale}/blog/${article.slug}`,
+    mainEntityOfPage: `${siteUrl}/en/blog/${article.slug}`,
     articleSection: article.category,
     keywords: article.tags.join(', '),
     citation: article.sources.map((source) => source.url)

@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
-import {localizedMetadata} from '@/lib/metadata';
+import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllNewsSlugs, getNewsArticleBySlug} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
 
@@ -22,7 +22,7 @@ export async function generateMetadata({
   const article = await getNewsArticleBySlug(slug);
   if (!article) notFound();
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
-  return localizedMetadata(locale, `/news/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt, {
+  return englishOnlyEditorialMetadata(locale, `/news/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt, {
     url: imageUrl,
     width: 1200,
     height: 630,
@@ -51,7 +51,7 @@ export default async function NewsArticlePage({
     image: [imageUrl],
     author: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
     publisher: {'@type': 'Organization', name: 'ZAIHAI SURFING'},
-    mainEntityOfPage: `${siteUrl}/${locale}/news/${article.slug}`,
+    mainEntityOfPage: `${siteUrl}/en/news/${article.slug}`,
     articleSection: article.category,
     keywords: article.tags.join(', '),
     citation: article.sources.map((source) => source.url)

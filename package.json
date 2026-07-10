@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts",
+    "sitemap:generate": "node scripts/sitemap-maintenance.mjs"
   },
   "dependencies": {
-    "@vercel/blob": "^2.4.0",
-    "next": "latest",
-    "next-intl": "latest",
+    "@vercel/blob": "^2.6.1",
+    "next": "16.2.10",
+    "next-intl": "4.13.1",
     "react": "latest",
     "react-dom": "latest"
   },
@@ -19,6 +21,10 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "tsx": "latest",
     "typescript": "latest"
+  },
+  "overrides": {
+    "postcss": "8.5.16"
   }
 }

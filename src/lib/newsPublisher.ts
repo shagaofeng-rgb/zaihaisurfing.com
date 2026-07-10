@@ -1,6 +1,7 @@
 import {readAdminStore, writeAdminStore, type ContentPost} from '@/lib/backendStore';
 import {recordPublishedAutomatedNews, selectNextAutomatedNews} from '@/lib/newsIntelligence';
 import {isOwnSiteImage, resolveSourceImage, type SourceImageResult} from '@/lib/sourceImages';
+import {automatedNewsSourceText, isRelevantNewsText} from '@/lib/newsRelevance';
 
 type Candidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
 
@@ -318,6 +319,21 @@ export async function repairNewsImageDiversity() {
   const store = changed ? await writeAdminStore((latest) => ({...latest, posts})) : current;
   const newsImages = store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage);
   return {changed, errors, images: newsImages};
+}
+
+export async function archiveIrrelevantAutomatedNews() {
+  const current = await readAdminStore();
+  const archived: string[] = [];
+  const now = new Date().toISOString();
+  const posts = current.posts.map((post) => {
+    const automated = post.type === 'news' && post.status === 'published' && post.slug.startsWith('auto-');
+    const source = automatedNewsSourceText(post.title, post.excerpt, post.content);
+    if (!automated || isRelevantNewsText(source.title, source.summary)) return post;
+    archived.push(post.slug);
+    return {...post, status: 'archived' as const, updatedAt: now};
+  });
+  if (archived.length) await writeAdminStore((store) => ({...store, posts}));
+  return {archived};
 }
 
 async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType<typeof readAdminStore>>) {

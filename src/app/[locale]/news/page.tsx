@@ -3,7 +3,7 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {NewsArticleGrid} from '@/components/NewsArticleGrid';
-import {localizedMetadata} from '@/lib/metadata';
+import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllNewsArticles} from '@/lib/newsFeed';
 
 export const dynamic = 'force-dynamic';
@@ -21,13 +21,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale} = await params;
   const query = await searchParams;
-  const metadata = localizedMetadata(
+  const metadata = englishOnlyEditorialMetadata(
     locale,
     '/news',
     'News & Insights | ZAIHAI SURFING',
     'Water sports equipment news, electric surfboard market analysis, resort operation insights and cited industry sources from ZAIHAI SURFING.'
   );
-  if (hasListParams(query)) {
+  if (hasListParams(query) || locale !== 'en') {
     metadata.robots = {index: false, follow: true};
   }
   return metadata;

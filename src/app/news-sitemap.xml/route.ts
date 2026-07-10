@@ -13,7 +13,11 @@ function xmlEscape(value: string) {
 }
 
 export async function GET() {
-  const newsArticles = await getAllNewsArticles();
+  const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
+  const newsArticles = (await getAllNewsArticles()).filter((article) => {
+    const published = new Date(article.date).getTime();
+    return Number.isFinite(published) && published >= cutoff && published <= Date.now() + 60 * 60 * 1000;
+  });
   const urls = newsArticles.map((article) => `
   <url>
     <loc>${siteUrl}/en/news/${article.slug}</loc>

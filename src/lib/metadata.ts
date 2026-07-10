@@ -50,3 +50,21 @@ export function localizedMetadata(
     }
   };
 }
+
+export function englishOnlyEditorialMetadata(
+  locale: Locale,
+  path: string,
+  title: string,
+  description: string,
+  image: MetadataImage = defaultOgImage
+): Metadata {
+  const metadata = localizedMetadata(locale, path, title, description, image);
+  const canonical = canonicalFor('en', path);
+  metadata.alternates = {
+    canonical,
+    languages: {en: canonical, 'x-default': canonical}
+  };
+  metadata.openGraph = {...metadata.openGraph, url: canonical, locale: 'en'};
+  if (locale !== 'en') metadata.robots = {index: false, follow: true};
+  return metadata;
+}

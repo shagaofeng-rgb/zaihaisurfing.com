@@ -3,7 +3,7 @@ import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
 
 const STORE_FILE = 'google-seo-snapshot.json';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const WEBMASTERS_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
+const WEBMASTERS_SCOPE = 'https://www.googleapis.com/auth/webmasters';
 
 export type GoogleSeoMetricRow = {
   key: string;
@@ -85,8 +85,16 @@ function getConfiguredSiteUrl() {
     process.env.GSC_SITE_URL ||
     process.env.SITE_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    'https://zaihaisurfing.com/'
+    'sc-domain:zaihaisurfing.com'
   ).trim();
+}
+
+function sitemapSubmissionEnabled() {
+  return /^(1|true|yes)$/i.test(process.env.GOOGLE_SEARCH_CONSOLE_ENABLED || '');
+}
+
+function configuredSitemapUrl() {
+  return (process.env.GOOGLE_SEARCH_CONSOLE_SITEMAP_URL || 'https://www.zaihaisurfing.com/sitemap.xml').trim();
 }
 
 function readCredentials(): ServiceAccountCredentials | null {
@@ -201,12 +209,64 @@ export function googleSeoConfigStatus() {
   return {
     configured: Boolean(credentials && getConfiguredSiteUrl()),
     siteUrl: getConfiguredSiteUrl(),
+    sitemapUrl: configuredSitemapUrl(),
+    sitemapSubmissionEnabled: sitemapSubmissionEnabled(),
     credentialSource: process.env.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON || process.env.GSC_SERVICE_ACCOUNT_JSON
       ? 'service_account_json'
       : credentials
         ? 'client_email_private_key'
         : 'missing'
   };
+}
+
+export async function submitSitemapToGoogle(sitemapUrl = configuredSitemapUrl()) {
+  if (!sitemapSubmissionEnabled()) {
+    return {attempted: false, success: false, status: 0, message: 'Google sitemap submission is disabled.'};
+  }
+  const credentials = readCredentials();
+  if (!credentials) {
+    return {attempted: false, success: false, status: 0, message: 'Google service account credentials are not configured.'};
+  }
+
+  try {
+    const accessToken = await getAccessToken(credentials);
+    const siteProperty = getConfiguredSiteUrl();
+    const endpoint = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteProperty)}/sitemaps/${encodeURIComponent(sitemapUrl)}`;
+    let lastStatus = 0;
+    let lastMessage = '';
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+      try {
+        const response = await fetch(endpoint, {
+          method: 'PUT',
+          headers: {Authorization: `Bearer ${accessToken}`},
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        lastStatus = response.status;
+        const payload = await response.json().catch(() => ({})) as {error?: {message?: string}};
+        if (response.ok) {
+          return {attempted: true, success: true, status: response.status, message: 'Google Search Console accepted the sitemap submission.'};
+        }
+        lastMessage = payload.error?.message || `Google sitemap submission failed: ${response.status}`;
+        if (response.status < 500 && response.status !== 429) break;
+      } catch (error) {
+        lastMessage = error instanceof Error ? error.message : 'Google sitemap request failed.';
+        if (attempt === 2) throw error;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+    return {attempted: true, success: false, status: lastStatus, message: lastMessage || 'Google sitemap submission failed.'};
+  } catch (error) {
+    return {
+      attempted: true,
+      success: false,
+      status: 0,
+      message: error instanceof Error ? error.message : 'Unknown Google sitemap submission error.'
+    };
+  }
 }
 
 export async function readGoogleSeoSnapshot() {
