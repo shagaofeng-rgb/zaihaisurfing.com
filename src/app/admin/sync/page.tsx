@@ -1,5 +1,6 @@
 import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, getRetailAdminHealth} from '@/lib/adminDataViews';
+import {listAdminPosts} from '@/lib/backendStore';
 import {readGoogleSeoSnapshot} from '@/lib/googleSeo';
 import {readSitemapState} from '@/lib/sitemapState';
 
@@ -13,12 +14,16 @@ function googleSeoReady() {
 }
 
 export default async function AdminSyncPage() {
-  const [health, seo, sitemap] = await Promise.all([getRetailAdminHealth(), readGoogleSeoSnapshot(), readSitemapState()]);
+  const [health, seo, sitemap, posts] = await Promise.all([getRetailAdminHealth(), readGoogleSeoSnapshot(), readSitemapState(), listAdminPosts()]);
+  const today = new Date().toISOString().slice(0, 10);
+  const newsToday = posts.filter((post) => post.type === 'news' && post.status === 'published' && post.publishDate === today).length;
+  const blogToday = posts.filter((post) => post.type === 'blog' && post.status === 'published' && post.publishDate === today).length;
   const cronJobs = [
     {name: '站点地图健康检查', path: '/api/cron/sitemap-health', status: sitemap.lastRun?.success ? `正常，最近处理 ${sitemap.lastRun.processedUrls} 个 URL` : '等待首次检查或需要处理'},
-    {name: '新闻自动发布', path: '/api/cron/publish-news', status: '按 Vercel Cron 配置执行，每天补足至少 3 篇'},
+    {name: '新闻自动发布', path: '/api/cron/publish-news', status: newsToday >= 3 ? `今日已发布 ${newsToday} 篇，已达标` : `今日已发布 ${newsToday} 篇，尚未达到 3 篇`},
+    {name: '博客自动发布', path: '/api/cron/publish-blog', status: blogToday >= 1 ? `今日已发布 ${blogToday} 篇` : '今日尚未发布'},
     {name: '月度表单测试', path: '/api/cron/test-contact-form', status: '每月 1 日测试表单邮件发送'},
-    {name: 'Google SEO 同步', path: '/api/admin/google-seo/sync', status: googleSeoReady() ? '服务账号已配置' : '等待 Google 服务账号环境变量'}
+    {name: 'Google SEO 同步', path: '/api/cron/sync-google-seo', status: googleSeoReady() ? `服务账号已配置，最近同步 ${formatAdminDate(seo.syncedAt || '')}` : '等待 Google 服务账号环境变量'}
   ];
 
   return (

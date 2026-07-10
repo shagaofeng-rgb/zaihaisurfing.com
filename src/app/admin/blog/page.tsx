@@ -1,11 +1,20 @@
+import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhPublishStatus} from '@/lib/adminZh';
 import {listAdminPosts} from '@/lib/backendStore';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminBlogPage() {
+export default async function AdminBlogPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const {page, perPage} = parseAdminPagination(params);
   const posts = await listAdminPosts('blog');
+  const paged = paginate(posts, page, perPage);
   return (
     <AdminShell active="blog">
       <div className="admin-title">
@@ -47,7 +56,7 @@ export default async function AdminBlogPage() {
           <table>
             <thead><tr><th>标题</th><th>日期</th><th>标签</th><th>状态</th><th>SEO 描述</th></tr></thead>
             <tbody>
-              {posts.length ? posts.map((post) => (
+              {paged.items.length ? paged.items.map((post) => (
                 <tr key={post.id}>
                   <td><strong>{post.title}</strong><br /><small>{post.slug}</small></td>
                   <td>{post.publishDate}</td>
@@ -59,6 +68,7 @@ export default async function AdminBlogPage() {
             </tbody>
           </table>
         </div>
+        <AdminPagination basePath="/admin/blog" params={params} page={paged.page} perPage={paged.perPage} total={paged.total} totalPages={paged.totalPages} />
       </section>
     </AdminShell>
   );

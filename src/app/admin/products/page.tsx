@@ -1,4 +1,6 @@
+import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhPublishStatus} from '@/lib/adminZh';
 import {listAdminCategories, listAdminProducts} from '@/lib/backendStore';
 
@@ -14,8 +16,15 @@ function discount(compareAt: number, sale: number) {
   return `${Math.round(((compareAt - sale) / compareAt) * 100)}%`;
 }
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const {page, perPage} = parseAdminPagination(params);
   const [products, categories] = await Promise.all([listAdminProducts(), listAdminCategories()]);
+  const paged = paginate(products, page, perPage);
 
   return (
     <AdminShell active="products">
@@ -93,7 +102,7 @@ export default async function AdminProductsPage() {
               <tr><th>产品</th><th>分类</th><th>价格</th><th>库存</th><th>媒体</th><th>状态</th><th>SEO</th></tr>
             </thead>
             <tbody>
-              {products.length ? products.map((product) => {
+              {paged.items.length ? paged.items.map((product) => {
                 const sale = product.salePriceCents || product.priceCents;
                 return (
                   <tr key={product.id}>
@@ -116,6 +125,7 @@ export default async function AdminProductsPage() {
             </tbody>
           </table>
         </div>
+        <AdminPagination basePath="/admin/products" params={params} page={paged.page} perPage={paged.perPage} total={paged.total} totalPages={paged.totalPages} />
       </section>
     </AdminShell>
   );

@@ -424,27 +424,52 @@ export async function publishDailyAutomatedNews(target = DAILY_MIN_NEWS) {
   const fallbackBatch: Candidate[] = [];
 
   for (let index = 0; index < remainingTarget; index += 1) {
-    const result = await publishNextAutomatedNews();
+    let result;
+    try {
+      result = await publishNextAutomatedNews();
+    } catch (error) {
+      result = {
+        published: false,
+        reason: 'Dynamic candidate publishing failed; rotating to a validated fallback source.',
+        diagnostics: {error: error instanceof Error ? error.message : String(error)}
+      };
+    }
     if (result.published) {
       results.push(result);
       publishedCount += 1;
       continue;
     }
 
-    const latestStore = await readAdminStore();
-    const fallback = fallbackDailyCandidate(latestStore.posts, fallbackBatch);
-    if (!fallback) {
-      results.push(result);
-      break;
+    results.push(result);
+    let fallbackPublished = false;
+    for (let attempt = 0; attempt < 12 && !fallbackPublished; attempt += 1) {
+      const latestStore = await readAdminStore();
+      const fallback = fallbackDailyCandidate(latestStore.posts, fallbackBatch);
+      if (!fallback) break;
+      fallbackBatch.push(fallback);
+      try {
+        const fallbackResult = await publishCandidate(fallback, {
+          mode: 'seo_geo_fallback',
+          reason: result.reason || 'Dynamic candidate unavailable; source-attributed fallback used to satisfy the daily minimum.',
+          previousDiagnostics: result.diagnostics || null,
+          fallbackAttempt: attempt + 1
+        });
+        results.push(fallbackResult);
+        publishedCount += 1;
+        fallbackPublished = true;
+      } catch (error) {
+        results.push({
+          published: false,
+          reason: 'Fallback source or image validation failed; rotating to the next source.',
+          diagnostics: {
+            fallbackAttempt: attempt + 1,
+            slug: fallback.slug,
+            error: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
-    const fallbackResult = await publishCandidate(fallback, {
-      mode: 'seo_geo_fallback',
-      reason: result.reason || 'Dynamic candidate unavailable; source-attributed fallback used to satisfy the daily minimum.',
-      previousDiagnostics: result.diagnostics || null
-    });
-    fallbackBatch.push(fallback);
-    results.push(fallbackResult);
-    publishedCount += 1;
+    if (!fallbackPublished) break;
   }
 
   return {
