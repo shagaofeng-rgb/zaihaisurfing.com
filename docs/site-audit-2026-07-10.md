@@ -46,10 +46,13 @@ The live `sc-domain:zaihaisurfing.com` property reported 237 indexed and 143 not
 - `npm audit --audit-level=moderate`: 0 vulnerabilities
 - Sitemap index: HTTP 200
 - Sitemap children: 4
-- Canonical sitemap URLs checked: 159, failures: 0
+- Final production sitemap URLs after historical content archival: 214, failures: 0
 - Internal links checked: 434, failures: 0
 - Google crawler variants under restricted-country headers: HTTP 200
 - Normal visitor under restricted-country headers: HTTP 403, as configured
 - Preview deployment: `dpl_8wmxyGLrejxFRYJoSK9yTrU84RKy`, READY
+- Production deployment: `dpl_DF1Qaiim3u71K37zkh3Z5j89tTA5`, READY, apex and www aliases attached
+- Google Search Console sitemap submission: HTTP 204 accepted
+- Production runtime errors in the final one-hour verification window: 0
 
 Search Console counts will change only after Google recrawls the corrected URLs. Intentional canonical and redirect exclusions are expected to remain excluded rather than become indexed.
