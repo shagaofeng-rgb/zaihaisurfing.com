@@ -43,6 +43,30 @@ const sourceBriefs: SourceBrief[] = [
     images: ['https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation'],
     category: 'Electric Surfboards',
     tags: ['Electric Surfboards', 'Commercial Rentals', 'Product Selection']
+  },
+  {
+    key: 'boating-safety',
+    name: 'Discover Boating safety resource',
+    url: 'https://www.discoverboating.com/resources/dos-and-donts-of-boating-safety',
+    images: [],
+    category: 'Safety & Regulation',
+    tags: ['Boating Safety', 'Operations', 'United States']
+  },
+  {
+    key: 'marine-technology',
+    name: 'Garmin marine newsroom',
+    url: 'https://www.garmin.com/en-US/newsroom/',
+    images: [],
+    category: 'Marine Technology',
+    tags: ['Marine Technology', 'Navigation', 'United States']
+  },
+  {
+    key: 'coast-guard-safety',
+    name: 'United States Coast Guard Boating Safety',
+    url: 'https://www.uscgboating.org/recreational-boaters/',
+    images: [],
+    category: 'Safety & Regulation',
+    tags: ['Boating Safety', 'Regulation', 'United States']
   }
 ];
 
@@ -187,7 +211,8 @@ function rollingCandidate(base: Date, offset: number, usedImages: Set<string>, u
   const angle = rollingAngles[offset % rollingAngles.length];
   const rotatedSources = [...sourceBriefs.slice(offset % sourceBriefs.length), ...sourceBriefs.slice(0, offset % sourceBriefs.length)];
   const source = rotatedSources.find((item) => !usedDomains.has(new URL(item.url).hostname.replace(/^www\./, '').toLowerCase())) || rotatedSources[0];
-  const coverImage = source.images.find((image) => !usedImages.has(image));
+  const coverImage = source.images.find((image) => !usedImages.has(image))
+    || (!usedImages.has(source.url) ? source.url : '');
   if (!coverImage) return null;
   const title = `${angle.title} for ${source.category}`;
   const sourceLine = `${source.name}: ${source.url}`;
@@ -343,7 +368,8 @@ async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType
     title: candidate.title,
     usedImages: used,
     preferredImages: [candidate.coverImage],
-    allowReuseAfterExhausted: true
+    allowReuseAfterExhausted: true,
+    allowExternalFallback: false
   });
   return {coverImage: image.url, image};
 }

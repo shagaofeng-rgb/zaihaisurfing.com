@@ -27,16 +27,6 @@ const externalFallbackImages = [
     pageUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
     sourceUrl: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation'
   },
-  {
-    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80',
-    pageUrl: 'https://unsplash.com/photos/body-of-water-under-cloudy-sky-KMn4VEeEPR8',
-    sourceUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80',
-    pageUrl: 'https://unsplash.com/photos/person-standing-near-body-of-water-brown-wooden-dock-0r8Am0r6lY4',
-    sourceUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee'
-  }
 ];
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 4000) {
@@ -127,6 +117,7 @@ export async function resolveSourceImage(input: {
   usedImages?: Set<string>;
   preferredImages?: string[];
   allowReuseAfterExhausted?: boolean;
+  allowExternalFallback?: boolean;
 }) {
   const used = input.usedImages || new Set<string>();
   const preferred = (input.preferredImages || []).filter((url) => url && !isOwnSiteImage(url));
@@ -142,7 +133,9 @@ export async function resolveSourceImage(input: {
   } catch {
     // Fall through to curated external internet images.
   }
-  candidates.push(...externalFallbackImages.map((item) => item.url));
+  if (input.allowExternalFallback !== false) {
+    candidates.push(...externalFallbackImages.map((item) => item.url));
+  }
 
   const errors: string[] = [];
   const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
