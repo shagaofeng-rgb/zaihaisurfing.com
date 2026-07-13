@@ -24,7 +24,19 @@ export async function GET(request: Request) {
       ? Number(url.searchParams.get('target'))
       : Number(process.env.NEWS_DAILY_TARGET || '');
     const result = Number.isFinite(target) ? await publishDailyAutomatedNews(target) : await publishDailyAutomatedNews();
-    return Response.json({ok: true, contentRepair, imageRepair, ...result});
+    if (!result.completed) {
+      console.error('Automated news daily target was not met', {
+        target: result.target,
+        totalPublishedToday: result.totalPublishedToday,
+        failedResults: result.results
+          .filter((item) => !item.published)
+          .map((item) => 'reason' in item ? item.reason : '')
+          .filter(Boolean)
+      });
+    }
+    return Response.json({ok: result.completed, contentRepair, imageRepair, ...result}, {
+      status: result.completed ? 200 : 503
+    });
   } catch (error) {
     return Response.json({
       ok: false,

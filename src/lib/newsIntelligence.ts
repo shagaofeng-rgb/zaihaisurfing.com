@@ -287,7 +287,11 @@ function scoreCandidate(candidate: RawCandidate, state: NewsIntelligenceState): 
   const originality = Math.min(5, authorityDomains.has(candidate.domain) ? 5 : /google|bing|reddit|youtube/.test(candidate.domain) ? 2 : 4);
   const publishedTime = candidate.publishedAt ? new Date(candidate.publishedAt).getTime() : 0;
   const ageDays = publishedTime ? (Date.now() - publishedTime) / 86400000 : 10;
-  const freshness = ageDays <= 2 ? 5 : ageDays <= 7 ? 4 : ageDays <= 30 ? 3 : 1;
+  // RSS and search aggregators do not always expose a parseable publication date.
+  // Keep those candidates eligible, while still preferring explicitly fresh items.
+  const freshness = publishedTime
+    ? (ageDays <= 2 ? 5 : ageDays <= 7 ? 4 : ageDays <= 30 ? 3 : 1)
+    : (candidate.tier === 'authority' || candidate.tier === 'media' ? 3 : 2);
   const relevanceHits = [
     /\b(electric surfboard|jetboard|e-?foil|water sports|marine battery|pwc|personal watercraft)\b/i,
     /\b(resort|rental|marina|tourism|dealer|distributor|fleet)\b/i,
@@ -566,12 +570,13 @@ function parseFeed(xml: string, source: CandidateSource, feedUrl: string, query?
 }
 
 async function collectCandidates(state: NewsIntelligenceState) {
-  const googleSources = queryVariants().map((query) => ({
+  const googleSources = queryVariants().slice(0, Math.ceil(MAX_FETCHES_PER_RUN / 2)).map((query) => ({
     source: {name: 'Google News', domain: 'news.google.com', tier: 'structured' as SourceTier, categories: ['structured', 'news']},
     feedUrl: googleNewsUrl(query),
     query
   }));
-  const fetchTargets = [...googleSources, ...feedCandidates(state)].slice(0, MAX_FETCHES_PER_RUN);
+  const sourceFeeds = feedCandidates(state).slice(0, Math.floor(MAX_FETCHES_PER_RUN / 2));
+  const fetchTargets = [...googleSources, ...sourceFeeds];
   const results = await Promise.allSettled(fetchTargets.map(async (target) => {
     const xml = await fetchText(target.feedUrl);
     const feedStat = state.feedStats[target.feedUrl] || {quality: 3, checks: 0, successes: 0, failures: 0, duplicates: 0, lastCheckedAt: ''};
