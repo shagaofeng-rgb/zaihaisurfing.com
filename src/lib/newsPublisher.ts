@@ -210,7 +210,12 @@ function rollingCandidate(base: Date, offset: number, usedImages: Set<string>, u
   const slotId = slot.toISOString().slice(0, 13).replace(/[-T:]/g, '');
   const angle = rollingAngles[offset % rollingAngles.length];
   const rotatedSources = [...sourceBriefs.slice(offset % sourceBriefs.length), ...sourceBriefs.slice(0, offset % sourceBriefs.length)];
-  const source = rotatedSources.find((item) => !usedDomains.has(new URL(item.url).hostname.replace(/^www\./, '').toLowerCase())) || rotatedSources[0];
+  const unusedSources = rotatedSources.filter((item) => !usedDomains.has(new URL(item.url).hostname.replace(/^www\./, '').toLowerCase()));
+  // Daily catch-up prefers a distinct source with a known, source-owned image.
+  // This avoids exhausting the batch on temporarily blocked source pages.
+  const source = unusedSources.find((item) => item.images.some((image) => !usedImages.has(image)))
+    || unusedSources[0]
+    || rotatedSources[0];
   const coverImage = source.images.find((image) => !usedImages.has(image))
     || (!usedImages.has(source.url) ? source.url : '');
   if (!coverImage) return null;
