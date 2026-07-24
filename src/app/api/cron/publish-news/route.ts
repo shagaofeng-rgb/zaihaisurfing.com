@@ -20,10 +20,14 @@ export async function GET(request: Request) {
       const result = await publishNextAutomatedNews();
       return Response.json({ok: true, contentRepair, imageRepair, ...result});
     }
-    const target = url.searchParams.has('target')
+    const requestedTarget = url.searchParams.has('target')
       ? Number(url.searchParams.get('target'))
-      : Number(process.env.NEWS_DAILY_TARGET || '');
-    const result = Number.isFinite(target) ? await publishDailyAutomatedNews(target) : await publishDailyAutomatedNews();
+      : Number(process.env.NEWS_DAILY_TARGET);
+    // Number('') is 0. An unset environment variable must use the publisher's
+    // default daily minimum instead of silently completing a zero-item run.
+    const result = Number.isFinite(requestedTarget) && requestedTarget > 0
+      ? await publishDailyAutomatedNews(requestedTarget)
+      : await publishDailyAutomatedNews();
     if (!result.completed) {
       console.error('Automated news daily target was not met', {
         target: result.target,
