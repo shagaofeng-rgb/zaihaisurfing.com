@@ -84,8 +84,8 @@ export const products = {
   },
   'one-time-35': {
     name: 'ZAIHAI One-Time Payment Link',
-    image: '/assets/logo-small.jpg',
-    thumbnail: '/assets/logo-small.jpg',
+    image: '/assets/brand-logo.png',
+    thumbnail: '/assets/brand-logo.png',
     category: 'One-Time Payment',
     price: 'USD 35',
     priceAmount: 35,

@@ -42,7 +42,13 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl)
+  metadataBase: new URL(siteUrl),
+  icons: {
+    icon: [{url: '/assets/brand-mark.png', type: 'image/png', sizes: '512x512'}],
+    shortcut: '/assets/brand-mark.png',
+    apple: [{url: '/assets/apple-touch-icon.png', type: 'image/png', sizes: '512x512'}]
+  },
+  manifest: '/manifest.webmanifest'
 };
 
 export default async function LocaleLayout({
@@ -62,7 +68,7 @@ export default async function LocaleLayout({
     '@type': 'Organization',
     name: 'ZAIHAI SURFING',
     url: siteUrl,
-    logo: `${siteUrl}/assets/logo-small.jpg`,
+    logo: `${siteUrl}/assets/brand-logo.png`,
     email: 'davidsha@zaihaisurfing.com',
     telephone: '+86 17621485205',
     address: {

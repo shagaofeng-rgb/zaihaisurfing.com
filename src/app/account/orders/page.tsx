@@ -33,7 +33,7 @@ export default async function AccountOrdersPage() {
       <section className="account-order-list">
         {orders.length ? orders.map((order) => (
           <article className="account-order-card" key={order.id}>
-            <img className="account-order-thumb" src={products[order.productSlug]?.thumbnail || '/assets/logo-small.jpg'} alt={order.productName} />
+            <img className="account-order-thumb" src={products[order.productSlug]?.thumbnail || '/assets/brand-logo.png'} alt={order.productName} />
             <div>
               <small>{order.id}</small>
               <h2>{order.productName}</h2>

@@ -54,7 +54,7 @@ export default async function AdminShell({active, children}: {active: string; ch
     <main className="admin-dashboard">
       <aside className="admin-sidebar">
         <a className="admin-logo" href="/admin">
-          <span>ZH</span>
+          <img src="/assets/brand-logo.png" alt="ZAIHAI" width="960" height="450" />
           <strong>在海零售后台</strong>
         </a>
         <nav aria-label="后台主导航">

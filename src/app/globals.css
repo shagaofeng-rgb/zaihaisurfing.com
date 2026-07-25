@@ -3638,6 +3638,14 @@ a {
   font-weight: 950;
 }
 
+.admin-logo img {
+  width: 58px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 5px;
+  background: #f6f7f7;
+}
+
 .admin-sidebar nav {
   display: grid;
   align-content: start;

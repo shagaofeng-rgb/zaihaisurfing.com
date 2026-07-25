@@ -35,7 +35,7 @@ export default async function AccountOrderDetailPage({params}: {params: Promise<
       <section className="account-detail-grid">
         <article className="account-order-card">
           <h2>Product</h2>
-          <img className="account-detail-image" src={products[order.productSlug]?.image || '/assets/logo.jpg'} alt={order.productName} />
+          <img className="account-detail-image" src={products[order.productSlug]?.image || '/assets/brand-logo.png'} alt={order.productName} />
           <dl>
             <div><dt>Name</dt><dd>{order.productName}</dd></div>
             <div><dt>SKU / model</dt><dd>{order.productSlug}</dd></div>
