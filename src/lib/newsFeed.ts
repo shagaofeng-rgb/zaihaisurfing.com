@@ -6,6 +6,10 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+export function isIndexableNewsTaxonomy(articleCount: number) {
+  return articleCount >= 3;
+}
+
 function topicFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
   return `${article.title} ${article.excerpt}`
     .toLowerCase()

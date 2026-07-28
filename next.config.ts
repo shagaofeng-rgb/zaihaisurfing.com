@@ -23,6 +23,41 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/pages/contact-us',
+        destination: '/en/contact',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/pages/contact-us',
+        destination: '/:locale/contact',
+        permanent: true
+      },
+      {
+        source: '/products/zai-hai-boat-kart-15kw-best',
+        destination: '/en/products/rage-shark-x',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/products/zai-hai-boat-kart-15kw-best',
+        destination: '/:locale/products/rage-shark-x',
+        permanent: true
+      },
+      {
+        source: '/account/signIn',
+        destination: '/account/login',
+        permanent: true
+      },
+      {
+        source: '/search',
+        destination: '/en/products',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/search',
+        destination: '/:locale/products',
+        permanent: true
+      },
+      {
         source: '/:locale(en|es|fr|de|it|pt|ru)/news/category/:category/:slug',
         destination: '/:locale/news/:slug',
         permanent: true

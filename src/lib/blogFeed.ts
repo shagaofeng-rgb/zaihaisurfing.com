@@ -2,6 +2,15 @@ import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
 import {newsArticles, type NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
+export function blogContentFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
+  return `${article.title} ${article.excerpt}`
+    .toLowerCase()
+    .replace(/\(\d{4}-\d{2}-\d{2}\s+edition\)/g, '')
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function sourceUrlFrom(post: ContentPost) {
   return post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/blog/${post.slug}`;
 }
@@ -66,10 +75,14 @@ export async function getAllBlogArticles() {
     category: article.category || 'Buying Guide'
   }));
   const seen = new Set<string>();
+  const seenTopics = new Set<string>();
   return [...published, ...staticBlogArticles]
     .filter((article) => {
       if (seen.has(article.slug)) return false;
+      const fingerprint = blogContentFingerprint(article);
+      if (seenTopics.has(fingerprint)) return false;
       seen.add(article.slug);
+      seenTopics.add(fingerprint);
       return true;
     })
     .sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
@@ -81,4 +94,11 @@ export async function getAllBlogSlugs() {
 
 export async function getBlogArticleBySlug(slug: string) {
   return (await getAllBlogArticles()).find((article) => article.slug === slug);
+}
+
+export async function getBlogCanonicalSlug(slug: string) {
+  const post = (await listAdminPosts('blog')).find((item) => item.status === 'published' && item.slug === slug);
+  if (!post) return null;
+  const fingerprint = blogContentFingerprint(postToBlogArticle(post));
+  return (await getAllBlogArticles()).find((article) => blogContentFingerprint(article) === fingerprint)?.slug || null;
 }

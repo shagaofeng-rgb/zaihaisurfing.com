@@ -1,7 +1,7 @@
 import {locales, pathnames} from '@/i18n/routing';
 import {listAdminProducts} from '@/lib/backendStore';
 import {getAllBlogArticles} from '@/lib/blogFeed';
-import {getAllNewsArticles} from '@/lib/newsFeed';
+import {getAllNewsArticles, isIndexableNewsTaxonomy} from '@/lib/newsFeed';
 import {productSlugs, siteUrl} from '@/lib/site';
 import {
   chunkSitemapEntries,
@@ -94,8 +94,12 @@ export async function buildSitemapEntries() {
     });
   });
   const categoryEntries = [
-    ...Array.from(categoryDates.entries()).flatMap(([slug, dates]) => localizedEntries('categories', `/news/category/${slug}`, newestDate(dates, newsLastmod), true)),
-    ...Array.from(tagDates.entries()).flatMap(([slug, dates]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate(dates, newsLastmod), true))
+    ...Array.from(categoryDates.entries())
+      .filter(([, dates]) => isIndexableNewsTaxonomy(dates.length))
+      .flatMap(([slug, dates]) => localizedEntries('categories', `/news/category/${slug}`, newestDate(dates, newsLastmod), true)),
+    ...Array.from(tagDates.entries())
+      .filter(([, dates]) => isIndexableNewsTaxonomy(dates.length))
+      .flatMap(([slug, dates]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate(dates, newsLastmod), true))
   ];
 
   return dedupeEntries([...pages, ...productEntries, ...postEntries, ...categoryEntries]);

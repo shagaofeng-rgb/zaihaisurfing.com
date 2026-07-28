@@ -1,10 +1,10 @@
 import type {Metadata} from 'next';
-import {notFound} from 'next/navigation';
+import {notFound, permanentRedirect} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
-import {getAllBlogSlugs, getBlogArticleBySlug} from '@/lib/blogFeed';
+import {getAllBlogSlugs, getBlogArticleBySlug, getBlogCanonicalSlug} from '@/lib/blogFeed';
 import {siteUrl} from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale, slug} = await params;
   const article = await getBlogArticleBySlug(slug);
-  if (!article) notFound();
+  if (!article) {
+    const canonicalSlug = await getBlogCanonicalSlug(slug);
+    if (canonicalSlug) permanentRedirect(`/en/blog/${canonicalSlug}`);
+    notFound();
+  }
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
   return englishOnlyEditorialMetadata(locale, `/blog/${slug}`, `${article.title} | ZAIHAI Guide`, article.excerpt, {
     url: imageUrl,
@@ -37,7 +41,11 @@ export default async function BlogArticlePage({
 }) {
   const {locale, slug} = await params;
   const article = await getBlogArticleBySlug(slug);
-  if (!article) notFound();
+  if (!article) {
+    const canonicalSlug = await getBlogCanonicalSlug(slug);
+    if (canonicalSlug) permanentRedirect(`/en/blog/${canonicalSlug}`);
+    notFound();
+  }
   setRequestLocale(locale);
 
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;

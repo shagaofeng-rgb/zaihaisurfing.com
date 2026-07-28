@@ -79,7 +79,7 @@ export default async function LocaleLayout({
       addressCountry: 'CN'
     },
     sameAs: [
-      'https://zaihaisurfing.com/en/contact'
+      `${siteUrl}/en/contact`
     ],
     makesOffer: [
       'Electric surfboards',

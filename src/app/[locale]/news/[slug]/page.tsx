@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import {notFound} from 'next/navigation';
+import {notFound, permanentRedirect} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
@@ -20,7 +20,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale, slug} = await params;
   const article = await getNewsArticleBySlug(slug);
-  if (!article) notFound();
+  if (!article) {
+    if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
+    notFound();
+  }
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
   return englishOnlyEditorialMetadata(locale, `/news/${slug}`, `${article.title} | ZAIHAI News`, article.excerpt, {
     url: imageUrl,
@@ -37,7 +40,10 @@ export default async function NewsArticlePage({
 }) {
   const {locale, slug} = await params;
   const article = await getNewsArticleBySlug(slug);
-  if (!article) notFound();
+  if (!article) {
+    if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
+    notFound();
+  }
   setRequestLocale(locale);
 
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;

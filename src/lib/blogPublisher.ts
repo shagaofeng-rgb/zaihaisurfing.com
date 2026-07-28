@@ -1,4 +1,5 @@
 import {readAdminStore, writeAdminStore, type ContentPost} from '@/lib/backendStore';
+import {blogContentFingerprint} from '@/lib/blogFeed';
 import {resolveSourceImage} from '@/lib/sourceImages';
 
 type BlogCandidate = Omit<ContentPost, 'id' | 'type' | 'createdAt' | 'updatedAt' | 'status'>;
@@ -64,10 +65,15 @@ function sourceUrlFrom(value: string) {
 
 function candidateFor(posts: ContentPost[]): BlogCandidate | null {
   const publishedSlugs = new Set(posts.map((post) => post.slug));
+  const publishedTopics = new Set(
+    posts
+      .filter((post) => post.type === 'blog' && post.status === 'published')
+      .map((post) => blogContentFingerprint(post))
+  );
   const dateKey = todayKey().replace(/-/g, '');
-  for (let offset = 0; offset < blogTopics.length * 20; offset += 1) {
-    const topic = blogTopics[offset % blogTopics.length];
-    const slug = `auto-blog-${dateKey}-${offset + 1}-${topic.slug}`;
+  for (const [index, topic] of blogTopics.entries()) {
+    if (publishedTopics.has(blogContentFingerprint(topic))) continue;
+    const slug = `auto-blog-${dateKey}-${index + 1}-${topic.slug}`;
     if (publishedSlugs.has(slug)) continue;
     return {
       slug,

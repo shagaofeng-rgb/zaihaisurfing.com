@@ -5,7 +5,7 @@ import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {NewsArticleGrid} from '@/components/NewsArticleGrid';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
-import {getNewsCategories, getNewsCategory} from '@/lib/newsFeed';
+import {getNewsCategories, getNewsCategory, isIndexableNewsTaxonomy} from '@/lib/newsFeed';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +30,7 @@ export async function generateMetadata({
     `${group.name} News | ZAIHAI SURFING`,
     `Latest ZAIHAI news and sourced water sports insights for ${group.name}.`
   );
-  if (query?.page || query?.perPage || locale !== 'en') {
+  if (query?.page || query?.perPage || locale !== 'en' || !isIndexableNewsTaxonomy(group.articles.length)) {
     metadata.robots = {index: false, follow: true};
   }
   return metadata;
