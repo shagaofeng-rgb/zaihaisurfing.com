@@ -10,7 +10,7 @@ const productHighlights: Record<ProductSlug, string> = {
   'p1-pro': 'Premium fuel-powered model for adventure operators and distributor showrooms.'
 };
 
-const recommendedSlugs = productSlugs.slice(0, 8);
+export const homeRecommendedSlugs = productSlugs;
 const homeThumbs: Record<ProductSlug, string> = {
   x1: '/assets/catalog/home-thumbs/x1.webp',
   'x1-pro': '/assets/catalog/home-thumbs/x1-pro.webp',
@@ -20,7 +20,9 @@ const homeThumbs: Record<ProductSlug, string> = {
 };
 
 export default async function HomeRecommendedProducts() {
-  const runtimeProducts = (await listRuntimeCatalogProducts(recommendedSlugs)).filter((product) => product.showOnHome);
+  // Every published retail SKU belongs in the home catalog. The admin flag remains
+  // available for future promotional modules, but must not hide core products here.
+  const runtimeProducts = await listRuntimeCatalogProducts(homeRecommendedSlugs);
   return (
     <section className="home-recommend-products" aria-labelledby="home-recommend-products-title">
       <div className="section-heading centered">

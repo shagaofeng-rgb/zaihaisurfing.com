@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {homeRecommendedSlugs} from '../src/components/HomeRecommendedProducts';
 import {productSlugs, products} from '../src/lib/site';
 
 test('the five retail catalog products remain published with their approved prices', () => {
@@ -12,6 +13,7 @@ test('the five retail catalog products remain published with their approved pric
   };
 
   assert.deepEqual(productSlugs, Object.keys(expectedPrices));
+  assert.deepEqual(homeRecommendedSlugs, productSlugs);
 
   for (const [slug, price] of Object.entries(expectedPrices)) {
     const product = products[slug as keyof typeof expectedPrices];

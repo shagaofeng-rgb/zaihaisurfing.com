@@ -391,7 +391,7 @@ function createSeedStore(): AdminStore {
       seoDescription: `${product.name} for overseas resorts, rentals, yacht clubs, water parks and distributors.`,
       status: 'published' as const,
       sortOrder: index + 1,
-      showOnHome: index < 3,
+      showOnHome: true,
       allowCart: true,
       allowDirectOrder: true,
       createdAt,
