@@ -11,21 +11,17 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
-      <link rel="preload" as="image" href="/assets/banners/generated/zaihai-main-banner-mobile-480.webp" type="image/webp" media="(max-width: 720px)" />
-      <link rel="preload" as="image" href="/assets/banners/generated/zaihai-main-banner-desktop.webp" type="image/webp" media="(min-width: 721px)" />
-      <picture className="hero-media">
-        <source media="(max-width: 720px)" type="image/webp" srcSet="/assets/banners/generated/zaihai-main-banner-mobile-480.webp" />
-        <source media="(max-width: 720px)" srcSet="/assets/banners/generated/zaihai-main-banner-mobile-480.jpg" />
-        <source media="(min-width: 721px)" type="image/webp" srcSet="/assets/banners/generated/zaihai-main-banner-desktop.webp" />
-        <img
-          src="/assets/banners/zaihai-main-banner-desktop-optimized.jpg"
-          alt={copy.title}
-          width="1600"
-          height="686"
-          fetchPriority="high"
-          decoding="async"
-        />
-      </picture>
+      <video
+        className="hero-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      >
+        <source src="/assets/banners/zaihai-home-hero-preview.mp4" type="video/mp4" />
+      </video>
       <div className="hero-overlay" />
       <div className="hero-content">
         <p className="eyebrow">{copy.eyebrow}</p>

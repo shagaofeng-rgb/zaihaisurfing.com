@@ -457,6 +457,17 @@ a {
   transform: scale(1.01);
 }
 
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.76;
+  filter: brightness(0.66) contrast(1.08) saturate(0.84);
+}
+
 .hero-media img {
   width: 100%;
   height: 100%;
@@ -466,8 +477,8 @@ a {
 
 .hero-overlay {
   background:
-    linear-gradient(90deg, rgba(4, 7, 10, 0.9) 0%, rgba(4, 7, 10, 0.54) 42%, rgba(4, 7, 10, 0.05) 100%),
-    linear-gradient(0deg, rgba(4, 7, 10, 0.76) 0%, rgba(4, 7, 10, 0.02) 62%),
+    linear-gradient(90deg, rgba(4, 7, 10, 0.94) 0%, rgba(4, 7, 10, 0.64) 45%, rgba(4, 7, 10, 0.22) 100%),
+    linear-gradient(0deg, rgba(4, 7, 10, 0.84) 0%, rgba(4, 7, 10, 0.12) 62%),
     radial-gradient(circle at 78% 40%, rgba(155, 220, 24, 0.16), transparent 32%);
 }
 
@@ -498,6 +509,16 @@ a {
   font-weight: 950;
 }
 
+.hero h1 {
+  font-family: var(--font-montserrat), var(--font-display);
+  font-weight: 900;
+}
+
+.hero .eyebrow {
+  font-family: var(--font-inter), var(--font-body);
+  font-weight: 500;
+}
+
 .hero-copy,
 .page-hero p:not(.eyebrow),
 .contact-hero p:not(.eyebrow) {
@@ -507,10 +528,20 @@ a {
   overflow-wrap: anywhere;
 }
 
+.hero .hero-copy {
+  font-family: var(--font-inter), var(--font-body);
+  font-weight: 400;
+}
+
 .hero-actions {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 30px;
+}
+
+.hero-actions .button {
+  font-family: var(--font-montserrat), var(--font-display);
+  font-weight: 600;
 }
 
 .hero-tags {
@@ -576,9 +607,9 @@ a {
 .hero-product-card span {
   display: block;
   color: rgba(255, 255, 255, 0.64);
-  font-family: var(--font-tech);
+  font-family: var(--font-rajdhani), var(--font-tech);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -5153,6 +5184,11 @@ html[dir="rtl"] .catalog-product-card dd {
     height: auto;
     object-fit: contain;
     object-position: center top;
+  }
+
+  .hero-video {
+    object-position: 58% center;
+    opacity: 0.66;
   }
 
   .hero-overlay {

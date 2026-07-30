@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import {Manrope, Oxanium, Sora} from 'next/font/google';
+import {Inter, Manrope, Montserrat, Oxanium, Rajdhani, Sora} from 'next/font/google';
 import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
@@ -34,6 +34,27 @@ const oxanium = Oxanium({
   subsets: ['latin'],
   weight: ['700'],
   variable: '--font-oxanium',
+  display: 'swap'
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['600', '900'],
+  variable: '--font-montserrat',
+  display: 'swap'
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-inter',
+  display: 'swap'
+});
+
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-rajdhani',
   display: 'swap'
 });
 
@@ -119,7 +140,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} dir={dir} className={`${manrope.variable} ${sora.variable} ${oxanium.variable}`}>
+    <html lang={locale} dir={dir} className={`${manrope.variable} ${sora.variable} ${oxanium.variable} ${montserrat.variable} ${inter.variable} ${rajdhani.variable}`}>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(organizationSchema)}} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(websiteSchema)}} />
