@@ -79,14 +79,6 @@ const MIN_SOURCE_SCORE = 10;
 const MAX_FETCHES_PER_RUN = 8;
 const FETCH_TIMEOUT_MS = 2500;
 
-const articleImagePool = [
-  'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg',
-  'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
-  'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80'
-];
-
 const sources: CandidateSource[] = [
   {name: 'WSIA', domain: 'wsia.net', tier: 'authority', url: 'https://wsia.net/news/', feedHints: ['https://wsia.net/feed/'], categories: ['association', 'water sports'], authorityBoost: 1},
   {name: 'NMMA', domain: 'nmma.org', tier: 'authority', url: 'https://www.nmma.org/press', categories: ['association', 'boating'], authorityBoost: 1},
@@ -367,9 +359,9 @@ function trimAtWord(value: string, maxLength: number) {
 function chooseImage(posts: ContentPost[], candidate: ScoredCandidate) {
   const used = new Set(posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
   if (candidate.imageUrl && isUsableFeedImage(candidate.imageUrl) && !used.has(candidate.imageUrl)) return candidate.imageUrl;
-  const offset = Math.abs(hash(`${candidate.domain}-${candidate.productCategory}-${candidate.country}`).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % articleImagePool.length;
-  const rotated = [...articleImagePool.slice(offset), ...articleImagePool.slice(0, offset)];
-  return rotated.find((image) => !used.has(image)) || rotated[0];
+  // The publisher resolves a source-page image or a unique labelled illustration.
+  // Returning an empty value here prevents a small static pool from being recycled.
+  return '';
 }
 
 function buildArticle(candidate: ScoredCandidate, posts: ContentPost[]): AutomatedNewsCandidate {

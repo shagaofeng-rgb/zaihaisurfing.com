@@ -67,6 +67,94 @@ const sourceBriefs: SourceBrief[] = [
     images: [],
     category: 'Safety & Regulation',
     tags: ['Boating Safety', 'Regulation', 'United States']
+  },
+  {
+    key: 'wsia',
+    name: 'Water Sports Industry Association',
+    url: 'https://wsia.net/news/',
+    images: [],
+    category: 'Industry Trend',
+    tags: ['Water Sports', 'Industry Association', 'United States']
+  },
+  {
+    key: 'nmma',
+    name: 'National Marine Manufacturers Association',
+    url: 'https://www.nmma.org/press',
+    images: [],
+    category: 'Marine Market',
+    tags: ['Boating Industry', 'Market', 'United States']
+  },
+  {
+    key: 'icomia',
+    name: 'International Council of Marine Industry Associations',
+    url: 'https://www.icomia.org/news',
+    images: [],
+    category: 'Marine Market',
+    tags: ['Marine Industry', 'Standards', 'Global']
+  },
+  {
+    key: 'metstrade',
+    name: 'METSTRADE',
+    url: 'https://www.metstrade.com/news',
+    images: [],
+    category: 'Marine Technology',
+    tags: ['Marine Technology', 'Trade Show', 'Europe']
+  },
+  {
+    key: 'boot-dusseldorf',
+    name: 'boot Dusseldorf',
+    url: 'https://www.boot.com/en/Media_News',
+    images: [],
+    category: 'Water Sports Destinations',
+    tags: ['Water Sports', 'Trade Show', 'Europe']
+  },
+  {
+    key: 'awake',
+    name: 'Awake Boards newsroom',
+    url: 'https://awakeboards.com/blogs/news',
+    images: [],
+    category: 'Product & Technology',
+    tags: ['Jetboards', 'Product Launches', 'Sweden']
+  },
+  {
+    key: 'fliteboard',
+    name: 'Fliteboard newsroom',
+    url: 'https://fliteboard.com/blogs/news',
+    images: [],
+    category: 'Product & Technology',
+    tags: ['E-Foils', 'Product Innovation', 'Australia']
+  },
+  {
+    key: 'torqeedo',
+    name: 'Torqeedo press center',
+    url: 'https://www.torqeedo.com/en/news-and-press',
+    images: [],
+    category: 'Marine Technology',
+    tags: ['Electric Propulsion', 'Marine Batteries', 'Germany']
+  },
+  {
+    key: 'marine-industry-news',
+    name: 'Marine Industry News',
+    url: 'https://www.marineindustrynews.co.uk/',
+    images: [],
+    category: 'Industry Trend',
+    tags: ['Marine Industry', 'Business News', 'United Kingdom']
+  },
+  {
+    key: 'boating-industry',
+    name: 'Boating Industry',
+    url: 'https://boatingindustry.com/',
+    images: [],
+    category: 'Resort & Rental Operations',
+    tags: ['Boating Business', 'Rentals', 'United States']
+  },
+  {
+    key: 'yachting-world',
+    name: 'Yachting World',
+    url: 'https://www.yachtingworld.com/',
+    images: [],
+    category: 'Water Sports Destinations',
+    tags: ['Yachting', 'Destinations', 'Europe']
   }
 ];
 
@@ -309,13 +397,14 @@ function isOwnSiteNewsImage(image: string) {
   return isOwnSiteImage(image);
 }
 
-export async function repairNewsImageDiversity() {
+export async function repairNewsImageDiversity(limit = 10) {
   const now = new Date().toISOString();
   let changed = 0;
   const current = await readAdminStore();
   const used = new Set<string>();
   const posts: ContentPost[] = [];
   const errors: {slug: string; error: string}[] = [];
+  let attempts = 0;
   for (const post of current.posts) {
     if (post.type !== 'news' || post.status !== 'published') {
       posts.push(post);
@@ -326,9 +415,14 @@ export async function repairNewsImageDiversity() {
       posts.push(post);
       continue;
     }
+    if (attempts >= limit) {
+      posts.push(post);
+      continue;
+    }
+    attempts += 1;
     const sourcePage = sourceUrl(post) || post.coverImagePageUrl || post.coverImageSourceUrl || '';
     try {
-      const image = await resolveSourceImage({pageUrl: sourcePage, title: post.title, usedImages: used, allowReuseAfterExhausted: true});
+      const image = await resolveSourceImage({pageUrl: sourcePage, title: post.title, usedImages: used, allowReuseAfterExhausted: false});
       used.add(image.url);
       changed += 1;
       posts.push({
@@ -348,7 +442,7 @@ export async function repairNewsImageDiversity() {
   }
   const store = changed ? await writeAdminStore((latest) => ({...latest, posts})) : current;
   const newsImages = store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage);
-  return {changed, errors, images: newsImages};
+  return {changed, attempts, errors, images: newsImages};
 }
 
 export async function archiveIrrelevantAutomatedNews() {
@@ -373,8 +467,8 @@ async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType
     title: candidate.title,
     usedImages: used,
     preferredImages: [candidate.coverImage],
-    allowReuseAfterExhausted: true,
-    allowExternalFallback: false
+    allowReuseAfterExhausted: false,
+    allowExternalFallback: true
   });
   return {coverImage: image.url, image};
 }

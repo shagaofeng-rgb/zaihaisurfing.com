@@ -23,12 +23,6 @@ function sourceUrlFrom(post: ContentPost) {
   return post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/news/${post.slug}`;
 }
 
-const displayImagePool = [
-  {url: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg', publisher: 'NEOM', sourceUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah', note: 'Feature image uses the public NEOM Sindalah newsroom image URL.'},
-  {url: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg', publisher: 'ShoreMaster', sourceUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/', note: 'Feature image uses public ShoreMaster waterfront industry material.'},
-  {url: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation', publisher: 'Claritas Intelligence', sourceUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market', note: 'Feature image uses the public Claritas market release Open Graph image.'}
-];
-
 function postToArticle(post: ContentPost): NewsArticle {
   const sourceUrl = sourceUrlFrom(post);
   const sourceName = post.source.split(':')[0]?.trim() || 'Public source';
@@ -42,10 +36,14 @@ function postToArticle(post: ContentPost): NewsArticle {
     hero: post.coverImage,
     heroAlt: `${post.title} source-attributed news image`,
     imageCredit: {
-      publisher: sourceName,
-      sourceUrl,
+      publisher: post.coverImageStatus === 'ai-illustrative' ? 'ZAIHAI AI illustration' : post.coverImageStatus === 'illustrative' ? 'Unsplash editorial illustration' : sourceName,
+      sourceUrl: post.coverImageSourceUrl || sourceUrl,
       imageUrl: post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`,
-      note: 'Feature image was validated before publication and is shown from a stable ZAIHAI-hosted copy when available.',
+      note: post.coverImageStatus === 'ai-illustrative'
+        ? 'AI-generated illustrative image. It is not a depiction of the cited event.'
+        : post.coverImageStatus === 'illustrative'
+          ? 'Editorial illustrative image used because the cited source did not provide a reusable original image.'
+          : 'Feature image was validated from the cited source before publication.',
       accessedDate: post.updatedAt.slice(0, 10)
     },
     tags: post.tags,
@@ -80,31 +78,6 @@ function postToArticle(post: ContentPost): NewsArticle {
   };
 }
 
-function diversifyArticleImages(articles: NewsArticle[]) {
-  const used = new Set<string>();
-  return articles.map((article) => {
-    if (!used.has(article.hero)) {
-      used.add(article.hero);
-      return article;
-    }
-    const replacement = displayImagePool.find((image) => !used.has(image.url));
-    if (!replacement) return article;
-    used.add(replacement.url);
-    return {
-      ...article,
-      hero: replacement.url,
-      heroAlt: `${article.title} supporting industry image`,
-      imageCredit: {
-        publisher: replacement.publisher,
-        sourceUrl: replacement.sourceUrl,
-        imageUrl: replacement.url,
-        note: replacement.note,
-        accessedDate: article.updatedAt
-      }
-    };
-  });
-}
-
 export async function getAllNewsArticles() {
   const adminPosts = await listAdminPosts('news');
   const published = adminPosts
@@ -122,7 +95,7 @@ export async function getAllNewsArticles() {
       return true;
     })
     .sort((a, b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
-  return diversifyArticleImages(articles);
+  return articles;
 }
 
 export async function getAllNewsSlugs() {

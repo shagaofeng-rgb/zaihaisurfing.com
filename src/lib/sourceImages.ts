@@ -5,29 +5,102 @@ export type SourceImageResult = {
   sourceUrl: string;
   pageUrl: string;
   alt: string;
-  status: 'validated';
+  status: 'validated' | 'illustrative' | 'ai-illustrative';
   fetchedAt: string;
   contentType: string;
   size: number;
 };
 
-const externalFallbackImages = [
+type ImageFallback = {
+  url: string;
+  pageUrl: string;
+  sourceUrl: string;
+  alt: string;
+  status: 'illustrative' | 'ai-illustrative';
+};
+
+// These are deliberately broad editorial illustrations. They are only used when a
+// source page has no usable original image, and are rotated without reuse.
+const editorialFallbackImages: ImageFallback[] = [
   {
-    url: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg',
-    pageUrl: 'https://www.neom.com/en-us/newsroom/neom-board-of-directors-showcases-opening-of-sindalah',
-    sourceUrl: 'https://www.neom.com/content/dam/neom/newsroom/opening-of-sindalah/sindalah-island-at-sunset.jpeg'
+    url: 'https://images.unsplash.com/photo-1455729552865-3658a5d39692?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Ocean sports editorial illustration', status: 'illustrative'
   },
   {
-    url: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg',
-    pageUrl: 'https://www.shoremaster.com/blog/articles/state-of-the-waterfront-industry-2026-key-trends-in-docks-lifts-and-marinas/',
-    sourceUrl: 'https://www.shoremaster.com/media/cukbt3s2/trad-oakwoodgrain_rs4_towermaxx_1.jpg'
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Coastal destination editorial illustration', status: 'illustrative'
   },
   {
-    url: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation',
-    pageUrl: 'https://claritasintelligence.com/press-release/global-electric-surfboard-market',
-    sourceUrl: 'https://claritasintelligence.com/api/og?title=Global%20Electric%20Surfboard%20Market%20Projected%20to%20Reach%20US%24%2066.34%20Million%20by%202033%20as%20AI-Driven%20Battery%20Management%20and%20eFoil%20Innovation%20Redefine%20Marine%20Recreation'
+    url: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Beach market editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1493552152660-f915ab47ae9d?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Marina operations editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Open water editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1438029071396-1e831a7fa6d8?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Waterfront travel editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1484291470158-b8f8d608850d?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Marine innovation editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Sea safety editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Outdoor tourism editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Coastal resort editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Destination trend editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Ocean environment editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Surf conditions editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Adventure operations editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Waterfront business editorial illustration', status: 'illustrative'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1523437236904-adeb9f94e821?auto=format&fit=crop&w=1600&q=85',
+    pageUrl: 'https://unsplash.com/', sourceUrl: 'https://unsplash.com/', alt: 'Marine lifestyle editorial illustration', status: 'illustrative'
   },
 ];
+
+function configuredAiFallbackImages(): ImageFallback[] {
+  return (process.env.NEWS_AI_IMAGE_URLS || '')
+    .split(/[\s,]+/)
+    .map((url) => url.trim())
+    .filter((url) => /^https?:\/\//i.test(url))
+    .map((url) => ({
+      url,
+      pageUrl: siteUrl,
+      sourceUrl: siteUrl,
+      alt: 'AI-generated water sports editorial illustration',
+      status: 'ai-illustrative' as const
+    }));
+}
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 4000) {
   const controller = new AbortController();
@@ -133,26 +206,34 @@ export async function resolveSourceImage(input: {
   } catch {
     // Fall through to curated external internet images.
   }
-  if (input.allowExternalFallback !== false) {
-    candidates.push(...externalFallbackImages.map((item) => item.url));
-  }
+  const fallbackImages = input.allowExternalFallback === false
+    ? []
+    : [...configuredAiFallbackImages(), ...editorialFallbackImages];
+  if (fallbackImages.length) candidates.push(...fallbackImages.map((item) => item.url));
 
   const errors: string[] = [];
   const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
   for (const candidate of uniqueCandidates) {
     if (used.has(candidate)) continue;
-    const fallbackMeta = externalFallbackImages.find((item) => item.url === candidate);
+    const fallbackMeta = fallbackImages.find((item) => item.url === candidate);
     try {
-      return await validateExternalImage(candidate, fallbackMeta?.pageUrl || input.pageUrl, `${input.title} source image`);
+      const validated = await validateExternalImage(candidate, fallbackMeta?.pageUrl || input.pageUrl, fallbackMeta?.alt || `${input.title} source image`);
+      return {
+        ...validated,
+        sourceUrl: fallbackMeta?.sourceUrl || validated.sourceUrl,
+        status: (fallbackMeta?.status || 'validated') as SourceImageResult['status']
+      };
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
     }
   }
+  // Reuse is intentionally limited to source-page candidates. Editorial and AI
+  // fallbacks are never silently recycled, which keeps the news archive visually diverse.
   if (input.allowReuseAfterExhausted) {
     for (const candidate of uniqueCandidates) {
-      const fallbackMeta = externalFallbackImages.find((item) => item.url === candidate);
+      if (fallbackImages.some((item) => item.url === candidate)) continue;
       try {
-        return await validateExternalImage(candidate, fallbackMeta?.pageUrl || input.pageUrl, `${input.title} source image`);
+        return await validateExternalImage(candidate, input.pageUrl, `${input.title} source image`);
       } catch (error) {
         errors.push(error instanceof Error ? error.message : String(error));
       }

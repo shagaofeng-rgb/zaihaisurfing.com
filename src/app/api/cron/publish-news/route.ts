@@ -15,7 +15,9 @@ export async function GET(request: Request) {
       return Response.json({ok: true, repaired: true, ...result});
     }
     const contentRepair = await archiveIrrelevantAutomatedNews();
-    const imageRepair = {skipped: true, reason: 'Image repair runs only with repair=1 so daily publishing cannot be blocked by historical media repair.'};
+    // Repair a small batch on every scheduled run so historic repeated covers are
+    // gradually replaced without making the daily publication job unbounded.
+    const imageRepair = await repairNewsImageDiversity(8);
     if (url.searchParams.get('single') === '1') {
       const result = await publishNextAutomatedNews();
       return Response.json({ok: true, contentRepair, imageRepair, ...result});

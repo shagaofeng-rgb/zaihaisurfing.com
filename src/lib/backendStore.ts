@@ -80,7 +80,7 @@ export type ContentPost = {
   coverImagePageUrl?: string;
   coverImageAlt?: string;
   coverImageFetchedAt?: string;
-  coverImageStatus?: 'validated' | 'failed' | 'pending';
+  coverImageStatus?: 'validated' | 'illustrative' | 'ai-illustrative' | 'failed' | 'pending';
   category: string;
   content: string;
   publishDate: string;
