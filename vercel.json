@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/sync-google-seo",
-      "schedule": "0 30 2 */3 * *"
+      "schedule": "30 2 */3 * *"
     },
     {
       "path": "/api/cron/sitemap-health",
