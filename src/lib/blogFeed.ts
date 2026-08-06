@@ -1,5 +1,5 @@
 import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
-import {newsArticles, type NewsArticle} from '@/lib/news';
+import type {NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
 export function blogContentFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
@@ -69,14 +69,9 @@ function postToBlogArticle(post: ContentPost): NewsArticle {
 export async function getAllBlogArticles() {
   const adminPosts = await listAdminPosts('blog');
   const published = adminPosts.filter((post) => post.status === 'published').map(postToBlogArticle);
-  const staticBlogArticles = newsArticles.slice(1).map((article) => ({
-    ...article,
-    slug: `guide-${article.slug}`,
-    category: article.category || 'Buying Guide'
-  }));
   const seen = new Set<string>();
   const seenTopics = new Set<string>();
-  return [...published, ...staticBlogArticles]
+  return published
     .filter((article) => {
       if (seen.has(article.slug)) return false;
       const fingerprint = blogContentFingerprint(article);

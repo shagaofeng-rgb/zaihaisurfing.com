@@ -16,6 +16,15 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // The external publishing plugin validates custom webhooks against POST /.
+  // Keep the public home page GET behavior unchanged and send only that POST
+  // to the authenticated server-side webhook handler.
+  if (request.method === 'POST' && request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/api/webhook/send_article';
+    return NextResponse.rewrite(url);
+  }
+
   const userAgent = request.headers.get('user-agent') || '';
   const country = request.headers.get('x-vercel-ip-country')?.toUpperCase() || '';
   if (blockedCountries.has(country) && !crawlerUserAgentPattern.test(userAgent)) {

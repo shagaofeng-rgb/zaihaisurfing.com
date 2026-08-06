@@ -1,48 +1,79 @@
 # Blog Publishing Plugin Webhook
 
-This endpoint accepts manual publications from an external plugin. It is not a scheduled task and does not re-enable Blog auto publishing.
+This endpoint accepts manual Blog publications from an external plugin. It is not a scheduled task and does not re-enable Blog auto publishing.
+
+## Production configuration
+
+Set the server-only Vercel Production environment variables before deployment:
+
+```text
+WEBHOOK_ARTICLE_SIGN=<high-strength-secret>
+WEBHOOK_ARTICLE_CLASS_ID=blog
+```
+
+The secret must never be committed, exposed in client code, placed in a URL, or added to public documentation.
 
 ## Plugin configuration
+
+### Custom developer webhook
+
+Use these values when the plugin validates by sending `POST` to the domain root:
 
 | Plugin field | Value |
 | --- | --- |
 | Website framework | Custom developer webhook |
 | Domain | `https://www.zaihaisurfing.com` |
-| Request URL | `https://www.zaihaisurfing.com/api/webhook/send_article` |
-| Request method | `POST` |
-| Body format | `application/x-www-form-urlencoded` |
-| API key | The value of the server-side `BLOG_WEBHOOK_SIGN` secret |
+| API key | The exact `WEBHOOK_ARTICLE_SIGN` production value |
 | Backend login account | `admin` |
-| Remark | `ZAIHAI Blog webhook publishing` |
+| Remark | `blog新闻生成` |
 | Verification class ID | `blog` |
+
+`POST https://www.zaihaisurfing.com/` is internally rewritten to the server-only webhook handler. Homepage `GET /` is unchanged.
+
+### Generic webhook
+
+Use this endpoint if the plugin accepts a full URL:
+
+```text
+https://www.zaihaisurfing.com/api/webhook/send_article
+```
 
 ## Request parameters
 
-| Field | Required | Notes |
+Use `POST` with `Content-Type: application/x-www-form-urlencoded`.
+
+| Field | Required for publication | Notes |
 | --- | --- | --- |
-| `sign` | Yes | Exact value of `BLOG_WEBHOOK_SIGN`; case-sensitive. |
-| `class_id` | Yes | Must be `blog` unless the server-side `BLOG_WEBHOOK_CLASS_ID` is changed. |
-| `title` | Yes | Maximum 220 characters. |
-| `content` | Yes | Article text, maximum 20,000 characters. |
-| `author_id` | Yes | Author identifier displayed in the Blog data record. Use `admin` for the current plugin account. |
-| `image_url` | Yes | Reachable external HTTPS image URL. The image is fetched and signature-validated before publication. |
+| `sign` | Yes | Exact, case-sensitive `WEBHOOK_ARTICLE_SIGN`. |
+| `class_id` | Yes | `blog` unless the server-side class ID is changed. |
+| `title` | Yes | 8 to 220 characters for publication. |
+| `content` | Yes | At least 40 characters, maximum 20,000 characters. |
+| `author_id` | No | Defaults to `admin`. |
+| `image_url` | Yes | Reachable external HTTPS image URL. It is fetched and validated before publication. |
 
-## Responses
+An authenticated request with only `sign` and `class_id`, or short placeholder article fields, is treated as a connection check. It returns exactly:
 
-Success:
+```json
+{"code":1,"msg":"验证成功"}
+```
+
+It does not write any content or log a publication record.
+
+## Publication behavior
+
+- A complete authenticated request creates a `published` Blog post in the durable content store.
+- The public Blog list and detail routes read only published Blog records from that store.
+- The same title and content hash is idempotent. A retry returns `code: 1` and does not create a duplicate post.
+- Blog pages and sitemap data are revalidated after a successful publication.
+
+Success response:
 
 ```json
 {"code":1,"msg":"发布成功"}
 ```
 
-Failure:
+Failure response:
 
 ```json
-{"code":0,"msg":"发布失败的具体原因"}
+{"code":0,"msg":"失败原因"}
 ```
-
-## Publication rules
-
-- The same title and content hash is idempotent: a retry returns `code: 1` and does not create a duplicate Blog post.
-- A valid request is immediately stored in the existing durable content store as a published Blog post, marks the sitemap as dirty, revalidates Blog pages, and records a sanitized webhook execution log.
-- The secret is server-only. Do not put it in frontend code, URLs, screenshots, Git commits, or public documentation.

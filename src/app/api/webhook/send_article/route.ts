@@ -50,8 +50,8 @@ function articleFingerprint(title: string, content: string) {
 }
 
 export async function POST(request: Request) {
-  const configuredSecret = process.env.BLOG_WEBHOOK_SIGN || '';
-  const expectedClassId = (process.env.BLOG_WEBHOOK_CLASS_ID || 'blog').trim().toLowerCase();
+  const configuredSecret = process.env.WEBHOOK_ARTICLE_SIGN || process.env.BLOG_WEBHOOK_SIGN || '';
+  const expectedClassId = (process.env.WEBHOOK_ARTICLE_CLASS_ID || process.env.BLOG_WEBHOOK_CLASS_ID || 'blog').trim().toLowerCase();
 
   let formData: FormData;
   try {
@@ -72,6 +72,12 @@ export async function POST(request: Request) {
   const imageUrl = value(formData, 'image_url', MAX_IMAGE_URL_LENGTH);
   if (classId !== expectedClassId) {
     return reply(0, `栏目错误：class_id 必须为 ${expectedClassId}`, 422);
+  }
+  const isCompleteArticle = title.length >= 8 && content.length >= 40 && Boolean(imageUrl);
+  if (!isCompleteArticle) {
+    // Plugin validation may have only credentials or short placeholders.
+    // It proves connectivity and must never create a durable post.
+    return reply(1, '验证成功');
   }
   if (!title || !content || !imageUrl) {
     return reply(0, '缺少必填参数：title、content 和 image_url 均不能为空', 422);
