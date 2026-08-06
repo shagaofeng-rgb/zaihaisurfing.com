@@ -4,6 +4,7 @@ node_modules/
 .vercel/
 .tools/
 .data/
+.audit-backups/
 tsconfig.tsbuildinfo
 
 # Local build and preview artifacts

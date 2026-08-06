@@ -42,6 +42,7 @@ export type SitemapState = {
   lock?: {token: string; acquiredAt: string; expiresAt: string};
   snapshot: SitemapEntry[];
   lastRun?: SitemapRunResult;
+  lastSuccessfulGoogleSubmissionAt?: string;
 };
 
 const emptyState: SitemapState = {
@@ -100,6 +101,9 @@ export async function finishSitemapRun(token: string, result: SitemapRunResult, 
     dirtyReason: result.success && !result.dryRun ? '' : state.dirtyReason,
     snapshot: result.success && !result.dryRun && snapshot ? snapshot : state.snapshot,
     lastRun: result,
+    lastSuccessfulGoogleSubmissionAt: result.googleSubmission.success
+      ? result.finishedAt
+      : state.lastSuccessfulGoogleSubmissionAt,
     lock: undefined
   };
   await writeStoreObject(STATE_FILE, next);

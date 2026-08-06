@@ -38,7 +38,7 @@ npm run sitemap:generate -- --force --submit --verbose
 
 ## Vercel Cron
 
-`vercel.json` calls `/api/cron/sitemap-health` once per day. Vercel schedules are UTC. The route requires the `Authorization: Bearer <CRON_SECRET>` header in production; Vercel adds it automatically when `CRON_SECRET` is configured.
+`vercel.json` calls `/api/cron/sitemap-health` once per day to validate sitemap health. Automatic Google sitemap submission is rate-limited to once every three days; manual submissions remain available through the maintenance command or the admin action. Vercel schedules are UTC. The route requires the `Authorization: Bearer <CRON_SECRET>` header in production; Vercel adds it automatically when `CRON_SECRET` is configured.
 
 ## Environment Variables
 

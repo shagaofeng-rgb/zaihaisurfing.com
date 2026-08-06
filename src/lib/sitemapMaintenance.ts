@@ -18,6 +18,14 @@ type MaintenanceOptions = {
   submit?: boolean;
 };
 
+const GOOGLE_SUBMISSION_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000;
+
+function automaticGoogleSubmissionDue(lastSuccessfulGoogleSubmissionAt?: string) {
+  if (!lastSuccessfulGoogleSubmissionAt) return true;
+  const lastAttempt = new Date(lastSuccessfulGoogleSubmissionAt).getTime();
+  return !Number.isFinite(lastAttempt) || Date.now() - lastAttempt >= GOOGLE_SUBMISSION_INTERVAL_MS;
+}
+
 function entryMap(entries: SitemapEntry[]) {
   return new Map(entries.map((entry) => [entry.url, entry.lastModified]));
 }
@@ -77,7 +85,11 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
     if (!robotsValid) errors.push('robots.txt does not declare the canonical sitemap index.');
 
     const googleConfig = googleSeoConfigStatus();
-    const shouldSubmit = Boolean(options.submit || (generated && googleConfig.sitemapSubmissionEnabled));
+    const shouldSubmit = Boolean(options.submit || (
+      generated &&
+      googleConfig.sitemapSubmissionEnabled &&
+      automaticGoogleSubmissionDue(state.lastSuccessfulGoogleSubmissionAt)
+    ));
     const googleSubmission = shouldSubmit
       ? await submitSitemapToGoogle(googleConfig.sitemapUrl)
       : {attempted: false, success: false, status: 0, message: 'Submission was not requested.'};

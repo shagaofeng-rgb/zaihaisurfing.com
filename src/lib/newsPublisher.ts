@@ -281,6 +281,15 @@ function isTodayPost(post: ContentPost, date = new Date()) {
   return post.type === 'news' && post.status === 'published' && post.publishDate === todayKey(date);
 }
 
+function recentNewsImageSet(posts: ContentPost[], days = 7) {
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return new Set(posts
+    .filter((post) => post.type === 'news' && post.status === 'published')
+    .filter((post) => new Date(post.updatedAt || post.publishDate).getTime() >= cutoff)
+    .map((post) => post.coverImage)
+    .filter(Boolean));
+}
+
 function sourceUrl(candidate: Pick<Candidate, 'source'>) {
   return candidate.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || '';
 }
@@ -461,7 +470,9 @@ export async function archiveIrrelevantAutomatedNews() {
 }
 
 async function validateNewsCover(candidate: Candidate, store: Awaited<ReturnType<typeof readAdminStore>>) {
-  const used = new Set(store.posts.filter((post) => post.type === 'news' && post.status === 'published').map((post) => post.coverImage));
+  // Keep the current seven-day editorial window visually distinct without
+  // exhausting a finite fallback pool forever because of historical articles.
+  const used = recentNewsImageSet(store.posts);
   const image = await resolveSourceImage({
     pageUrl: sourceUrl(candidate),
     title: candidate.title,
