@@ -11,16 +11,28 @@ export default function Hero({locale}: HeroProps) {
 
   return (
     <section className="hero" id="top">
+      <picture className="hero-media">
+        <source media="(max-width: 660px)" srcSet="/assets/banners/zaihai-main-banner-mobile-optimized.jpg" />
+        <img
+          src="/assets/banners/zaihai-main-banner-desktop-optimized.jpg"
+          alt="ZAIHAI water sports equipment in use"
+          width="1920"
+          height="1080"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+        />
+      </picture>
       <video
         className="hero-video"
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         aria-hidden="true"
       >
-        <source src="/assets/banners/zaihai-home-hero-preview.mp4" type="video/mp4" />
+        <source media="(min-width: 661px)" src="/assets/banners/zaihai-home-hero-preview.mp4" type="video/mp4" />
       </video>
       <div className="hero-overlay" />
       <div className="hero-content">

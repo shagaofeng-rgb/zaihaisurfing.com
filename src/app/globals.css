@@ -5302,8 +5302,7 @@ html[dir="rtl"] .catalog-product-card dd {
   }
 
   .hero-video {
-    object-position: 58% center;
-    opacity: 0.66;
+    display: none;
   }
 
   .hero-overlay {
@@ -5821,6 +5820,12 @@ html[dir="rtl"] .catalog-product-card dd {
     font-size: 14px;
     line-height: 1.1;
     text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    display: none;
   }
 }
 
