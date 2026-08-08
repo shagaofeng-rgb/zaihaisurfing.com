@@ -1,4 +1,5 @@
 import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
+import {editorialSections, isListBlock, listItems} from '@/lib/editorialContent';
 import type {NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
@@ -18,7 +19,10 @@ function sourceUrlFrom(post: ContentPost) {
 function postToBlogArticle(post: ContentPost): NewsArticle {
   const sourceUrl = sourceUrlFrom(post);
   const sourceName = post.source.split(':')[0]?.trim() || 'ZAIHAI editorial';
-  const paragraphs = post.content.split(/\n{2,}/).map((item) => item.replace(/^#+\s*/, '').trim()).filter(Boolean);
+  const parsedSections = editorialSections(post.content, 'Buyer context');
+  const takeawaySection = parsedSections.find((section) => /^(key )?takeaways?$/i.test(section.heading));
+  const body = parsedSections.filter((section) => section !== takeawaySection);
+  const textBlocks = body.flatMap((section) => section.paragraphs).filter((item) => !isListBlock(item));
   return {
     slug: post.slug,
     date: post.publishDate,
@@ -45,23 +49,10 @@ function postToBlogArticle(post: ContentPost): NewsArticle {
       accessedDate: post.updatedAt.slice(0, 10),
       note: 'Used for product education, buyer context and source attribution.'
     }],
-    keyTakeaways: [
-      'Commercial buyers should evaluate product fit, operating workflow and support before purchase.',
-      'ZAIHAI buying guides connect product details with resort, rental and distributor use cases.',
-      'Each guide links back to real ZAIHAI product lines instead of inventing specifications.'
-    ],
-    body: [
-      {
-        heading: 'Buyer context',
-        paragraphs: paragraphs.slice(0, 2).length ? paragraphs.slice(0, 2) : [post.excerpt]
-      },
-      {
-        heading: 'How to use this guide',
-        paragraphs: paragraphs.slice(2, 5).length ? paragraphs.slice(2, 5) : [
-          'Use this guide to compare commercial water sports equipment by rider type, daily workflow, service requirements and sales positioning.'
-        ]
-      }
-    ],
+    keyTakeaways: takeawaySection
+      ? takeawaySection.paragraphs.flatMap((item) => isListBlock(item) ? listItems(item) : [item]).slice(0, 4)
+      : textBlocks.slice(0, 3).length ? textBlocks.slice(0, 3) : [post.excerpt],
+    body,
     productFit: 'Relevant to ZAIHAI electric surfboards, fuel-powered surfboards and go-kart boats for resorts, rental fleets and distributors.'
   };
 }

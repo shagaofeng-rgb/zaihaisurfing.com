@@ -1,4 +1,5 @@
 import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
+import {editorialSections, isListBlock, listItems} from '@/lib/editorialContent';
 import {newsArticles, type NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
@@ -28,7 +29,10 @@ function sourceUrlFrom(post: ContentPost) {
 function postToArticle(post: ContentPost): NewsArticle {
   const sourceUrl = sourceUrlFrom(post);
   const sourceName = post.source.split(':')[0]?.trim() || 'Public source';
-  const paragraphs = post.content.split(/\n{2,}/).map((item) => item.replace(/^#+\s*/, '').trim()).filter(Boolean);
+  const parsedSections = editorialSections(post.content, 'Industry update');
+  const takeawaySection = parsedSections.find((section) => /^(key )?takeaways?$/i.test(section.heading));
+  const body = parsedSections.filter((section) => section !== takeawaySection);
+  const textBlocks = body.flatMap((section) => section.paragraphs).filter((item) => !isListBlock(item));
   return {
     slug: post.slug,
     date: post.publishDate,
@@ -59,23 +63,10 @@ function postToArticle(post: ContentPost): NewsArticle {
       accessedDate: post.updatedAt.slice(0, 10),
       note: 'Used for source attribution and market context.'
     }],
-    keyTakeaways: [
-      'Public market signals continue to support commercial water sports planning.',
-      'Buyers should compare equipment by guest use case, operating workflow and after-sales support.',
-      'ZAIHAI keeps image and source attribution visible on every News item.'
-    ],
-    body: [
-      {
-        heading: 'What happened',
-        paragraphs: paragraphs.slice(0, 2).length ? paragraphs.slice(0, 2) : [post.excerpt]
-      },
-      {
-        heading: 'Why it matters for buyers',
-        paragraphs: paragraphs.slice(2, 4).length ? paragraphs.slice(2, 4) : [
-          'Resorts, rental operators and distributors need market information that connects public industry updates with practical equipment planning.'
-        ]
-      }
-    ],
+    keyTakeaways: takeawaySection
+      ? takeawaySection.paragraphs.flatMap((item) => isListBlock(item) ? listItems(item) : [item]).slice(0, 4)
+      : textBlocks.slice(0, 3).length ? textBlocks.slice(0, 3) : [post.excerpt],
+    body,
     productFit: 'Relevant to ZAIHAI electric surfboards and go-kart boats for resorts, rental fleets and distributor programs.'
   };
 }

@@ -1,4 +1,6 @@
 import AdminShell from '@/components/AdminShell';
+import {EditorialContent} from '@/components/EditorialContent';
+import {editorialSections} from '@/lib/editorialContent';
 import {formatManila, newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +47,7 @@ export default async function NewsAutopilotPage() {
         <h3>{draft.title}</h3>
         <p>{draft.excerpt}</p>
         <p><small>来源：<a href={draft.source.url} target="_blank" rel="noreferrer">{draft.source.name}</a> · 访问日期：{draft.source.accessedDate}</small></p>
-        <details><summary>查看完整草稿</summary><pre style={{whiteSpace: 'pre-wrap', maxWidth: 840, fontFamily: 'inherit'}}>{draft.content}</pre></details>
+        <details><summary>查看完整草稿</summary><div className="editorial-preview"><EditorialContent sections={editorialSections(draft.content, 'Overview')} /></div></details>
         <p><small>校验：{draft.validation.length ? draft.validation.join(' ') : '通过'} · 状态：{draft.status === 'published' ? '已发布' : '待审核'}</small></p>
         {draft.status === 'draft' && <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="publish"/><input type="hidden" name="draftId" value={draft.id}/><button type="submit">批准并发布英文版</button></form>}
       </article>) : <p>尚未建立草稿。</p>}

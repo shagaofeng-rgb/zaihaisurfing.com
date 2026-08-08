@@ -3,6 +3,7 @@ import {notFound, permanentRedirect} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
+import {EditorialContent} from '@/components/EditorialContent';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllNewsSlugs, getNewsArticleBySlug, getNewsCanonicalSlug} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
@@ -99,12 +100,7 @@ export default async function NewsArticlePage({
           <h2>Key Takeaways</h2>
           <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
         </section>
-        {article.body.map((section) => (
-          <section key={section.heading}>
-            <h2>{section.heading}</h2>
-            {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          </section>
-        ))}
+        <EditorialContent sections={article.body} />
         <section className="product-fit-box">
           <h2>How this connects to ZAIHAI products</h2>
           <p>{article.productFit}</p>
