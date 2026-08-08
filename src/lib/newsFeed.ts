@@ -38,13 +38,13 @@ function postToArticle(post: ContentPost): NewsArticle {
     hero: post.coverImage,
     heroAlt: `${post.title} source-attributed news image`,
     imageCredit: {
-      publisher: post.coverImageStatus === 'ai-illustrative' ? 'ZAIHAI AI illustration' : post.coverImageStatus === 'illustrative' ? 'Unsplash editorial illustration' : sourceName,
+      publisher: post.coverImageStatus === 'ai-illustrative' ? 'ZAIHAI AI illustration' : post.coverImageStatus === 'illustrative' ? 'ZAIHAI product media' : sourceName,
       sourceUrl: post.coverImageSourceUrl || sourceUrl,
       imageUrl: post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`,
       note: post.coverImageStatus === 'ai-illustrative'
         ? 'AI-generated illustrative image. It is not a depiction of the cited event.'
         : post.coverImageStatus === 'illustrative'
-          ? 'Editorial illustrative image used because the cited source did not provide a reusable original image.'
+          ? 'ZAIHAI-owned product media is used as an illustration because the cited source does not grant reusable image rights.'
           : 'Feature image was validated from the cited source before publication.',
       accessedDate: post.updatedAt.slice(0, 10)
     },

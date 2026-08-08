@@ -29,6 +29,7 @@ const navSections = [
       {key: 'leads', label: '客户表单', href: '/admin/leads'},
       {key: 'carts', label: '购物车与弃购', href: '/admin/carts'},
       {key: 'news', label: '新闻管理', href: '/admin/news'},
+      {key: 'news-autopilot', label: '新闻自主运营', href: '/admin/news-autopilot'},
       {key: 'blog', label: '博客管理', href: '/admin/blog'},
       {key: 'media', label: '媒体库', href: '/admin/media'}
     ]

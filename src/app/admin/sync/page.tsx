@@ -37,6 +37,11 @@ export default async function AdminSyncPage() {
       name: 'Monthly form email test',
       path: '/api/cron/test-contact-form',
       status: 'Runs on the first day of every month to verify form-email delivery.'
+    },
+    {
+      name: 'News Autopilot guard check',
+      path: '/api/cron/news-autopilot',
+      status: 'Checks daily, but News can publish at most once every 48 hours. It remains disabled until an administrator enables it.'
     }
   ];
 
@@ -64,7 +69,7 @@ export default async function AdminSyncPage() {
       </section>
       <section className="admin-panel">
         <h2>Editorial publishing</h2>
-        <p>News and Blog automated publishing are removed. Existing content remains available, and editors can continue to create and publish content manually from the admin console.</p>
+        <p>Blog automated publishing remains removed. News Autopilot is a separate, review-first workflow: it creates review drafts and remains disabled until an administrator enables it from the News Autopilot page.</p>
       </section>
       <section className="admin-panel">
         <h2>Recent data timestamps</h2>
