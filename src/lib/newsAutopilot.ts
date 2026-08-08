@@ -66,6 +66,16 @@ export type NewsAutopilotState = {
   audit: {at: string; action: string; detail: string}[];
 };
 
+export function newsAutopilotRuntimeStatus() {
+  const store = durableStoreStatus();
+  return {
+    schedulingEnabled: process.env.NEWS_AUTOPILOT_ENABLED === 'true',
+    publishingEnabled: process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED === 'true',
+    durableStore: store.provider,
+    hasDistributedLock: store.provider === 'kv_rest'
+  };
+}
+
 const sourceSeeds: AutopilotSource[] = [
   {id: 'ky-fish-wildlife', name: 'Kentucky Fish and Wildlife', domain: 'fw.ky.gov', url: 'https://fw.ky.gov/News/Pages/Kentucky-Fish-and-Wildlife-encourages-safe-summer-boating.aspx', region: 'United States', tier: 'official', imageLicense: 'link-card-only', enabled: true, health: 'verified'},
   {id: 'yachting-pages', name: 'Yachting Pages', domain: 'yachting-pages.com', url: 'https://www.yachting-pages.com/articles/seabob-launches-biggest-coast-to-coast-tour-news.html', region: 'United States', tier: 'industry', imageLicense: 'link-card-only', enabled: true, health: 'verified'},
@@ -100,7 +110,7 @@ export function formatManila(value = new Date()) {
 }
 
 function defaultState(): NewsAutopilotState {
-  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: draftSeeds.map(makeDraft), runs: [], audit: [{at: isoNow(), action: 'initial-drafts', detail: 'Six editorial review drafts were initialized. Nothing was published.'}]};
+  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: [makeDraft(draftSeeds[4])], runs: [], audit: [{at: isoNow(), action: 'initial-draft', detail: 'One editorial review draft was initialized. Nothing was published.'}]};
 }
 
 export async function readNewsAutopilotState() {
@@ -195,9 +205,12 @@ export async function setNewsAutopilotEnabled(enabled: boolean) {
 
 export async function runNewsAutopilot(trigger: 'cron' | 'manual', dryRun: boolean) {
   const state = await readNewsAutopilotState(); const now = isoNow();
+  const runtime = newsAutopilotRuntimeStatus();
   let reason = ''; let status: AutopilotRun['status'] = 'skipped';
-  if (!state.enabled) reason = 'Automatic News publishing is disabled by the administrator.';
-  else if (!durableStoreStatus().provider.includes('kv')) reason = 'A production KV-backed distributed lock is required before automation can publish.';
+  if (!runtime.schedulingEnabled) reason = 'The production scheduling switch is disabled.';
+  else if (!state.enabled) reason = 'Automatic News planning is disabled by the administrator.';
+  else if (!runtime.hasDistributedLock) reason = 'A production KV-backed distributed lock is required before automation can publish.';
+  else if (!runtime.publishingEnabled || !state.publishEnabled) reason = 'Draft planning is enabled, but the public publishing switch remains closed.';
   else if (!canPublishAt(state.lastPublishedAt)) reason = 'The 48-hour Asia/Manila publication window is still cooling down.';
   else reason = 'No approved source-to-draft content model is configured. The run was recorded without publishing.';
   const run = {id: crypto.randomUUID(), trigger, startedAt: now, finishedAt: isoNow(), mode: dryRun ? 'dry-run' as const : 'live' as const, status, reason};
