@@ -62,7 +62,7 @@ function postToArticle(post: ContentPost): NewsArticle {
     keyTakeaways: [
       'Public market signals continue to support commercial water sports planning.',
       'Buyers should compare equipment by guest use case, operating workflow and after-sales support.',
-      'ZAIHAI keeps image and source attribution visible on every automated news item.'
+      'ZAIHAI keeps image and source attribution visible on every News item.'
     ],
     body: [
       {

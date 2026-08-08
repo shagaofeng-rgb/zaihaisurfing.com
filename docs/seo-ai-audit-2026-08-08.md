@@ -14,7 +14,7 @@ The snapshot is ignored by Git and contains the original production objects need
 | Area | Evidence | Result |
 | --- | --- | --- |
 | Blog automated publishing | `vercel.json` has no Blog publishing cron and source search found no `publish-blog` route or publisher | Disabled in code before this audit; historical posts remain available. |
-| News automated publishing | Production cron called `/api/cron/publish-news` three times a day. Vercel recorded 15 target-miss errors from 2026-07-13 to 2026-08-08. | Confirmed source of repetitive fallback publishing and runtime noise. |
+| News automated publishing | Production cron called `/api/cron/publish-news` three times a day. Vercel recorded 15 target-miss errors from 2026-07-13 to 2026-08-08. | Confirmed source of repetitive fallback publishing and runtime noise; the complete automation chain was removed on 2026-08-08. |
 | Editorial duplication | Production snapshot has 92 published News (91 automated) and 27 published Blog posts (25 automated). | News normalizes to 29 canonical topics; Blog normalizes to 5 canonical topics. |
 | Image concentration | 29 published News images resolve to NEOM, 20 to ShoreMaster, and 17 to Unsplash. Multiple historic covers are reused 10 times. | Confirmed; existing image rights need a manual source-license review before replacement. |
 | Product metadata | Product detail pages generated one generic description despite distinct backend SEO descriptions. | Fixed locally to read each product's persisted SEO title and description. |
@@ -24,8 +24,7 @@ The snapshot is ignored by Git and contains the original production objects need
 
 ## Local remediation included in this change set
 
-1. Remove the News publishing cron from `vercel.json`.
-2. Make the protected News publishing endpoint return `paused_for_editorial_review` by default. Existing manual admin publishing is unchanged.
+1. Remove the News publishing cron, protected publishing endpoint, candidate intelligence, fallback generation, relevance gate, and image-repair publisher from the codebase. Existing manual admin publishing is unchanged.
 3. Normalize dated buyer-brief titles, keep one canonical article in News/Blog lists and sitemaps, and permanently redirect duplicate News detail URLs to the retained article.
 4. Restrict product detail sitemap entries to English while the shared product body copy remains English. Non-English product URLs remain usable for visitors but are `noindex,follow` and point canonically to English.
 5. Use the current product record's SEO title and description in the product page metadata.
@@ -45,7 +44,7 @@ The snapshot is ignored by Git and contains the original production objects need
 
 ## Post-deployment checks
 
-1. Confirm Vercel Cron Jobs no longer lists `/api/cron/publish-news`.
+1. Confirm Vercel Cron Jobs and deployed route inventory no longer list `/api/cron/publish-news`.
 2. Check a known duplicate News URL returns a permanent redirect to its canonical article.
 3. Confirm `sitemap.xml` no longer contains duplicate News/Blog URLs and product sitemap contains only English product detail URLs.
 4. In Search Console, inspect the retained canonical URLs before requesting validation. Do not submit mass removals before exporting the URL performance and link data.

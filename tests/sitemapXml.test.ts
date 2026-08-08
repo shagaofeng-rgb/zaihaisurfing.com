@@ -9,7 +9,6 @@ import {
   xmlEscape,
   type SitemapEntry
 } from '../src/lib/sitemapXml';
-import {automatedNewsSourceText, isRelevantNewsText} from '../src/lib/newsRelevance';
 
 function entry(index: number): SitemapEntry {
   return {
@@ -48,20 +47,4 @@ test('splits sitemap entries before the URL limit', () => {
 test('renders a valid sitemap index', () => {
   const xml = renderSitemapIndex([{url: 'https://www.zaihaisurfing.com/sitemaps/pages-1.xml', lastModified: '2026-07-08'}]);
   assert.equal(validateSitemapXml(xml, 'sitemapindex'), true);
-});
-
-test('rejects unrelated feed results even when they came from a relevant search query', () => {
-  assert.equal(isRelevantNewsText(`What a celebrity's diagnosis teaches us`, 'A medical health update.'), false);
-  assert.equal(isRelevantNewsText('Electric surfboard battery safety rules expand in Europe', 'New marine equipment guidance for rental operators.'), true);
-  assert.equal(isRelevantNewsText('Marina investment grows across island resorts', 'Tourism operators add new boating rental fleets.'), true);
-});
-
-test('evaluates an automated article by its original source subject', () => {
-  const source = automatedNewsSourceText(
-    'Water Sports Equipment Market Signal: What a celebrity diagnosis teaches us',
-    'A generic market introduction.',
-    'This article reviews source item “What a celebrity diagnosis teaches us”.\n\nSource summary: A medical health update.'
-  );
-  assert.equal(source.title, 'What a celebrity diagnosis teaches us');
-  assert.equal(isRelevantNewsText(source.title, source.summary), false);
 });
