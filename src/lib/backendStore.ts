@@ -130,6 +130,14 @@ export type CustomerLead = {
   notes: string;
 };
 
+export type CustomerLeadDetail = {
+  lead: CustomerLead;
+  formFields: Array<{label: string; value: string}>;
+  orders: StoreOrder[];
+  timeline: AnalyticsEvent[];
+  visitorIds: string[];
+};
+
 export type AdminDashboardFilter = {
   from?: Date;
   to?: Date;
@@ -312,6 +320,68 @@ export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[
     };
   });
   return [...orderLeads, ...eventLeads].sort((a, b) => b.lastActiveTime.localeCompare(a.lastActiveTime));
+}
+
+function eventVisitorIds(event: AnalyticsEvent) {
+  const attribution = event.attribution as AttributionSnapshot | null | undefined;
+  return [attribution?.visitorId, event.visitorId, event.sessionId].map((value) => String(value || '').trim()).filter(Boolean);
+}
+
+function orderVisitorIds(order: StoreOrder) {
+  const attribution = order.attribution as AttributionSnapshot | null | undefined;
+  return [attribution?.visitorId, order.userId].map((value) => String(value || '').trim()).filter(Boolean);
+}
+
+function readableFieldLabel(key: string) {
+  const labels: Record<string, string> = {
+    name: 'Name', email: 'Email', phone: 'Phone', country: 'Country / region', company: 'Company',
+    product: 'Interested product', productSlug: 'Interested product', quantity: 'Quantity', message: 'Message',
+    buyerType: 'Buyer type', waterArea: 'Water area', port: 'Preferred port', language: 'Language',
+    page: 'Submitted from page', source: 'Source', medium: 'Medium', campaign: 'Campaign'
+  };
+  return labels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (value) => value.toUpperCase());
+}
+
+function displayFieldValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '';
+  if (Array.isArray(value)) return value.map((item) => displayFieldValue(item)).filter(Boolean).join(', ');
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+export async function getCustomerLeadDetail(leadId: string): Promise<CustomerLeadDetail | null> {
+  const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
+  const lead = buildCustomerLeads(orders, events).find((item) => item.id === leadId);
+  if (!lead) return null;
+
+  const selectedEvent = events.find((event) => event.id === leadId);
+  const selectedOrder = orders.find((order) => order.id === leadId);
+  const visitorIds = new Set<string>();
+  if (selectedEvent) eventVisitorIds(selectedEvent).forEach((id) => visitorIds.add(id));
+  if (selectedOrder) orderVisitorIds(selectedOrder).forEach((id) => visitorIds.add(id));
+
+  const matchingOrders = orders.filter((order) => {
+    if (order.id === leadId) return true;
+    if (lead.email && order.customer.email && order.customer.email.toLowerCase() === lead.email.toLowerCase()) return true;
+    return orderVisitorIds(order).some((id) => visitorIds.has(id));
+  });
+  matchingOrders.flatMap(orderVisitorIds).forEach((id) => visitorIds.add(id));
+
+  const timeline = events
+    .filter((event) => {
+      if (event.id === leadId) return true;
+      if (eventVisitorIds(event).some((id) => visitorIds.has(id))) return true;
+      const eventEmail = String(event.payload?.email || '').trim().toLowerCase();
+      return Boolean(lead.email && eventEmail && eventEmail === lead.email.toLowerCase());
+    })
+    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+  const formPayload = selectedEvent?.payload || {};
+  const formFields = Object.entries(formPayload)
+    .filter(([key, value]) => !['cardNumber', 'cardCvv', 'cvv', 'password'].includes(key.toLowerCase()) && displayFieldValue(value))
+    .map(([key, value]) => ({label: readableFieldLabel(key), value: displayFieldValue(value)}));
+
+  return {lead, formFields, orders: matchingOrders.sort((a, b) => b.createdAt.localeCompare(a.createdAt)), timeline, visitorIds: [...visitorIds]};
 }
 
 function buildFunnel(events: AnalyticsEvent[], orders: StoreOrder[]) {

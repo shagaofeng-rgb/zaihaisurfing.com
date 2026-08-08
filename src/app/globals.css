@@ -4439,6 +4439,122 @@ a {
   border-bottom: 1px solid var(--line);
 }
 
+.admin-detail-title,
+.admin-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-panel-heading {
+  margin-bottom: 18px;
+}
+
+.admin-panel-heading h2 {
+  margin: 0;
+}
+
+.admin-panel-heading p:not(.eyebrow),
+.admin-empty-copy {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.admin-detail-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  color: #075f73;
+  border: 1px solid rgba(0, 118, 139, 0.25);
+  border-radius: 6px;
+  background: #f2fbfa;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-detail-link:hover {
+  color: #fff;
+  border-color: #00768b;
+  background: #00768b;
+}
+
+.admin-detail-span {
+  grid-column: 1 / -1;
+}
+
+.admin-detail-single {
+  grid-template-columns: 1fr;
+}
+
+.admin-detail-list dd {
+  overflow-wrap: anywhere;
+}
+
+.admin-journey-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-journey-list li {
+  display: grid;
+  grid-template-columns: minmax(145px, 0.8fr) minmax(220px, 1.4fr) minmax(260px, 1.2fr);
+  gap: 18px;
+  padding: 16px 0 16px 20px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+
+.admin-journey-list li::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00a8b8;
+  box-shadow: 0 0 0 4px rgba(0, 168, 184, 0.12);
+}
+
+.admin-journey-time,
+.admin-journey-body,
+.admin-journey-meta {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-journey-time span,
+.admin-journey-body span,
+.admin-journey-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-journey-meta {
+  align-content: start;
+}
+
+@media (max-width: 900px) {
+  .admin-detail-title,
+  .admin-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-journey-list li {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 .admin-pagination {
   display: flex;
   flex-wrap: wrap;

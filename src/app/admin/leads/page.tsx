@@ -39,6 +39,7 @@ export default async function AdminLeadsPage({
                   <td>{lead.trafficSource}</td>
                   <td>{lead.notes}</td>
                   <td>{lead.lastActiveTime.slice(0, 10)}</td>
+                  <td><a className="admin-detail-link" href={`/admin/leads/${encodeURIComponent(lead.id)}`}>View details</a></td>
                 </tr>
               )) : <tr><td colSpan={7}>暂无真实线索/弃单数据。前台访问、点击或结账后会实时记录。</td></tr>}
             </tbody>
