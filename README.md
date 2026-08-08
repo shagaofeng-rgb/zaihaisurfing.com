@@ -1,6 +1,6 @@
 # ZAIHAI Surfing Production Site
 
-This is the Next.js production site for `https://www.zaihaisurfing.com`. It includes the multilingual storefront, checkout and payment flows, News and Blog automation, Google Search Console data sync, analytics, customer accounts, a Chinese retail admin, and a separate pricing admin.
+This is the Next.js production site for `https://www.zaihaisurfing.com`. It includes the multilingual storefront, checkout and payment flows, a review-first News workflow, a Blog publishing webhook, Google Search Console data sync, analytics, customer accounts, a Chinese retail admin, and a separate pricing admin.
 
 ## Commands
 

@@ -1,23 +1,34 @@
 import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, getRetailAdminHealth} from '@/lib/adminDataViews';
-import {readGoogleSeoSnapshot} from '@/lib/googleSeo';
+import {googleSeoConfigStatus, readGoogleSeoSnapshot} from '@/lib/googleSeo';
+import {newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
 import {readSitemapState} from '@/lib/sitemapState';
 
 export const dynamic = 'force-dynamic';
 
-function googleSeoReady() {
-  return Boolean(
-    process.env.GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON ||
-      (process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL && process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY)
-  );
-}
-
 export default async function AdminSyncPage() {
-  const [health, seo, sitemap] = await Promise.all([
+  const [health, seo, sitemap, newsAutopilot] = await Promise.all([
     getRetailAdminHealth(),
     readGoogleSeoSnapshot(),
-    readSitemapState()
+    readSitemapState(),
+    readNewsAutopilotState()
   ]);
+  const googleSeo = googleSeoConfigStatus();
+  const newsRuntime = newsAutopilotRuntimeStatus();
+  const googleSeoStatus = seo.status === 'ok'
+    ? `Healthy. Last verified sync: ${formatAdminDate(seo.syncedAt)}.`
+    : googleSeo.configured
+      ? `Needs attention. Last sync status: ${seo.status}. ${seo.error || 'No successful snapshot exists yet.'}`
+      : 'Waiting for Google Search Console service-account environment variables.';
+  const newsAutopilotStatus = !newsRuntime.schedulingEnabled
+    ? 'Scheduling switch is off in production. No automatic News run can publish.'
+    : !newsAutopilot.enabled
+      ? 'Planning is disabled by the administrator. No automatic News run can publish.'
+      : !newsRuntime.hasDistributedLock
+        ? `Blocked safely: a KV/Redis distributed lock is required (current store: ${newsRuntime.durableStore}).`
+        : !newsRuntime.publishingEnabled || !newsAutopilot.publishEnabled
+          ? 'Draft planning may run, but the public publishing switch remains off.'
+          : 'Publishing remains held until an approved source-to-draft model is configured.';
   const cronJobs = [
     {
       name: 'Sitemap health check',
@@ -29,9 +40,7 @@ export default async function AdminSyncPage() {
     {
       name: 'Google SEO sync',
       path: '/api/cron/sync-google-seo',
-      status: googleSeoReady()
-        ? `Service account configured. Runs every 3 days. Last sync: ${formatAdminDate(seo.syncedAt || '')}`
-        : 'Waiting for Google service-account environment variables.'
+      status: `${googleSeoStatus} Scheduled every 3 days.`
     },
     {
       name: 'Monthly form email test',
@@ -41,7 +50,7 @@ export default async function AdminSyncPage() {
     {
       name: 'News Autopilot guard check',
       path: '/api/cron/news-autopilot',
-      status: 'Checks daily, but News can publish at most once every 48 hours. It remains disabled until an administrator enables it.'
+      status: `${newsAutopilotStatus} The guard checks daily and enforces a 48-hour minimum publication window.`
     }
   ];
 
@@ -69,7 +78,7 @@ export default async function AdminSyncPage() {
       </section>
       <section className="admin-panel">
         <h2>Editorial publishing</h2>
-        <p>Blog automated publishing remains removed. News Autopilot is a separate, review-first workflow: it creates review drafts and remains disabled until an administrator enables it from the News Autopilot page.</p>
+        <p>Blog automated publishing remains removed. News Autopilot is a separate review-first workflow. Its runtime state, publication switch and distributed-lock requirement are shown above so an incomplete production configuration cannot be mistaken for a live publisher.</p>
       </section>
       <section className="admin-panel">
         <h2>Recent data timestamps</h2>
