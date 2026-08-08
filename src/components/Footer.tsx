@@ -37,6 +37,7 @@ export default async function Footer({locale}: {locale: Locale}) {
         <Link href="/faq">{copy.footer.faq}</Link>
         <Link href="/contact">{copy.footer.distributor}</Link>
         <Link href="/news">{copy.nav.news}</Link>
+        <Link href="/blog">{copy.nav.blog}</Link>
       </div>
       <div className="footer-column footer-contact">
         <h3>{copy.footer.contact}</h3>

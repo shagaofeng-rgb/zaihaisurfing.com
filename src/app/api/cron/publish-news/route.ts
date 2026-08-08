@@ -1,4 +1,4 @@
-import {archiveIrrelevantAutomatedNews, publishDailyAutomatedNews, publishNextAutomatedNews, repairNewsImageDiversity} from '@/lib/newsPublisher';
+import {repairNewsImageDiversity} from '@/lib/newsPublisher';
 import {cronAuthorized} from '@/lib/cronAuth';
 
 export const runtime = 'nodejs';
@@ -14,34 +14,10 @@ export async function GET(request: Request) {
       const result = await repairNewsImageDiversity();
       return Response.json({ok: true, repaired: true, ...result});
     }
-    const contentRepair = await archiveIrrelevantAutomatedNews();
-    // Repair a small batch on every scheduled run so historic repeated covers are
-    // gradually replaced without making the daily publication job unbounded.
-    const imageRepair = await repairNewsImageDiversity(8);
-    if (url.searchParams.get('single') === '1') {
-      const result = await publishNextAutomatedNews();
-      return Response.json({ok: true, contentRepair, imageRepair, ...result});
-    }
-    const requestedTarget = url.searchParams.has('target')
-      ? Number(url.searchParams.get('target'))
-      : Number(process.env.NEWS_DAILY_TARGET);
-    // Number('') is 0. An unset environment variable must use the publisher's
-    // default daily minimum instead of silently completing a zero-item run.
-    const result = Number.isFinite(requestedTarget) && requestedTarget > 0
-      ? await publishDailyAutomatedNews(requestedTarget)
-      : await publishDailyAutomatedNews();
-    if (!result.completed) {
-      console.error('Automated news daily target was not met', {
-        target: result.target,
-        totalPublishedToday: result.totalPublishedToday,
-        failedResults: result.results
-          .filter((item) => !item.published)
-          .map((item) => 'reason' in item ? item.reason : '')
-          .filter(Boolean)
-      });
-    }
-    return Response.json({ok: result.completed, contentRepair, imageRepair, ...result}, {
-      status: result.completed ? 200 : 503
+    return Response.json({
+      ok: true,
+      status: 'paused_for_editorial_review',
+      message: 'Automatic News publishing is paused. Publish reviewed News items manually from the admin console.'
     });
   } catch (error) {
     return Response.json({

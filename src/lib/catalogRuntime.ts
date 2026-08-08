@@ -18,6 +18,8 @@ export type RuntimeCatalogProduct = {
   stock: number | null;
   showOnHome: boolean;
   allowDirectOrder: boolean;
+  seoTitle: string;
+  seoDescription: string;
   updatedAt: string;
 };
 
@@ -39,6 +41,8 @@ export async function getRuntimeCatalogProduct(slug: CheckoutProductSlug): Promi
       stock: null,
       showOnHome: true,
       allowDirectOrder: true,
+      seoTitle: `${fallback.name} for Resorts, Rentals and Distributors | ZAIHAI SURFING`,
+      seoDescription: `${fallback.name}: commercial specifications, buyer use cases, pricing and export support for water sports projects.`,
       updatedAt: '2026-06-24'
     };
   }
@@ -58,6 +62,8 @@ export async function getRuntimeCatalogProduct(slug: CheckoutProductSlug): Promi
     stock: adminProduct.stock,
     showOnHome: adminProduct.showOnHome,
     allowDirectOrder: adminProduct.allowDirectOrder,
+    seoTitle: adminProduct.seoTitle || `${adminProduct.name || fallback.name} | ZAIHAI SURFING`,
+    seoDescription: adminProduct.seoDescription || `${adminProduct.name || fallback.name}: commercial specifications, buyer use cases, pricing and export support for water sports projects.`,
     updatedAt: adminProduct.updatedAt
   };
 }

@@ -14,6 +14,7 @@ import {
 
 const STATIC_PAGE_LASTMOD = '2026-07-08';
 const FALLBACK_PRODUCT_LASTMOD = '2026-06-24';
+const PRODUCT_TEMPLATE_LASTMOD = '2026-08-08';
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -73,7 +74,8 @@ export async function buildSitemapEntries() {
     return localizedEntries(
       'products',
       `/products/${slug}`,
-      normalizeLastmod(adminProduct?.updatedAt || '', FALLBACK_PRODUCT_LASTMOD)
+      newestDate([adminProduct?.updatedAt || '', PRODUCT_TEMPLATE_LASTMOD], FALLBACK_PRODUCT_LASTMOD),
+      true
     );
   });
 

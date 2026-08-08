@@ -23,6 +23,7 @@ type UiCopy = {
     applications: string;
     support: string;
     news: string;
+    blog: string;
     about: string;
     contact: string;
     quote: string;
@@ -184,6 +185,7 @@ const en: UiCopy = {
     applications: 'Applications',
     support: 'Support',
     news: 'News',
+    blog: 'Blog',
     about: 'About',
     contact: 'Contact',
     quote: 'Get Quote',
@@ -390,7 +392,8 @@ function localizedCopy(locale: Locale): UiCopy {
       products: m.nav.products,
       applications: m.nav.applications,
       support: m.nav.factory,
-      news: m.nav.blog,
+      news: 'News',
+      blog: m.nav.blog,
       about: m.nav.about,
       contact: m.nav.contact,
       quote: m.nav.quote,

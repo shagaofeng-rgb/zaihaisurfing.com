@@ -7,7 +7,7 @@ import ProductGallery from '@/components/ProductGallery';
 import RelatedProducts from '@/components/RelatedProducts';
 import ShareButtons from '@/components/ShareButtons';
 import {localizedMetadata} from '@/lib/metadata';
-import {productDetailedSpecs, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
+import {canonicalFor, productDetailedSpecs, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
 import {uiCopy} from '@/lib/uiCopy';
 import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
 
@@ -83,6 +83,34 @@ const productContent: Record<ProductSlug, {
   }
 };
 
+const productFaq: Record<ProductSlug, Array<{question: string; answer: string}>> = {
+  x1: [
+    {question: 'How long does the battery last?', answer: 'The listed endurance is 60-80 minutes. Actual operating time depends on rider weight, speed, water conditions and battery workflow.'},
+    {question: 'Can I order one sample first?', answer: 'Yes. Share the destination country and intended use so the sample configuration, battery handling and export documents can be confirmed.'},
+    {question: 'Is X1 suitable for rental business?', answer: 'X1 is positioned for resort and rental programs. Operators should still define rider screening, safety equipment, charging workflow and local operating rules.'}
+  ],
+  'x1-pro': [
+    {question: 'What makes X1 Pro different from X1?', answer: 'X1 Pro has a 12 kW drive, higher listed top speed and IP67 waterproof rating. It is positioned for premium demonstrations and advanced riders.'},
+    {question: 'What is the expected riding time?', answer: 'The listed endurance is 45 minutes. Actual time varies by speed, rider weight, conditions and battery condition.'},
+    {question: 'Can it be included in a resort demo fleet?', answer: 'Yes. Premium demo fleets should set advanced-rider criteria, staff supervision, battery rotation and local safety procedures.'}
+  ],
+  'rage-shark-x': [
+    {question: 'Is Rage Shark X suitable for family attractions?', answer: 'It is positioned for controlled water attractions. Operators must set their own age, size, route, supervision and local safety requirements.'},
+    {question: 'How long does the battery last?', answer: 'The listed endurance is 60-80 minutes. Guest turnover, speed, water conditions and battery maintenance affect actual runtime.'},
+    {question: 'What should a water park plan before purchase?', answer: 'Confirm the controlled operating area, guest route, charging workflow, life-jacket policy, supervision plan and local rules before ordering.'}
+  ],
+  p1: [
+    {question: 'What fuel does P1 use?', answer: 'P1 is specified for unleaded gasoline No. 95 and above with a 50:1 fuel ratio. Follow the supplied operation and maintenance guidance.'},
+    {question: 'How is P1 different from an electric surfboard?', answer: 'P1 uses a 110 cc two-stroke water-cooled engine and a 3.5 L fuel tank, so its operating and maintenance workflow differs from battery-powered models.'},
+    {question: 'What should an outdoor operator confirm first?', answer: 'Confirm local waterway permissions, fuel storage and handling rules, rider training, safety equipment and maintenance capacity before operating.'}
+  ],
+  'p1-pro': [
+    {question: 'What distinguishes P1 Pro from P1?', answer: 'P1 Pro is the premium fuel-powered option with a listed 64 km/h top speed. The final model choice should consider rider level, operating area and maintenance plan.'},
+    {question: 'What fuel and engine does P1 Pro use?', answer: 'P1 Pro is specified with a 110 cc two-stroke water-cooled engine, unleaded gasoline No. 95 and above, a 50:1 fuel ratio and a 3.5 L tank.'},
+    {question: 'Is P1 Pro suitable for rental operation?', answer: 'It can suit experienced outdoor operators when local permissions, supervised rider procedures, fuel handling and maintenance requirements are in place.'}
+  ]
+};
+
 export function generateStaticParams() {
   return productSlugs.map((slug) => ({slug}));
 }
@@ -98,8 +126,15 @@ export async function generateMetadata({
   if (!runtimeProduct) notFound();
   const names = await getTranslations({locale, namespace: 'productNames'});
   const seo = await getTranslations({locale, namespace: 'seo'});
-  const title = `${names(slug as ProductSlug)} for Commercial Water Sports Projects | ZAIHAI SURFING`;
-  return localizedMetadata(locale, `/products/${slug}`, title, seo('productsDescription'));
+  const title = runtimeProduct.seoTitle || `${names(slug as ProductSlug)} for Commercial Water Sports Projects | ZAIHAI SURFING`;
+  const description = runtimeProduct.seoDescription || seo('productsDescription');
+  const metadata = localizedMetadata(locale, `/products/${slug}`, title, description);
+  if (locale !== 'en') {
+    const canonical = canonicalFor('en', `/products/${slug}`);
+    metadata.alternates = {canonical, languages: {en: canonical, 'x-default': canonical}};
+    metadata.robots = {index: false, follow: true};
+  }
+  return metadata;
 }
 
 export default async function ProductDetailPage({
@@ -118,6 +153,12 @@ export default async function ProductDetailPage({
   const names = await getTranslations({locale, namespace: 'productNames'});
   const alt = await getTranslations({locale, namespace: 'alt'});
   const copy = uiCopy[locale].productDetail;
+  const faqs = locale === 'en'
+    ? productFaq[productSlug]
+    : copy.faq.map((question) => ({
+      question,
+      answer: 'Contact our sales team with your target market, expected quantity, water area and shipping country for a project-specific answer.'
+    }));
   const specRows = [
     ...productDetailedSpecs[productSlug].map((spec) => [spec.label, spec.value] as const),
     ['Recommended use', content.useCases.join(' / ')] as const
@@ -292,10 +333,10 @@ export default async function ProductDetailPage({
             <h2>{copy.faqTitle}</h2>
           </div>
           <div className="faq-grid">
-            {copy.faq.map((question) => (
-              <article key={question}>
-                <h3>{question}</h3>
-                <p>Contact our sales team with your target market, expected quantity, water area and shipping country for a project-specific answer.</p>
+            {faqs.map((faq) => (
+              <article key={faq.question}>
+                <h3>{faq.question}</h3>
+                <p>{faq.answer}</p>
               </article>
             ))}
           </div>

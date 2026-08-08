@@ -4,7 +4,7 @@ import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
-import {getAllNewsSlugs, getNewsArticleBySlug} from '@/lib/newsFeed';
+import {getAllNewsSlugs, getNewsArticleBySlug, getNewsCanonicalSlug} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,8 @@ export async function generateMetadata({
   const {locale, slug} = await params;
   const article = await getNewsArticleBySlug(slug);
   if (!article) {
+    const canonicalSlug = await getNewsCanonicalSlug(slug);
+    if (canonicalSlug) permanentRedirect(`/en/news/${canonicalSlug}`);
     if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
     notFound();
   }
@@ -41,6 +43,8 @@ export default async function NewsArticlePage({
   const {locale, slug} = await params;
   const article = await getNewsArticleBySlug(slug);
   if (!article) {
+    const canonicalSlug = await getNewsCanonicalSlug(slug);
+    if (canonicalSlug) permanentRedirect(`/en/news/${canonicalSlug}`);
     if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
     notFound();
   }

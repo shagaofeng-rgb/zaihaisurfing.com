@@ -10,11 +10,13 @@ export function isIndexableNewsTaxonomy(articleCount: number) {
   return articleCount >= 3;
 }
 
-function topicFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
+export function newsContentFingerprint(article: Pick<NewsArticle, 'title' | 'excerpt'>) {
   return `${article.title} ${article.excerpt}`
     .toLowerCase()
-    .replace(/\(\d{4}-\d{2}-\d{2}\)/g, '')
-    .replace(/\s+for\s+(water sports destinations|resort and rental operations|electric surfboards)/g, '')
+    .replace(/\(\d{4}-\d{2}-\d{2}(?:\s+edition)?\)/g, '')
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, '')
+    .replace(/\bbuyer\s+brief\s*\d+\b/g, '')
+    .replace(/\bdaily\s+seo\/geo\s+buyer\s+brief\b/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
@@ -88,7 +90,7 @@ export async function getAllNewsArticles() {
   const articles = [...published, ...newsArticles]
     .filter((article) => {
       if (seen.has(article.slug)) return false;
-      const topic = topicFingerprint(article);
+      const topic = newsContentFingerprint(article);
       if (seenTopics.has(topic)) return false;
       seen.add(article.slug);
       seenTopics.add(topic);
@@ -104,6 +106,13 @@ export async function getAllNewsSlugs() {
 
 export async function getNewsArticleBySlug(slug: string) {
   return (await getAllNewsArticles()).find((article) => article.slug === slug);
+}
+
+export async function getNewsCanonicalSlug(slug: string) {
+  const post = (await listAdminPosts('news')).find((item) => item.status === 'published' && item.slug === slug);
+  if (!post) return null;
+  const fingerprint = newsContentFingerprint(postToArticle(post));
+  return (await getAllNewsArticles()).find((article) => newsContentFingerprint(article) === fingerprint)?.slug || null;
 }
 
 export async function getNewsCategories() {

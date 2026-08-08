@@ -99,9 +99,6 @@ export default async function LocaleLayout({
       addressRegion: 'Zhejiang',
       addressCountry: 'CN'
     },
-    sameAs: [
-      `${siteUrl}/en/contact`
-    ],
     makesOffer: [
       'Electric surfboards',
       'Fuel-powered surfboards',
