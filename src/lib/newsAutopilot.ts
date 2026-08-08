@@ -100,11 +100,15 @@ export function formatManila(value = new Date()) {
 }
 
 function defaultState(): NewsAutopilotState {
-  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: [], runs: [], audit: []};
+  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: draftSeeds.map(makeDraft), runs: [], audit: [{at: isoNow(), action: 'initial-drafts', detail: 'Six editorial review drafts were initialized. Nothing was published.'}]};
 }
 
 export async function readNewsAutopilotState() {
-  return (await readStoreObject<NewsAutopilotState>(STORE_FILE)) || defaultState();
+  const stored = await readStoreObject<NewsAutopilotState>(STORE_FILE);
+  if (stored) return stored;
+  const initial = defaultState();
+  await writeStoreObject(STORE_FILE, initial);
+  return initial;
 }
 
 async function saveState(state: NewsAutopilotState) {
