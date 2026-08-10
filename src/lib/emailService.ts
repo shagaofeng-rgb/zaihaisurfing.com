@@ -501,3 +501,16 @@ export async function sendContactInquiryEmail(input: {
     throw error;
   }
 }
+
+export async function sendSystemAlertEmail(subject: string, text: string) {
+  try {
+    return await sendSmtpMail({
+      to: adminNotificationEmail(),
+      subject,
+      text,
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.6"><h2>${escapeHtml(subject)}</h2><p>${escapeHtml(text).replace(/\n/g, '<br/>')}</p></div>`
+    });
+  } catch (error) {
+    return {ok: false, skipped: false, message: error instanceof Error ? error.message : 'System alert email failed'};
+  }
+}
