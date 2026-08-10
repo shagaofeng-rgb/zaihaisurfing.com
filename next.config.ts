@@ -53,6 +53,26 @@ const nextConfig: NextConfig = {
         permanent: true
       },
       {
+        source: '/collections-all',
+        destination: '/en/products',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/collections-all',
+        destination: '/:locale/products',
+        permanent: true
+      },
+      {
+        source: '/pt-pt',
+        destination: '/pt',
+        permanent: true
+      },
+      {
+        source: '/pt-pt/:path*',
+        destination: '/pt/:path*',
+        permanent: true
+      },
+      {
         source: '/:locale(en|es|fr|de|ar|pt|ru)/search',
         destination: '/:locale/products',
         permanent: true
