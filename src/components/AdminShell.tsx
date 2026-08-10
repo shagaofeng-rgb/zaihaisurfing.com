@@ -54,6 +54,7 @@ export default async function AdminShell({active, children}: {active: string; ch
   return (
     <main className="admin-dashboard">
       <aside className="admin-sidebar">
+        <a className={active === 'facebook' ? 'is-active' : ''} href="/admin/facebook">Facebook Page</a>
         <a className="admin-logo" href="/admin">
           <img src="/assets/brand-logo.png" alt="ZAIHAI" width="960" height="450" />
           <strong>在海零售后台</strong>
