@@ -73,6 +73,7 @@ export function newsAutopilotRuntimeStatus() {
     schedulingEnabled: process.env.NEWS_AUTOPILOT_ENABLED === 'true' || (productionDefault && process.env.NEWS_AUTOPILOT_ENABLED !== 'false'),
     publishingEnabled: process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED === 'true' || (productionDefault && process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED !== 'false'),
     durableStore: store.provider,
+    hasPersistentStore: store.configured,
     hasDistributedLock: store.provider === 'kv_rest'
   };
 }
@@ -237,7 +238,7 @@ export async function runNewsAutopilot(trigger: 'cron' | 'manual', dryRun: boole
   let reason = ''; let status: AutopilotRun['status'] = 'skipped'; let publishedSlug: string | undefined;
   if (!runtime.schedulingEnabled) reason = 'The production scheduling switch is disabled.';
   else if (!state.enabled) reason = 'Automatic News publishing is disabled by the administrator.';
-  else if (!runtime.hasDistributedLock) reason = 'A production KV-backed distributed lock is required before automation can publish.';
+  else if (!runtime.hasPersistentStore) reason = 'A persistent production content store is required before automation can publish.';
   else if (!runtime.publishingEnabled || !state.publishEnabled) reason = 'The public publishing switch is disabled.';
   else if (!canPublishAt(state.lastPublishedAt)) reason = 'A News article has already been published today in Asia/Manila.';
   else {
