@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {canPublishAt, lexicalSimilarity, validateDraft} from '../src/lib/newsAutopilot';
 
-test('News Autopilot enforces the 48-hour publication window', () => {
+test('News Autopilot permits one direct publication per Asia/Manila calendar day', () => {
   const now = Date.UTC(2026, 7, 8, 12);
-  assert.equal(canPublishAt(new Date(now - 47 * 60 * 60 * 1000).toISOString(), now), false);
-  assert.equal(canPublishAt(new Date(now - 48 * 60 * 60 * 1000).toISOString(), now), true);
+  assert.equal(canPublishAt(new Date(now - 2 * 60 * 60 * 1000).toISOString(), now), false);
+  assert.equal(canPublishAt(new Date(now - 25 * 60 * 60 * 1000).toISOString(), now), true);
 });
 
 test('lexical similarity identifies substantially repeated editorial topics', () => {

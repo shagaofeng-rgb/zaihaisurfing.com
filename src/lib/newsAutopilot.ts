@@ -4,7 +4,6 @@ import {durableStoreStatus, readStoreObject, writeStoreObject} from '@/lib/durab
 import {listAdminPosts, writeAdminStore, type ContentPost} from '@/lib/backendStore';
 
 const STORE_FILE = 'news-autopilot.json';
-const WINDOW_MS = 48 * 60 * 60 * 1000;
 const MANILA_TIME_ZONE = 'Asia/Manila';
 
 export type AutopilotSource = {
@@ -53,6 +52,7 @@ export type AutopilotRun = {
   mode: 'dry-run' | 'live';
   status: 'skipped' | 'drafted' | 'published' | 'failed';
   reason: string;
+  publishedSlug?: string;
 };
 
 export type NewsAutopilotState = {
@@ -99,10 +99,20 @@ export function lexicalSimilarity(left: string, right: string) {
   return overlap / union.size;
 }
 
+function manilaDay(value: Date) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: MANILA_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(value);
+}
+
 export function canPublishAt(lastPublishedAt?: string, now = Date.now()) {
   if (!lastPublishedAt) return true;
-  const last = new Date(lastPublishedAt).getTime();
-  return !Number.isFinite(last) || now - last >= WINDOW_MS;
+  const last = new Date(lastPublishedAt);
+  if (!Number.isFinite(last.getTime())) return true;
+  return manilaDay(last) !== manilaDay(new Date(now));
 }
 
 export function formatManila(value = new Date()) {
@@ -110,7 +120,7 @@ export function formatManila(value = new Date()) {
 }
 
 function defaultState(): NewsAutopilotState {
-  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: [makeDraft(draftSeeds[4])], runs: [], audit: [{at: isoNow(), action: 'initial-draft', detail: 'One editorial review draft was initialized. Nothing was published.'}]};
+  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: draftSeeds.map(makeDraft), runs: [], audit: [{at: isoNow(), action: 'initial-drafts', detail: 'Validated News candidates were initialized. Publishing remains disabled until the production and administrator switches are enabled.'}]};
 }
 
 export async function readNewsAutopilotState() {
@@ -199,27 +209,66 @@ export async function seedNewsAutopilotDrafts() {
 
 export async function setNewsAutopilotEnabled(enabled: boolean) {
   const state = await readNewsAutopilotState(); const now = isoNow();
-  const next = {...state, enabled, audit: [...state.audit, {at: now, action: 'toggle-autopilot', detail: enabled ? 'Automatic draft planning enabled.' : 'Automatic News publishing disabled.'}]};
+  const next = {...state, enabled, publishEnabled: enabled, audit: [...state.audit, {at: now, action: 'toggle-autopilot', detail: enabled ? 'Automatic News publishing enabled: validated articles can publish directly without editorial approval.' : 'Automatic News publishing disabled.'}]};
   await saveState(next); return next;
 }
 
-export async function runNewsAutopilot(trigger: 'cron' | 'manual', dryRun: boolean) {
-  const state = await readNewsAutopilotState(); const now = isoNow();
+async function ensureDraftPool(state: NewsAutopilotState) {
+  const known = new Set(state.drafts.map((draft) => draft.slug));
+  const additions = draftSeeds.filter((seed) => !known.has(seed.slug)).map(makeDraft);
+  return additions.length ? {...state, drafts: [...state.drafts, ...additions]} : state;
+}
+
+function makeRun(input: Omit<AutopilotRun, 'id' | 'startedAt' | 'finishedAt'> & {startedAt?: string}) {
+  const startedAt = input.startedAt || isoNow();
+  return {...input, id: crypto.randomUUID(), startedAt, finishedAt: isoNow()};
+}
+
+export async function runNewsAutopilot(trigger: 'cron' | 'manual', dryRun: boolean, options?: {activate?: boolean}) {
+  const originalState = await readNewsAutopilotState(); const now = isoNow();
+  let state = await ensureDraftPool(originalState);
+  if (options?.activate && (!state.enabled || !state.publishEnabled)) {
+    state = {...state, enabled: true, publishEnabled: true, audit: [...state.audit, {at: now, action: 'cron-activation', detail: 'Automatic News publishing was explicitly activated through the protected cron endpoint.'}]};
+  }
+  if (!dryRun && state !== originalState) await saveState(state);
   const runtime = newsAutopilotRuntimeStatus();
-  let reason = ''; let status: AutopilotRun['status'] = 'skipped';
+  let reason = ''; let status: AutopilotRun['status'] = 'skipped'; let publishedSlug: string | undefined;
   if (!runtime.schedulingEnabled) reason = 'The production scheduling switch is disabled.';
-  else if (!state.enabled) reason = 'Automatic News planning is disabled by the administrator.';
+  else if (!state.enabled) reason = 'Automatic News publishing is disabled by the administrator.';
   else if (!runtime.hasDistributedLock) reason = 'A production KV-backed distributed lock is required before automation can publish.';
-  else if (!runtime.publishingEnabled || !state.publishEnabled) reason = 'Draft planning is enabled, but the public publishing switch remains closed.';
-  else if (!canPublishAt(state.lastPublishedAt)) reason = 'The 48-hour Asia/Manila publication window is still cooling down.';
-  else reason = 'No approved source-to-draft content model is configured. The run was recorded without publishing.';
-  const run = {id: crypto.randomUUID(), trigger, startedAt: now, finishedAt: isoNow(), mode: dryRun ? 'dry-run' as const : 'live' as const, status, reason};
-  const next = {...state, runs: [...state.runs, run], audit: [...state.audit, {at: now, action: `${trigger}-run`, detail: reason}]};
-  if (!dryRun) await saveState(next);
+  else if (!runtime.publishingEnabled || !state.publishEnabled) reason = 'The public publishing switch is disabled.';
+  else if (!canPublishAt(state.lastPublishedAt)) reason = 'A News article has already been published today in Asia/Manila.';
+  else {
+    const existing = await listAdminPosts('news');
+    const existingSlugs = new Set(existing.map((post) => post.slug));
+    const candidate = state.drafts.find((draft) => draft.status === 'draft' && !draft.validation.length && !existingSlugs.has(draft.slug));
+    if (!candidate) reason = 'No unused validated News candidate is available. Nothing was published.';
+    else if (dryRun) {
+      status = 'drafted';
+      reason = `Dry run passed. ${candidate.slug} is the next validated article and would publish directly.`;
+      publishedSlug = candidate.slug;
+    } else {
+      try {
+        await publishNewsAutopilotDraft(candidate.id, 'autopilot-publish');
+        status = 'published';
+        publishedSlug = candidate.slug;
+        reason = `${candidate.slug} was published directly after validation.`;
+      } catch (error) {
+        status = 'failed';
+        reason = error instanceof Error ? error.message : 'Direct publication failed.';
+      }
+    }
+  }
+  const run = makeRun({trigger, mode: dryRun ? 'dry-run' : 'live', status, reason, publishedSlug, startedAt: now});
+  if (!dryRun) {
+    const latest = await readNewsAutopilotState();
+    const next = {...latest, runs: [...latest.runs, run], audit: [...latest.audit, {at: now, action: `${trigger}-run`, detail: reason}]};
+    await saveState(next);
+  }
   return run;
 }
 
-export async function publishNewsAutopilotDraft(draftId: string) {
+export async function publishNewsAutopilotDraft(draftId: string, auditAction = 'manual-publish-draft') {
   const state = await readNewsAutopilotState(); const draft = state.drafts.find((item) => item.id === draftId);
   if (!draft) throw new Error('Draft not found.');
   if (draft.status === 'published') return draft;
@@ -230,6 +279,6 @@ export async function publishNewsAutopilotDraft(draftId: string) {
     await writeAdminStore((store) => ({...store, posts: [...store.posts, {id: `autopilot-${draft.id}`, type: 'news', slug: draft.slug, title: draft.title, excerpt: draft.excerpt, coverImage: draft.coverImage, coverImageSourceUrl: `${siteUrl}/en/products`, coverImagePageUrl: `${siteUrl}/en/products`, coverImageAlt: draft.coverImageAlt, coverImageStatus: 'illustrative', category: draft.category, content: draft.content, publishDate: now.slice(0, 10), author: 'ZAIHAI Editorial Team', source: `${draft.source.name}: ${draft.source.url}`, tags: draft.tags, seoTitle: draft.seoTitle, seoDescription: draft.seoDescription, status: 'published', createdAt: now, updatedAt: now} as ContentPost]}));
   }
   const now = isoNow(); const updated = {...draft, status: 'published' as const, updatedAt: now, languageStatus: {...draft.languageStatus, en: 'published' as const}};
-  const next = {...state, lastPublishedAt: now, drafts: state.drafts.map((item) => item.id === draft.id ? updated : item), audit: [...state.audit, {at: now, action: 'manual-publish-draft', detail: `${draft.slug} published after editorial approval.`}]};
+  const next = {...state, lastPublishedAt: now, drafts: state.drafts.map((item) => item.id === draft.id ? updated : item), audit: [...state.audit, {at: now, action: auditAction, detail: `${draft.slug} published after automated validation.`}]};
   await saveState(next); return updated;
 }
