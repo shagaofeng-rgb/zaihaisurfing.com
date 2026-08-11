@@ -1,5 +1,4 @@
 import type {Metadata} from 'next';
-import {Inter, Manrope, Montserrat, Oxanium, Rajdhani, Sora} from 'next/font/google';
 import {Suspense} from 'react';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
@@ -15,48 +14,6 @@ import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
 import DelayedThirdPartyScript from '@/components/DelayedThirdPartyScript';
 import {siteUrl} from '@/lib/site';
 import '../globals.css';
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  variable: '--font-manrope',
-  display: 'swap'
-});
-
-const sora = Sora({
-  subsets: ['latin'],
-  weight: ['700'],
-  variable: '--font-sora',
-  display: 'swap'
-});
-
-const oxanium = Oxanium({
-  subsets: ['latin'],
-  weight: ['700'],
-  variable: '--font-oxanium',
-  display: 'swap'
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  weight: ['600', '900'],
-  variable: '--font-montserrat',
-  display: 'swap'
-});
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-inter',
-  display: 'swap'
-});
-
-const rajdhani = Rajdhani({
-  subsets: ['latin'],
-  weight: ['700'],
-  variable: '--font-rajdhani',
-  display: 'swap'
-});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({locale}));
@@ -137,7 +94,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} dir={dir} className={`${manrope.variable} ${sora.variable} ${oxanium.variable} ${montserrat.variable} ${inter.variable} ${rajdhani.variable}`}>
+    <html lang={locale} dir={dir}>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(organizationSchema)}} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(websiteSchema)}} />

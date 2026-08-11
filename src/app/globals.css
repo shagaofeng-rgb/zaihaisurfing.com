@@ -9,9 +9,16 @@
   --red: #c91f1f;
   --charcoal: #171a1f;
   --shadow: 0 18px 50px rgba(15, 24, 34, 0.16);
-  --font-body: var(--font-manrope), Inter, "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-  --font-display: var(--font-sora), var(--font-manrope), "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-  --font-tech: var(--font-oxanium), var(--font-sora), var(--font-manrope), "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  /* Keep typography self-contained so production builds never depend on a font CDN. */
+  --font-manrope: Inter, "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-sora: "Arial Black", Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-oxanium: "Arial Narrow", Inter, "Segoe UI", ui-sans-serif, sans-serif;
+  --font-montserrat: "Arial Black", Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-inter: Inter, "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-rajdhani: "Arial Narrow", Inter, "Segoe UI", ui-sans-serif, sans-serif;
+  --font-body: var(--font-manrope);
+  --font-display: var(--font-sora);
+  --font-tech: var(--font-oxanium);
 }
 
 * {
