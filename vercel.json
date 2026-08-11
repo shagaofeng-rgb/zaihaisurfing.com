@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/cron/news-autopilot",
-      "schedule": "35 2 * * *"
+      "schedule": "45 2 * * *"
     },
     {
       "path": "/api/cron/facebook-page-post",
