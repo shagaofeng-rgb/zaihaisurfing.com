@@ -56,7 +56,7 @@ export type AutopilotRun = {
 };
 
 export type NewsAutopilotState = {
-  version: 1;
+  version: 1 | 2;
   enabled: boolean;
   publishEnabled: boolean;
   lastPublishedAt?: string;
@@ -68,9 +68,10 @@ export type NewsAutopilotState = {
 
 export function newsAutopilotRuntimeStatus() {
   const store = durableStoreStatus();
+  const productionDefault = process.env.VERCEL === '1';
   return {
-    schedulingEnabled: process.env.NEWS_AUTOPILOT_ENABLED === 'true',
-    publishingEnabled: process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED === 'true',
+    schedulingEnabled: process.env.NEWS_AUTOPILOT_ENABLED === 'true' || (productionDefault && process.env.NEWS_AUTOPILOT_ENABLED !== 'false'),
+    publishingEnabled: process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED === 'true' || (productionDefault && process.env.NEWS_AUTOPILOT_PUBLISH_ENABLED !== 'false'),
     durableStore: store.provider,
     hasDistributedLock: store.provider === 'kv_rest'
   };
@@ -120,7 +121,7 @@ export function formatManila(value = new Date()) {
 }
 
 function defaultState(): NewsAutopilotState {
-  return {version: 1, enabled: false, publishEnabled: false, sources: sourceSeeds, drafts: draftSeeds.map(makeDraft), runs: [], audit: [{at: isoNow(), action: 'initial-drafts', detail: 'Validated News candidates were initialized. Publishing remains disabled until the production and administrator switches are enabled.'}]};
+  return {version: 2, enabled: true, publishEnabled: true, sources: sourceSeeds, drafts: draftSeeds.map(makeDraft), runs: [], audit: [{at: isoNow(), action: 'initial-drafts', detail: 'Validated News candidates were initialized for direct daily publishing.'}]};
 }
 
 export async function readNewsAutopilotState() {
@@ -226,12 +227,13 @@ function makeRun(input: Omit<AutopilotRun, 'id' | 'startedAt' | 'finishedAt'> & 
 
 export async function runNewsAutopilot(trigger: 'cron' | 'manual', dryRun: boolean, options?: {activate?: boolean}) {
   const originalState = await readNewsAutopilotState(); const now = isoNow();
+  const runtime = newsAutopilotRuntimeStatus();
   let state = await ensureDraftPool(originalState);
-  if (options?.activate && (!state.enabled || !state.publishEnabled)) {
-    state = {...state, enabled: true, publishEnabled: true, audit: [...state.audit, {at: now, action: 'cron-activation', detail: 'Automatic News publishing was explicitly activated through the protected cron endpoint.'}]};
+  const legacyReviewOnlyState = state.version === 1 && !state.enabled && !state.publishEnabled && runtime.schedulingEnabled && runtime.publishingEnabled;
+  if ((options?.activate || legacyReviewOnlyState) && (!state.enabled || !state.publishEnabled)) {
+    state = {...state, version: 2, enabled: true, publishEnabled: true, audit: [...state.audit, {at: now, action: legacyReviewOnlyState ? 'legacy-state-migration' : 'cron-activation', detail: legacyReviewOnlyState ? 'Legacy review-only News state was migrated to direct daily publishing.' : 'Automatic News publishing was explicitly activated through the protected cron endpoint.'}]};
   }
   if (!dryRun && state !== originalState) await saveState(state);
-  const runtime = newsAutopilotRuntimeStatus();
   let reason = ''; let status: AutopilotRun['status'] = 'skipped'; let publishedSlug: string | undefined;
   if (!runtime.schedulingEnabled) reason = 'The production scheduling switch is disabled.';
   else if (!state.enabled) reason = 'Automatic News publishing is disabled by the administrator.';
