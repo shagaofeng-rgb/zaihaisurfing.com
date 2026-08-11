@@ -23,12 +23,12 @@ export function newsContentFingerprint(article: Pick<NewsArticle, 'title' | 'exc
 }
 
 function sourceUrlFrom(post: ContentPost) {
-  return post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/news/${post.slug}`;
+  return post.sourceUrl || post.source.match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || `${siteUrl}/en/news/${post.slug}`;
 }
 
 function postToArticle(post: ContentPost): NewsArticle {
   const sourceUrl = sourceUrlFrom(post);
-  const sourceName = post.source.split(':')[0]?.trim() || 'Public source';
+  const sourceName = post.sourceName || post.source.split(':')[0]?.trim() || 'Public source';
   const parsedSections = editorialSections(post.content, 'Industry update');
   const takeawaySection = parsedSections.find((section) => /^(key )?takeaways?$/i.test(section.heading));
   const body = parsedSections.filter((section) => section !== takeawaySection);
@@ -42,13 +42,13 @@ function postToArticle(post: ContentPost): NewsArticle {
     hero: post.coverImage,
     heroAlt: `${post.title} source-attributed news image`,
     imageCredit: {
-      publisher: post.coverImageStatus === 'ai-illustrative' ? 'ZAIHAI AI illustration' : post.coverImageStatus === 'illustrative' ? 'ZAIHAI product media' : sourceName,
+      publisher: post.coverImageStatus === 'ai-illustrative' ? 'ZAIHAI AI illustration' : post.coverImageStatus === 'illustrative' ? 'ZAIHAI-owned neutral editorial visual' : sourceName,
       sourceUrl: post.coverImageSourceUrl || sourceUrl,
       imageUrl: post.coverImage.startsWith('http') ? post.coverImage : `${siteUrl}${post.coverImage}`,
       note: post.coverImageStatus === 'ai-illustrative'
         ? 'AI-generated illustrative image. It is not a depiction of the cited event.'
         : post.coverImageStatus === 'illustrative'
-          ? 'ZAIHAI-owned product media is used as an illustration because the cited source does not grant reusable image rights.'
+          ? 'A ZAIHAI-owned neutral editorial visual is used because no reusable source image has been verified. It does not depict the cited event.'
           : 'Feature image was validated from the cited source before publication.',
       accessedDate: post.updatedAt.slice(0, 10)
     },
@@ -57,9 +57,9 @@ function postToArticle(post: ContentPost): NewsArticle {
     readTime: '4 min read',
     sources: [{
       name: sourceName,
-      title: post.title,
+      title: post.sourceTitle || post.title,
       url: sourceUrl,
-      publishedDate: post.publishDate,
+      publishedDate: post.sourcePublishedAt || post.publishDate,
       accessedDate: post.updatedAt.slice(0, 10),
       note: 'Used for source attribution and market context.'
     }],
@@ -67,7 +67,8 @@ function postToArticle(post: ContentPost): NewsArticle {
       ? takeawaySection.paragraphs.flatMap((item) => isListBlock(item) ? listItems(item) : [item]).slice(0, 4)
       : textBlocks.slice(0, 3).length ? textBlocks.slice(0, 3) : [post.excerpt],
     body,
-    productFit: 'Relevant to ZAIHAI electric surfboards and go-kart boats for resorts, rental fleets and distributor programs.'
+    productFit: post.siteId ? '' : 'Relevant to ZAIHAI electric surfboards and go-kart boats for resorts, rental fleets and distributor programs.',
+    editorialDisclaimer: post.editorialDisclaimer || 'This page is an independent editorial summary and analysis based on the linked original source. It does not republish the source article or claim that the cited event involved ZAIHAI.'
   };
 }
 

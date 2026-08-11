@@ -114,12 +114,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/sitemap_blogs_1.xml',
-        destination: '/sitemaps/posts-1.xml',
+        destination: '/sitemaps/blog-1.xml',
         permanent: true
       },
       {
         source: '/sitemap_articles_1.xml',
-        destination: '/sitemaps/posts-1.xml',
+        destination: '/sitemaps/news-1.xml',
         permanent: true
       },
       {

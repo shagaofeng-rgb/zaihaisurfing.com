@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {canPublishAt, lexicalSimilarity, validateDraft} from '../src/lib/newsAutopilot';
+import {canPublishAt, lexicalSimilarity, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
-test('News Autopilot permits one direct publication per Asia/Manila calendar day', () => {
+const site = defaultNewsSite();
+
+test('News publication enforces a 48-hour interval', () => {
   const now = Date.UTC(2026, 7, 8, 12);
-  assert.equal(canPublishAt(new Date(now - 2 * 60 * 60 * 1000).toISOString(), now), false);
-  assert.equal(canPublishAt(new Date(now - 25 * 60 * 60 * 1000).toISOString(), now), true);
+  assert.equal(canPublishAt(new Date(now - 47 * 60 * 60 * 1000).toISOString(), now), false);
+  assert.equal(canPublishAt(new Date(now - 48 * 60 * 60 * 1000).toISOString(), now), true);
 });
 
 test('lexical similarity identifies substantially repeated editorial topics', () => {
@@ -13,9 +16,32 @@ test('lexical similarity identifies substantially repeated editorial topics', ()
   assert.ok(lexicalSimilarity('Marina demo day', 'Fuel maintenance workflow') < 0.3);
 });
 
-test('quality gate rejects unapproved cover sources and missing compliance content', () => {
-  const issues = validateDraft({id: 'x', title: 'Draft', slug: 'draft', excerpt: '', content: '## Source context', category: '', tags: [], productSlugs: ['x1'], industry: '', region: '', structure: '', keyword: '', source: {name: 'Source', url: 'http://invalid', publishedDate: '', accessedDate: '', note: ''}, coverImage: 'https://third-party.example/image.jpg', coverImageAlt: '', status: 'draft', seoTitle: '', seoDescription: '', contentHash: '', createdAt: '', updatedAt: '', languageStatus: {}, validation: []});
-  assert.ok(issues.some((item) => item.includes('compliance')));
-  assert.ok(issues.some((item) => item.includes('HTTPS')));
-  assert.ok(issues.some((item) => item.includes('approved owned')));
+test('RSS parsing extracts only complete date-stamped items', () => {
+  const items = parseNewsFeed('<rss><channel><item><title>Marine safety update</title><link>https://example.org/update</link><description>Verified safety information for operators.</description><pubDate>Mon, 10 Aug 2026 12:00:00 GMT</pubDate></item><item><title>Incomplete</title></item></channel></rss>');
+  assert.equal(items.length, 1);
+  assert.equal(items[0].url, 'https://example.org/update');
+});
+
+test('candidate scoring rewards current authoritative in-scope material', () => {
+  assert.ok(site);
+  const score = scoreNewsCandidate({
+    title: 'Marine safety regulation updates electric watercraft operations',
+    summary: 'A regulator announced a boating safety standard relevant to marina rental operators and battery-powered water sports equipment.',
+    publishedAt: new Date().toISOString(),
+    source: site!.sources.primary_whitelist[0]
+  });
+  assert.ok(score >= site!.news.min_score);
+});
+
+test('quality gate rejects promotional and under-length News copy', () => {
+  const issues = validateDraft({
+    title: 'Discounted electric surfboards for sale',
+    excerpt: 'Short deck.',
+    content: '## News facts\nBuy now and request a quote.',
+    tags: [],
+    seoTitle: '',
+    seoDescription: ''
+  }, site);
+  assert.ok(issues.some((item) => item.includes('Content must contain')));
+  assert.ok(issues.some((item) => item.includes('prohibited sales CTA')));
 });

@@ -20,6 +20,7 @@ export type NewsArticle = {
   keyTakeaways: string[];
   body: {heading: string; paragraphs: string[]}[];
   productFit: string;
+  editorialDisclaimer?: string;
 };
 
 export const newsArticles: NewsArticle[] = [

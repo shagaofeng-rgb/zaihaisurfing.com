@@ -13,8 +13,12 @@
       "schedule": "0 2 1 * *"
     },
     {
-      "path": "/api/cron/news-autopilot",
-      "schedule": "55 2 * * *"
+      "path": "/api/cron/news-ingest",
+      "schedule": "0 */12 * * *"
+    },
+    {
+      "path": "/api/cron/news-publish",
+      "schedule": "30 */12 * * *"
     },
     {
       "path": "/api/cron/facebook-page-post",

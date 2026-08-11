@@ -1,62 +1,69 @@
 import AdminShell from '@/components/AdminShell';
-import {EditorialContent} from '@/components/EditorialContent';
-import {editorialSections} from '@/lib/editorialContent';
-import {formatManila, newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
+import {formatNewsTime, newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
+import {defaultNewsSite} from '@/lib/newsSiteConfig';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewsAutopilotPage() {
+  const site = defaultNewsSite();
   const state = await readNewsAutopilotState();
+  const siteState = site ? state.sites[site.site_id] : undefined;
   const runtime = newsAutopilotRuntimeStatus();
-  const drafts = state.drafts.slice().reverse();
+  const candidates = siteState?.candidates.slice().reverse().slice(0, 25) || [];
+  const runs = siteState?.runs.slice().reverse().slice(0, 25) || [];
 
   return <AdminShell active="news-autopilot">
     <div className="admin-title">
-      <p className="eyebrow">NEWS AUTOPILOT</p>
-      <h1>新闻自主运营</h1>
-      <p>仅管理 News。Blog 自动发布保持关闭；所有内容先进入审核草稿，未审核内容不会显示在前台或 sitemap。</p>
+      <p className="eyebrow">NEWS AUTOMATION V3</p>
+      <h1>News collection and publication</h1>
+      <p>Every 12 hours the system only collects, validates, scores and stores candidates. Every 48 hours it publishes one verified News article only after the public list, detail page, sitemap and RSS all pass delivery checks. Blog is not part of this workflow.</p>
     </div>
 
     <section className="admin-panel">
-      <h2>运行状态</h2>
-      <div className="admin-metrics">
-        <article><span>自动规划</span><strong>{state.enabled ? '已开启' : '已关闭'}</strong><small>后台开关</small></article>
-        <article><span>发布节奏</span><strong>48 小时 / 最多 1 篇</strong><small>Asia/Manila</small></article>
-        <article><span>上次发布</span><strong>{state.lastPublishedAt ? formatManila(new Date(state.lastPublishedAt)) : '暂无'}</strong><small>仅记录已批准发布</small></article>
-        <article><span>待审核草稿</span><strong>{state.drafts.filter((item) => item.status === 'draft').length}</strong><small>不会自动上前台</small></article>
-      </div>
-      <p><small>生产定时器：{runtime.schedulingEnabled ? '已启用' : '未启用'} · 公开发布：{runtime.publishingEnabled ? '已启用' : '未启用'} · 分布式锁：{runtime.hasDistributedLock ? 'KV 已就绪' : `待配置（当前 ${runtime.durableStore}）`}</small></p>
+      <h2>Configured site</h2>
+      {site ? <div className="admin-config-list">
+        <div><dt>Site ID</dt><dd>{site.site_id}</dd></div>
+        <div><dt>News routes</dt><dd>{site.news.list_route} and {site.news.detail_route_pattern}</dd></div>
+        <div><dt>Time zone</dt><dd>{site.timezone}</dd></div>
+        <div><dt>Last ingest</dt><dd>{siteState?.lastIngestAt ? formatNewsTime(new Date(siteState.lastIngestAt), site.timezone) : 'No successful ingest recorded'}</dd></div>
+        <div><dt>Last public News</dt><dd>{siteState?.lastPublishedAt ? formatNewsTime(new Date(siteState.lastPublishedAt), site.timezone) : 'No public News verification recorded'}</dd></div>
+      </div> : <p>No valid News site configuration is available.</p>}
       <div className="admin-action-row">
-        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="seed"/><button type="submit">建立后续 6 篇草稿</button></form>
-        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="dry-run"/><button type="submit">执行 Dry Run</button></form>
-        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="toggle"/><input type="hidden" name="enabled" value={state.enabled ? 'false' : 'true'}/><button type="submit">{state.enabled ? '关闭自动草稿计划' : '开启自动草稿计划'}</button></form>
+        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="ingest" /><button type="submit">Run ingest only</button></form>
+        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="dry-run" /><button type="submit">Preview next publication</button></form>
+        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="publish" /><button type="submit">Run publication check</button></form>
+        <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="toggle" /><input type="hidden" name="enabled" value={siteState?.enabled === false ? 'true' : 'false'} /><button type="submit">{siteState?.enabled === false ? 'Resume News automation' : 'Pause News automation'}</button></form>
       </div>
     </section>
 
     <section className="admin-panel">
-      <h2>来源白名单</h2>
-      <div className="admin-table-wrap"><table><thead><tr><th>来源</th><th>地区</th><th>层级</th><th>图片规则</th><th>状态</th></tr></thead><tbody>
-        {state.sources.map((source) => <tr key={source.id}><td><a href={source.url} target="_blank" rel="noreferrer">{source.name}</a><br/><small>{source.domain}</small></td><td>{source.region}</td><td>{source.tier === 'official' ? '官方 / 监管' : '行业媒体'}</td><td>{source.imageLicense === 'link-card-only' ? '仅外链，不复制图片' : '未提供'}</td><td>{source.enabled ? '启用' : '停用'} / {source.health}</td></tr>)}
+      <h2>Runtime safeguards</h2>
+      <div className="admin-metrics">
+        <article><span>Automation switch</span><strong>{runtime.schedulingEnabled && siteState?.enabled !== false ? 'Enabled' : 'Paused'}</strong><small>Production environment and site switch</small></article>
+        <article><span>Publication switch</span><strong>{runtime.publishingEnabled ? 'Enabled' : 'Paused'}</strong><small>Direct publishing is disabled when this switch is off</small></article>
+        <article><span>Persistent storage</span><strong>{runtime.durableStore}</strong><small>{runtime.hasDistributedLock ? 'KV/Redis lease available' : 'A KV/Redis lease is required'}</small></article>
+        <article><span>Candidate pool</span><strong>{candidates.filter((candidate) => candidate.status === 'candidate').length}</strong><small>Eligible, source-attributed records only</small></article>
+      </div>
+    </section>
+
+    <section className="admin-panel">
+      <h2>Source allowlist</h2>
+      <div className="admin-table-wrap"><table><thead><tr><th>Domain</th><th>Tier</th><th>Trust score</th><th>Use</th></tr></thead><tbody>
+        {site ? [...site.sources.primary_whitelist, ...site.sources.fallback_whitelist].map((source) => <tr key={source.domain}><td><a href={source.rss_or_api_url} target="_blank" rel="noreferrer">{source.domain}</a></td><td>{site.sources.primary_whitelist.some((item) => item.domain === source.domain) ? 'Primary' : 'Fallback'}</td><td>{source.source_trust_score}</td><td>{source.allowed_topics.join(', ')}</td></tr>) : null}
       </tbody></table></div>
     </section>
 
     <section className="admin-panel">
-      <h2>审核草稿</h2>
-      {drafts.length ? drafts.map((draft) => <article key={draft.id} className="admin-panel" style={{marginTop: 16}}>
-        <p className="eyebrow">{draft.category} · {draft.region}</p>
-        <h3>{draft.title}</h3>
-        <p>{draft.excerpt}</p>
-        <p><small>来源：<a href={draft.source.url} target="_blank" rel="noreferrer">{draft.source.name}</a> · 访问日期：{draft.source.accessedDate}</small></p>
-        <details><summary>查看完整草稿</summary><div className="editorial-preview"><EditorialContent sections={editorialSections(draft.content, 'Overview')} /></div></details>
-        <p><small>校验：{draft.validation.length ? draft.validation.join(' ') : '通过'} · 状态：{draft.status === 'published' ? '已发布' : '待审核'}</small></p>
-        {draft.status === 'draft' && <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="publish"/><input type="hidden" name="draftId" value={draft.id}/><button type="submit">批准并发布英文版</button></form>}
-      </article>) : <p>尚未建立草稿。</p>}
+      <h2>Recent candidate decisions</h2>
+      <div className="admin-table-wrap"><table><thead><tr><th>Source</th><th>Title</th><th>Score</th><th>Status</th><th>Published at source</th><th>Reason</th></tr></thead><tbody>
+        {candidates.map((candidate) => <tr key={candidate.id}><td><a href={candidate.sourceUrl} target="_blank" rel="noreferrer">{candidate.sourceName}</a></td><td>{candidate.title}</td><td>{candidate.score}</td><td>{candidate.status}</td><td>{candidate.sourcePublishedAt}</td><td>{candidate.rejectReason || '-'}</td></tr>)}
+      </tbody></table></div>
     </section>
 
     <section className="admin-panel">
-      <h2>最近运行与审计</h2>
-      <div className="admin-table-wrap"><table><thead><tr><th>时间</th><th>触发</th><th>状态</th><th>原因</th></tr></thead><tbody>
-        {state.runs.slice().reverse().slice(0, 20).map((run) => <tr key={run.id}><td>{formatManila(new Date(run.finishedAt))}</td><td>{run.trigger}</td><td>{run.status}</td><td>{run.reason}</td></tr>)}
+      <h2>Execution audit</h2>
+      <div className="admin-table-wrap"><table><thead><tr><th>Finished</th><th>Task</th><th>Status</th><th>Accepted</th><th>Reason</th></tr></thead><tbody>
+        {runs.map((run) => <tr key={run.id}><td>{formatNewsTime(new Date(run.finishedAt), site?.timezone)}</td><td>{run.kind}</td><td>{run.status}</td><td>{run.candidateCount}</td><td>{run.reason}</td></tr>)}
       </tbody></table></div>
     </section>
   </AdminShell>;

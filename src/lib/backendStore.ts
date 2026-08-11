@@ -72,6 +72,7 @@ export type MediaAsset = {
 export type ContentPost = {
   id: string;
   type: ContentType;
+  siteId?: string;
   slug: string;
   title: string;
   excerpt: string;
@@ -81,11 +82,20 @@ export type ContentPost = {
   coverImageAlt?: string;
   coverImageFetchedAt?: string;
   coverImageStatus?: 'validated' | 'illustrative' | 'ai-illustrative' | 'failed' | 'pending';
+  imageLicense?: 'owned-neutral-illustration' | 'validated-source-license' | 'unknown';
   category: string;
   content: string;
   publishDate: string;
   author: string;
   source: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  sourcePublishedAt?: string;
+  sourceAuthor?: string;
+  sourceTitle?: string;
+  editorialDisclaimer?: string;
+  contentFingerprint?: string;
+  newsCandidateId?: string;
   tags: string[];
   seoTitle: string;
   seoDescription: string;

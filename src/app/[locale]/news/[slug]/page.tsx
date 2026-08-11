@@ -93,26 +93,25 @@ export default async function NewsArticlePage({
       </section>
       <article className="news-article">
         <div className="source-note">
-          <strong>Editorial note</strong>
-          <p>This is an original ZAIHAI SURFING article based on public industry sources. Part of the image/source material is taken from {article.imageCredit.publisher}, with attribution shown on this page. We summarize and interpret market signals for overseas buyers without republishing copyrighted article text.</p>
+          <strong>Editorial disclaimer</strong>
+          <p>{article.editorialDisclaimer}</p>
         </div>
         <section className="key-takeaways">
           <h2>Key Takeaways</h2>
           <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
         </section>
         <EditorialContent sections={article.body} />
-        <section className="product-fit-box">
-          <h2>How this connects to ZAIHAI products</h2>
+        {article.productFit ? <section className="product-fit-box">
+          <h2>Editorial context</h2>
           <p>{article.productFit}</p>
-          <Link href="/products" className="button primary">View matching products</Link>
-        </section>
+        </section> : null}
         <section>
           <h2>Sources and attribution</h2>
           <ul className="source-list">
             {article.sources.map((source) => (
               <li key={source.url}>
-                <a href={source.url} target="_blank" rel="noreferrer">{source.name}: {source.title}</a>
-                <p>Published: {source.publishedDate}. Accessed: {source.accessedDate}. {source.note}</p>
+                <a href={source.url} target="_blank" rel="noreferrer">Original source: {source.name}: {source.title}</a>
+                <p>Original publication date: {source.publishedDate}. Site access date: {source.accessedDate}. {source.note}</p>
               </li>
             ))}
             <li>

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(_request: Request, {params}: {params: Promise<{file: string}>}) {
   const {file} = await params;
-  if (!/^(pages|products|posts|categories)-\d+\.xml$/.test(file)) {
+  if (!/^(pages|products|news|blog|categories)-\d+\.xml$/.test(file)) {
     return new Response('Not found', {status: 404});
   }
 

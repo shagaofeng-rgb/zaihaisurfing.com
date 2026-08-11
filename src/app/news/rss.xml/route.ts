@@ -27,7 +27,7 @@ export async function GET() {
       <pubDate>${new Date(article.date).toUTCString()}</pubDate>
       <category>${xmlEscape(article.category)}</category>
       <enclosure url="${xmlEscape(absoluteUrl(article.hero))}" type="image/jpeg" />
-      <source url="${xmlEscape(article.imageCredit.sourceUrl)}">${xmlEscape(article.imageCredit.publisher)}</source>
+      <source url="${xmlEscape(article.sources[0]?.url || article.imageCredit.sourceUrl)}">${xmlEscape(article.sources[0]?.name || article.imageCredit.publisher)}</source>
     </item>`).join('');
 
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>

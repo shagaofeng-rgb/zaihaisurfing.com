@@ -1,0 +1,67 @@
+[
+  {
+    "site_id": "zaihai-global",
+    "enabled": true,
+    "brand_name": "ZAIHAI SURFING",
+    "site_url": "https://www.zaihaisurfing.com",
+    "industry": "commercial water sports equipment",
+    "industry_scope": "Commercial electric surfboards, fuel-powered surfboards, electric go-kart boats, resort and rental operations, water parks, marinas, marine safety, boating regulation, lithium battery transport, distribution and OEM procurement. Excludes consumer gossip, celebrity coverage, unrelated shipping, political content and competitor promotions.",
+    "target_markets": ["US", "EU", "GCC", "Asia-Pacific"],
+    "publication_language": "en",
+    "locale": "en-US",
+    "timezone": "Asia/Manila",
+    "news": {
+      "enabled": true,
+      "list_route": "/en/news",
+      "detail_route_pattern": "/en/news/[slug]",
+      "rss_route": "/news/rss.xml",
+      "sitemap_route": "/news-sitemap.xml",
+      "desired_word_count": {"min": 700, "max": 1000},
+      "ingest_interval_hours": 12,
+      "publish_interval_hours": 48,
+      "candidate_max_age_hours": 72,
+      "fallback_candidate_max_age_days": 7,
+      "min_score": 70,
+      "max_internal_product_links": 1,
+      "default_author_type": "Editorial Team",
+      "neutral_images": [
+        "/assets/banners/market-north-america-optimized.jpg",
+        "/assets/banners/market-europe-optimized.jpg",
+        "/assets/banners/market-middle-east-optimized.jpg",
+        "/assets/banners/market-asia-optimized.jpg"
+      ]
+    },
+    "blog": {
+      "enabled": true,
+      "list_route": "/en/blog",
+      "detail_route_pattern": "/en/blog/[slug]",
+      "sitemap_route": "/blog-sitemap.xml",
+      "content_source": "existing-blog-source",
+      "allow_news_automation": false
+    },
+    "product_theme_plan": [
+      {"theme_id": "x1-resort-fleet", "product_url": "/en/products/x1", "product_name": "ZAIHAI X1 Electric Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
+      {"theme_id": "x1-pro-demo", "product_url": "/en/products/x1-pro", "product_name": "ZAIHAI X1 Pro Electric Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
+      {"theme_id": "rage-water-park", "product_url": "/en/products/rage-shark-x", "product_name": "Rage Shark X Electric Go-Kart Boat", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
+      {"theme_id": "p1-open-water", "product_url": "/en/products/p1", "product_name": "ZAIHAI P1 Fuel-Powered Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
+      {"theme_id": "p1-pro-adventure", "product_url": "/en/products/p1-pro", "product_name": "ZAIHAI P1 Pro Fuel-Powered Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"}
+    ],
+    "sources": {
+      "primary_whitelist": [
+        {"domain": "news.uscg.mil", "type": "regulator", "allowed_topics": ["boating safety", "recreational boating", "water safety", "marine regulation"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.news.uscg.mil/RSS/", "source_trust_score": 95},
+        {"domain": "marineindustrynews.co.uk", "type": "trade-media", "allowed_topics": ["marine industry", "boating", "water sports", "marinas", "marine technology"], "allowed_languages": ["en"], "rss_or_api_url": "https://marineindustrynews.co.uk/feed/", "source_trust_score": 85}
+      ],
+      "fallback_whitelist": [
+        {"domain": "boatindustry.com", "type": "trade-media", "allowed_topics": ["boating industry", "marine equipment", "water sports"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.boatindustry.com/feed/", "source_trust_score": 80},
+        {"domain": "rbaw.org", "type": "trade-association", "allowed_topics": ["recreational boating", "boating regulation", "water safety"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.rbaw.org/feed/", "source_trust_score": 80}
+      ]
+    },
+    "publishing": {
+      "cms_adapter": "zaihai-admin-store",
+      "content_status_after_publish": "published",
+      "require_frontend_verification": true,
+      "alert_channel": "NEWS_ALERT_WEBHOOK_URL",
+      "production_enabled": true
+    }
+  }
+]

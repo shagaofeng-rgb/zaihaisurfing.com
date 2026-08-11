@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const type = (text(formData, 'type', 12) === 'news' ? 'news' : 'blog') as ContentType;
   const coverImage = text(formData, 'coverImage', 600);
   const status = postStatus(text(formData, 'status', 24));
-  if (status === 'published' && (!coverImage || isOwnSiteImage(coverImage))) {
+  if (status === 'published' && !coverImage) {
     return Response.json({
       message: '正式发布 News/Blog 必须填写可访问的外部引用图片 URL，不能使用站内产品图、站内媒体图或默认占位图。'
     }, {status: 400});
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         coverImageSourceUrl: coverImage,
         coverImagePageUrl: text(formData, 'source', 600).match(/https?:\/\/\S+/)?.[0]?.replace(/[),.;]+$/, '') || '',
         coverImageAlt: `${text(formData, 'title', 220)} source image`,
-        coverImageStatus: coverImage ? 'validated' : 'pending',
+        coverImageStatus: coverImage ? (isOwnSiteImage(coverImage) ? 'illustrative' : 'validated') : 'pending',
         category: text(formData, 'category', 120) || (type === 'news' ? 'Industry News' : 'Product Knowledge'),
         content: text(formData, 'content', 6000),
         publishDate: text(formData, 'publishDate', 20) || now.slice(0, 10),

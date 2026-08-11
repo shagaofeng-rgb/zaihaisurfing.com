@@ -2,6 +2,7 @@ import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, getRetailAdminHealth} from '@/lib/adminDataViews';
 import {googleSeoConfigStatus, readGoogleSeoSnapshot} from '@/lib/googleSeo';
 import {newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
+import {defaultNewsSite} from '@/lib/newsSiteConfig';
 import {readSitemapState} from '@/lib/sitemapState';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +16,8 @@ export default async function AdminSyncPage() {
   ]);
   const googleSeo = googleSeoConfigStatus();
   const newsRuntime = newsAutopilotRuntimeStatus();
+  const newsSite = defaultNewsSite();
+  const newsState = newsSite ? newsAutopilot.sites[newsSite.site_id] : undefined;
   const googleSeoStatus = seo.status === 'ok'
     ? `Healthy. Last verified sync: ${formatAdminDate(seo.syncedAt)}.`
     : googleSeo.configured
@@ -22,13 +25,13 @@ export default async function AdminSyncPage() {
       : 'Waiting for Google Search Console service-account environment variables.';
   const newsAutopilotStatus = !newsRuntime.schedulingEnabled
     ? 'Scheduling switch is off in production. No automatic News run can publish.'
-    : !newsAutopilot.enabled
+    : newsState?.enabled === false
       ? 'Planning is disabled by the administrator. No automatic News run can publish.'
       : !newsRuntime.hasDistributedLock
         ? `Blocked safely: a KV/Redis distributed lock is required (current store: ${newsRuntime.durableStore}).`
-        : !newsRuntime.publishingEnabled || !newsAutopilot.publishEnabled
-          ? 'Draft planning may run, but the public publishing switch remains off.'
-          : 'Publishing remains held until an approved source-to-draft model is configured.';
+        : !newsRuntime.publishingEnabled
+          ? 'Ingest remains available, but the public publishing switch remains off.'
+          : '12-hour ingest and 48-hour public News verification are enabled.';
   const cronJobs = [
     {
       name: 'Sitemap health check',
@@ -48,9 +51,14 @@ export default async function AdminSyncPage() {
       status: 'Runs on the first day of every month to verify form-email delivery.'
     },
     {
-      name: 'News Autopilot guard check',
-      path: '/api/cron/news-autopilot',
-      status: `${newsAutopilotStatus} The guard checks daily and enforces a 48-hour minimum publication window.`
+      name: 'News candidate ingest',
+      path: '/api/cron/news-ingest',
+      status: `${newsAutopilotStatus} Collects, verifies, deduplicates and scores only; no writing or publishing.`
+    },
+    {
+      name: 'News publication verification',
+      path: '/api/cron/news-publish',
+      status: 'Checks every 12 hours and publishes only after the 48-hour interval and public list/detail/sitemap/RSS verification pass.'
     }
   ];
 
@@ -78,7 +86,7 @@ export default async function AdminSyncPage() {
       </section>
       <section className="admin-panel">
         <h2>Editorial publishing</h2>
-        <p>Blog automated publishing remains removed. News Autopilot is a separate review-first workflow. Its runtime state, publication switch and distributed-lock requirement are shown above so an incomplete production configuration cannot be mistaken for a live publisher.</p>
+        <p>Blog is isolated from News automation. News candidates, articles, routes, sitemap entries, RSS, audit logs and scheduled endpoints are separate from Blog data and publishing.</p>
       </section>
       <section className="admin-panel">
         <h2>Recent data timestamps</h2>

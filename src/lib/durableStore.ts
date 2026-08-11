@@ -25,6 +25,10 @@ export function durableStoreStatus() {
   };
 }
 
+export function durableStoreHasDistributedLock() {
+  return Boolean(KV_URL && KV_TOKEN);
+}
+
 function storeKey(fileName: string) {
   return `${STORE_PREFIX}:${fileName.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
 }
@@ -63,6 +67,27 @@ async function kvPipeline<T>(commands: string[][]) {
   const error = payload.find((item) => item.error)?.error;
   if (error) throw new Error(`Durable store command failed: ${error}`);
   return payload.map((item) => item.result);
+}
+
+/** Redis-backed lease used by scheduled jobs that may execute in parallel. */
+export async function acquireStoreLock(name: string, token: string, ttlMs: number) {
+  if (!durableStoreHasDistributedLock()) return false;
+  const [result] = await kvPipeline<string | null>([[
+    'SET',
+    storeKey(`lock-${name}`),
+    token,
+    'NX',
+    'PX',
+    String(Math.max(1_000, Math.floor(ttlMs)))
+  ]]);
+  return result === 'OK';
+}
+
+export async function releaseStoreLock(name: string, token: string) {
+  if (!durableStoreHasDistributedLock()) return false;
+  const script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+  const [result] = await kvPipeline<number>([['EVAL', script, '1', storeKey(`lock-${name}`), token]]);
+  return Number(result) === 1;
 }
 
 async function readLocalLines<T>(fileName: string) {

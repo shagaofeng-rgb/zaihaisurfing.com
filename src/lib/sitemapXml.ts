@@ -1,7 +1,7 @@
 export const MAX_SITEMAP_URLS = 45_000;
 export const MAX_SITEMAP_BYTES = 45 * 1024 * 1024;
 
-export type SitemapSection = 'pages' | 'products' | 'posts' | 'categories';
+export type SitemapSection = 'pages' | 'products' | 'news' | 'blog' | 'categories';
 
 export type SitemapEntry = {
   section: SitemapSection;

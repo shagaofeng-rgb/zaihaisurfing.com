@@ -79,10 +79,8 @@ export async function buildSitemapEntries() {
     );
   });
 
-  const postEntries = [
-    ...newsArticles.flatMap((article) => localizedEntries('posts', `/news/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true)),
-    ...blogArticles.flatMap((article) => localizedEntries('posts', `/blog/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true))
-  ];
+  const newsEntries = newsArticles.flatMap((article) => localizedEntries('news', `/news/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
+  const blogEntries = blogArticles.flatMap((article) => localizedEntries('blog', `/blog/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
 
   const categoryDates = new Map<string, string[]>();
   const tagDates = new Map<string, string[]>();
@@ -104,12 +102,12 @@ export async function buildSitemapEntries() {
       .flatMap(([slug, dates]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate(dates, newsLastmod), true))
   ];
 
-  return dedupeEntries([...pages, ...productEntries, ...postEntries, ...categoryEntries]);
+  return dedupeEntries([...pages, ...productEntries, ...newsEntries, ...blogEntries, ...categoryEntries]);
 }
 
 export async function buildSitemapManifest() {
   const entries = await buildSitemapEntries();
-  const sections: SitemapSection[] = ['pages', 'products', 'posts', 'categories'];
+  const sections: SitemapSection[] = ['pages', 'products', 'news', 'blog', 'categories'];
   const parts: SitemapPart[] = [];
 
   for (const section of sections) {
@@ -130,7 +128,7 @@ export async function buildSitemapManifest() {
 }
 
 export function manifestFromSnapshot(entries: SitemapEntry[]) {
-  const sections: SitemapSection[] = ['pages', 'products', 'posts', 'categories'];
+  const sections: SitemapSection[] = ['pages', 'products', 'news', 'blog', 'categories'];
   const parts: SitemapPart[] = [];
   for (const section of sections) {
     chunkSitemapEntries(entries.filter((entry) => entry.section === section)).forEach((chunk, index) => {
