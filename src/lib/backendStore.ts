@@ -103,6 +103,7 @@ export type SiteSettings = {
   paymentCurrency: string;
   qianhaiStatus: string;
   cookieConsentReady: boolean;
+  legacyEditorialMigrationCompletedAt?: string;
   updatedAt: string;
 };
 
@@ -154,16 +155,39 @@ function cents(amount: number) {
 export async function readAdminStore() {
   const stored = await readStoreObject<AdminStore>(STORE_FILE);
   if (stored) {
-    const synced = syncCatalogPrices(stored);
-    if (synced.changed) {
-      await writeStoreObject(STORE_FILE, synced.store);
-      return synced.store;
+    const catalog = syncCatalogPrices(stored);
+    const editorial = migrateLegacyEditorialPosts(catalog.store);
+    if (catalog.changed || editorial.changed) {
+      await writeStoreObject(STORE_FILE, editorial.store);
+      return editorial.store;
     }
-    return stored;
+    return editorial.store;
   }
   const seeded = createSeedStore();
   await writeStoreObject(STORE_FILE, seeded);
   return seeded;
+}
+
+function migrateLegacyEditorialPosts(store: AdminStore) {
+  // Legacy articles used to render directly from src/lib/news. Move them into
+  // the persisted store once so public editorial routes have a single source.
+  if (store.settings.legacyEditorialMigrationCompletedAt) {
+    return {changed: false, store};
+  }
+  const existingSlugs = new Set(store.posts.map((post) => post.slug));
+  const legacyPosts = createSeedStore().posts.filter((post) => !existingSlugs.has(post.slug));
+  return {
+    changed: true,
+    store: {
+      ...store,
+      posts: legacyPosts.length ? [...store.posts, ...legacyPosts] : store.posts,
+      settings: {
+        ...store.settings,
+        legacyEditorialMigrationCompletedAt: now(),
+        updatedAt: now()
+      }
+    }
+  };
 }
 
 function syncCatalogPrices(store: AdminStore) {
@@ -336,7 +360,8 @@ function readableFieldLabel(key: string) {
   const labels: Record<string, string> = {
     name: 'Name', email: 'Email', phone: 'Phone', country: 'Country / region', company: 'Company',
     product: 'Interested product', productSlug: 'Interested product', quantity: 'Quantity', message: 'Message',
-    buyerType: 'Buyer type', waterArea: 'Water area', port: 'Preferred port', language: 'Language',
+    buyerType: 'Buyer type', waterArea: 'Water area', destinationPort: 'Preferred port', targetMarket: 'Target market',
+    oem: 'OEM / private label request', port: 'Preferred port', language: 'Language',
     page: 'Submitted from page', source: 'Source', medium: 'Medium', campaign: 'Campaign'
   };
   return labels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (value) => value.toUpperCase());
@@ -511,6 +536,7 @@ function createSeedStore(): AdminStore {
       paymentCurrency: 'USD',
       qianhaiStatus: process.env.QIANHAI_MERCHANT_ID ? '已配置' : '等待前海通道参数',
       cookieConsentReady: false,
+      legacyEditorialMigrationCompletedAt: createdAt,
       updatedAt: createdAt
     }
   };

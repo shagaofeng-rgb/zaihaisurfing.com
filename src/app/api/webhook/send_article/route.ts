@@ -11,6 +11,7 @@ const MAX_TITLE_LENGTH = 220;
 const MAX_CONTENT_LENGTH = 20_000;
 const MAX_AUTHOR_LENGTH = 120;
 const MAX_IMAGE_URL_LENGTH = 1_500;
+const MAX_PERSIST_ATTEMPTS = 2;
 
 function reply(code: 0 | 1, msg: string, status = 200) {
   return Response.json({code, msg}, {status});
@@ -47,6 +48,31 @@ function excerptFrom(content: string) {
 
 function articleFingerprint(title: string, content: string) {
   return crypto.createHash('sha256').update(`${title}\n${content}`).digest('hex');
+}
+
+async function retryOnce<T>(operation: () => Promise<T>) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < MAX_PERSIST_ATTEMPTS; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt + 1 < MAX_PERSIST_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+    }
+  }
+  throw lastError;
+}
+
+async function recordRun(value: Record<string, unknown>) {
+  try {
+    await appendStoreLine('blog-webhook-runs.jsonl', value);
+  } catch (error) {
+    // A completed publication must not be reported as failed solely because
+    // the secondary audit log is temporarily unavailable.
+    console.error('[blog-webhook] unable to append audit record', error);
+  }
 }
 
 export async function POST(request: Request) {
@@ -88,12 +114,12 @@ export async function POST(request: Request) {
 
   let image;
   try {
-    image = await resolveSourceImage({
+    image = await retryOnce(() => resolveSourceImage({
       pageUrl: imageUrl,
       title,
       preferredImages: [imageUrl],
       allowExternalFallback: false
-    });
+    }));
   } catch {
     return reply(0, '封面图不可访问、格式不受支持或不是有效图片', 422);
   }
@@ -104,7 +130,7 @@ export async function POST(request: Request) {
   let duplicate = false;
 
   try {
-    await writeAdminStore((store) => {
+    await retryOnce(() => writeAdminStore((store) => {
       duplicate = store.posts.some((post) => post.type === 'blog' && post.tags.includes(idempotencyTag));
       if (duplicate) return store;
       return {
@@ -137,8 +163,8 @@ export async function POST(request: Request) {
           }
         ]
       };
-    });
-    await appendStoreLine('blog-webhook-runs.jsonl', {
+    }));
+    await recordRun({
       executedAt: now,
       classId,
       authorId,
@@ -149,7 +175,17 @@ export async function POST(request: Request) {
     });
     revalidatePath('/[locale]/blog', 'page');
     revalidatePath('/[locale]/blog/[slug]', 'page');
-  } catch {
+  } catch (error) {
+    await recordRun({
+      executedAt: now,
+      classId,
+      authorId,
+      title,
+      fingerprint,
+      duplicate,
+      status: 'failed',
+      reason: error instanceof Error ? error.message : 'Persistent storage write failed.'
+    });
     return reply(0, '数据录入失败，请重试', 500);
   }
 

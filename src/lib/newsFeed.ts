@@ -1,6 +1,6 @@
 import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
 import {editorialSections, isListBlock, listItems} from '@/lib/editorialContent';
-import {newsArticles, type NewsArticle} from '@/lib/news';
+import type {NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
 function slugify(value: string) {
@@ -78,7 +78,7 @@ export async function getAllNewsArticles() {
     .map(postToArticle);
   const seen = new Set<string>();
   const seenTopics = new Set<string>();
-  const articles = [...published, ...newsArticles]
+  const articles = published
     .filter((article) => {
       if (seen.has(article.slug)) return false;
       const topic = newsContentFingerprint(article);

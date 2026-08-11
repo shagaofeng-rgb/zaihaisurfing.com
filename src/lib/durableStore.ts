@@ -7,7 +7,7 @@ type RedisResult<T> = {
   error?: string;
 };
 
-const LOCAL_DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data');
+const LOCAL_DATA_DIR = process.env.COMMERCE_LOCAL_DATA_DIR || (process.env.VERCEL ? path.join('/tmp', 'zaihai-commerce') : path.join(process.cwd(), '.data'));
 const KV_URL = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '');
 const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';

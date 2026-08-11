@@ -95,14 +95,19 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
       attribution,
       payload: {
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        company: inquiry.company,
         buyerType: inquiry.buyerType,
         product: inquiry.product,
         quantity: inquiry.quantity,
         country: inquiry.country,
         targetMarket: inquiry.targetMarket,
         waterArea: inquiry.waterArea,
-        oem: inquiry.oem ? 'yes' : '',
-        destinationPort: inquiry.destinationPort ? 'provided' : ''
+        oem: inquiry.oem,
+        destinationPort: inquiry.destinationPort,
+        message: inquiry.message
       }
     });
 
