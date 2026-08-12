@@ -52,6 +52,7 @@ export default async function NewsArticlePage({
   setRequestLocale(locale);
 
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
+  const primarySource = article.sources[0];
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -69,58 +70,90 @@ export default async function NewsArticlePage({
   };
 
   return (
-    <main>
+    <main className="news-detail-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />
       <section className="news-detail-hero">
-        <div>
-          <Link href="/news" className="text-link">Back to News</Link>
-          <p className="eyebrow">News & Insights</p>
+        <div className="news-hero-copy">
+          <Link href="/news" className="news-back-link">All news</Link>
+          <p className="news-kicker">{article.category}</p>
           <h1>{article.title}</h1>
-          <p>{article.excerpt}</p>
+          <p className="news-deck">{article.excerpt}</p>
           <div className="news-meta">
-            <time dateTime={article.date}>{article.date}</time>
-            <span>Updated {article.updatedAt}</span>
-            <span>{article.readTime}</span>
-            {article.tags.map((tag) => <span key={tag}>{tag}</span>)}
+            <time dateTime={article.date}><b>Published</b>{article.date}</time>
+            <span><b>Reading time</b>{article.readTime}</span>
+            <span><b>Updated</b>{article.updatedAt}</span>
           </div>
+          <ul className="news-topic-list" aria-label="Article topics">
+            {article.tags.slice(0, 3).map((tag) => <li key={tag}>{tag}</li>)}
+          </ul>
         </div>
         <figure className="news-hero-figure">
-          <img src={article.hero} alt={article.heroAlt} />
+          <div className="news-hero-media">
+            <img src={article.hero} alt={article.heroAlt} />
+          </div>
           <figcaption>
             Image/source material: <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">{article.imageCredit.publisher}</a>. {article.imageCredit.note}
           </figcaption>
         </figure>
       </section>
-      <article className="news-article">
-        <div className="source-note">
-          <strong>Editorial disclaimer</strong>
-          <p>{article.editorialDisclaimer}</p>
-        </div>
-        <section className="key-takeaways">
-          <h2>Key Takeaways</h2>
-          <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
-        </section>
-        <EditorialContent sections={article.body} />
-        {article.productFit ? <section className="product-fit-box">
-          <h2>Editorial context</h2>
-          <p>{article.productFit}</p>
-        </section> : null}
-        <section>
-          <h2>Sources and attribution</h2>
-          <ul className="source-list">
-            {article.sources.map((source) => (
-              <li key={source.url}>
-                <a href={source.url} target="_blank" rel="noreferrer">Original source: {source.name}: {source.title}</a>
-                <p>Original publication date: {source.publishedDate}. Site access date: {source.accessedDate}. {source.note}</p>
+      <div className="news-reading-layout">
+        <aside className="news-reading-rail" aria-label="Article information">
+          <div className="news-rail-card">
+            <p className="news-rail-label">News brief</p>
+            <dl>
+              <div>
+                <dt>Category</dt>
+                <dd>{article.category}</dd>
+              </div>
+              <div>
+                <dt>Original source</dt>
+                <dd><a href={primarySource?.url ?? article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">{primarySource?.name ?? 'Verified source'}</a></dd>
+              </div>
+              <div>
+                <dt>Published</dt>
+                <dd>{article.date}</dd>
+              </div>
+              <div>
+                <dt>Updated</dt>
+                <dd>{article.updatedAt}</dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+        <article className="news-article">
+          <div className="source-note">
+            <strong>Editorial disclaimer</strong>
+            <p>{article.editorialDisclaimer}</p>
+          </div>
+          <section className="key-takeaways" id="key-takeaways">
+            <p className="section-kicker">At a glance</p>
+            <h2>Key Takeaways</h2>
+            <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
+          </section>
+          <EditorialContent sections={article.body} />
+          {article.productFit ? <section className="product-fit-box">
+            <p className="section-kicker">Editorial context</p>
+            <h2>Industry relevance</h2>
+            <p>{article.productFit}</p>
+          </section> : null}
+          <section id="sources">
+            <p className="section-kicker">Verification</p>
+            <h2>Sources and attribution</h2>
+            <ul className="source-list">
+              {article.sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} target="_blank" rel="noreferrer">Original source: {source.name}: {source.title}</a>
+                  <p>Original publication date: {source.publishedDate}. Site access date: {source.accessedDate}. {source.note}</p>
+                </li>
+              ))}
+              <li>
+                <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">Image source: {article.imageCredit.publisher}</a>
+                <p>Image URL: {article.imageCredit.imageUrl}. Accessed: {article.imageCredit.accessedDate}. {article.imageCredit.note}</p>
               </li>
-            ))}
-            <li>
-              <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">Image source: {article.imageCredit.publisher}</a>
-              <p>Image URL: {article.imageCredit.imageUrl}. Accessed: {article.imageCredit.accessedDate}. {article.imageCredit.note}</p>
-            </li>
-          </ul>
-        </section>
-      </article>
+            </ul>
+          </section>
+        </article>
+      </div>
     </main>
   );
 }
