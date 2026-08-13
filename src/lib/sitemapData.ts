@@ -82,24 +82,30 @@ export async function buildSitemapEntries() {
   const newsEntries = newsArticles.flatMap((article) => localizedEntries('news', `/news/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
   const blogEntries = blogArticles.flatMap((article) => localizedEntries('blog', `/blog/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
 
-  const categoryDates = new Map<string, string[]>();
-  const tagDates = new Map<string, string[]>();
+  const categoryArticles = new Map<string, Map<string, string>>();
+  const tagArticles = new Map<string, Map<string, string>>();
   newsArticles.forEach((article) => {
     const date = article.updatedAt || article.date;
     const category = slugify(article.category);
-    categoryDates.set(category, [...(categoryDates.get(category) || []), date]);
-    article.tags.forEach((tag) => {
-      const tagSlug = slugify(tag);
-      tagDates.set(tagSlug, [...(tagDates.get(tagSlug) || []), date]);
+    const categoryEntries = categoryArticles.get(category) || new Map<string, string>();
+    categoryEntries.set(article.slug, date);
+    categoryArticles.set(category, categoryEntries);
+
+    // A publishing source can repeat a tag in one record. Count unique articles,
+    // matching the taxonomy page's actual article list and its indexability rule.
+    Array.from(new Set(article.tags.map(slugify))).forEach((tagSlug) => {
+      const tagEntries = tagArticles.get(tagSlug) || new Map<string, string>();
+      tagEntries.set(article.slug, date);
+      tagArticles.set(tagSlug, tagEntries);
     });
   });
   const categoryEntries = [
-    ...Array.from(categoryDates.entries())
-      .filter(([, dates]) => isIndexableNewsTaxonomy(dates.length))
-      .flatMap(([slug, dates]) => localizedEntries('categories', `/news/category/${slug}`, newestDate(dates, newsLastmod), true)),
-    ...Array.from(tagDates.entries())
-      .filter(([, dates]) => isIndexableNewsTaxonomy(dates.length))
-      .flatMap(([slug, dates]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate(dates, newsLastmod), true))
+    ...Array.from(categoryArticles.entries())
+      .filter(([, articles]) => isIndexableNewsTaxonomy(articles.size))
+      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/category/${slug}`, newestDate([...articles.values()], newsLastmod), true)),
+    ...Array.from(tagArticles.entries())
+      .filter(([, articles]) => isIndexableNewsTaxonomy(articles.size))
+      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate([...articles.values()], newsLastmod), true))
   ];
 
   return dedupeEntries([...pages, ...productEntries, ...newsEntries, ...blogEntries, ...categoryEntries]);

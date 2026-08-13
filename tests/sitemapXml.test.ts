@@ -9,6 +9,7 @@ import {
   xmlEscape,
   type SitemapEntry
 } from '../src/lib/sitemapXml';
+import {isIndexableNewsTaxonomy} from '../src/lib/newsFeed';
 
 function entry(index: number): SitemapEntry {
   return {
@@ -47,4 +48,14 @@ test('splits sitemap entries before the URL limit', () => {
 test('renders a valid sitemap index', () => {
   const xml = renderSitemapIndex([{url: 'https://www.zaihaisurfing.com/sitemaps/pages-1.xml', lastModified: '2026-07-08'}]);
   assert.equal(validateSitemapXml(xml, 'sitemapindex'), true);
+});
+
+test('news taxonomy requires three distinct articles before it can be submitted', () => {
+  const duplicateTagRecords = new Map<string, string>();
+  duplicateTagRecords.set('article-1', '2026-08-01');
+  duplicateTagRecords.set('article-1', '2026-08-01');
+  duplicateTagRecords.set('article-2', '2026-08-02');
+  assert.equal(isIndexableNewsTaxonomy(duplicateTagRecords.size), false);
+  duplicateTagRecords.set('article-3', '2026-08-03');
+  assert.equal(isIndexableNewsTaxonomy(duplicateTagRecords.size), true);
 });
