@@ -7,6 +7,9 @@ function cleanText(value: string) {
   return value
     .replace(/```[\s\S]*?```/g, '')
     .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<\/(p|div|h[1-6]|blockquote)>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/(\*\*|__|`)/g, '')
     .replace(/\r/g, '')
@@ -15,7 +18,9 @@ function cleanText(value: string) {
 
 function isHeading(value: string) {
   const match = value.match(/^#{1,3}\s+(.+)$/);
-  return match ? cleanText(match[1]) : '';
+  if (match) return cleanText(match[1]);
+  const plain = cleanText(value).replace(/:$/, '');
+  return /^(key )?takeaways?|introduction|overview|buyer context|selection factors|what to consider|next steps|conclusion|faq$/i.test(plain) ? plain : '';
 }
 
 function isListItem(value: string) {
@@ -30,6 +35,11 @@ export function editorialSections(content: string, fallbackHeading = 'Overview')
   const sections: EditorialSection[] = [];
   let heading = fallbackHeading;
   let lines: string[] = [];
+  const normalizedContent = content
+    .replace(/<(h[1-3])[^>]*>([\s\S]*?)<\/\1>/gi, (_match, _tag, headingText) => `\n## ${headingText}\n`)
+    .replace(/<\/(p|div|blockquote)>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n');
 
   const flush = () => {
     const paragraphs: string[] = [];
@@ -61,7 +71,7 @@ export function editorialSections(content: string, fallbackHeading = 'Overview')
     lines = [];
   };
 
-  for (const rawLine of content.replace(/```[\s\S]*?```/g, '').split('\n')) {
+  for (const rawLine of normalizedContent.replace(/```[\s\S]*?```/g, '').split('\n')) {
     const nextHeading = isHeading(rawLine.trim());
     if (nextHeading) {
       flush();

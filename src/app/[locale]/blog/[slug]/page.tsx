@@ -50,6 +50,7 @@ export default async function BlogArticlePage({
   setRequestLocale(locale);
 
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
+  const visibleTags = article.tags.slice(0, 3);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -67,51 +68,68 @@ export default async function BlogArticlePage({
   };
 
   return (
-    <main>
+    <main className="blog-detail-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />
-      <section className="news-detail-hero">
-        <div>
-          <Link href="/blog" className="text-link">Back to Blog</Link>
-          <p className="eyebrow">Buying Guide</p>
+      <section className="blog-detail-hero">
+        <div className="blog-hero-copy">
+          <Link href="/blog" className="blog-back-link">All buying guides</Link>
+          <p className="blog-kicker">{article.category}</p>
           <h1>{article.title}</h1>
-          <p>{article.excerpt}</p>
-          <div className="news-meta">
-            <time dateTime={article.date}>{article.date}</time>
-            <span>Updated {article.updatedAt}</span>
-            <span>{article.readTime}</span>
-            {article.tags.map((tag) => <span key={tag}>{tag}</span>)}
+          <p className="blog-deck">{article.excerpt}</p>
+          <div className="blog-meta">
+            <time dateTime={article.date}><b>Published</b>{article.date}</time>
+            <span><b>Reading time</b>{article.readTime}</span>
+            <span><b>Updated</b>{article.updatedAt}</span>
           </div>
+          {visibleTags.length ? <ul className="blog-topic-list" aria-label="Article topics">
+            {visibleTags.map((tag) => <li key={tag}>{tag}</li>)}
+          </ul> : null}
         </div>
-        <figure className="news-hero-figure">
-          <img src={article.hero} alt={article.heroAlt} />
-          <figcaption>
-            Image/source material: <a href={article.imageCredit.sourceUrl} target="_blank" rel="noreferrer">{article.imageCredit.publisher}</a>. {article.imageCredit.note}
-          </figcaption>
+        <figure className="blog-hero-figure">
+          <div className="blog-hero-media">
+            <img src={article.hero} alt={article.heroAlt} />
+          </div>
         </figure>
       </section>
-      <article className="news-article">
-        <section className="key-takeaways">
-          <h2>Key Takeaways</h2>
-          <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
-        </section>
-        <EditorialContent sections={article.body} />
-        <section className="product-fit-box">
-          <h2>How this connects to ZAIHAI products</h2>
-          <p>{article.productFit}</p>
-          <Link href="/products" className="button primary">View matching products</Link>
-        </section>
-        <section>
-          <h2>References</h2>
-          <ul className="source-list">
-            {article.sources.map((source) => (
-              <li key={source.url}>
-                <a href={source.url} target="_blank" rel="noreferrer">{source.name}: {source.title}</a>
-                <p>Published: {source.publishedDate}. Accessed: {source.accessedDate}. {source.note}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </article>
+      <div className="blog-reading-layout">
+        <aside className="blog-reading-rail" aria-label="Guide information">
+          <div className="blog-rail-card">
+            <p className="blog-rail-label">Guide details</p>
+            <dl>
+              <div><dt>Topic</dt><dd>{article.category}</dd></div>
+              <div><dt>Reading time</dt><dd>{article.readTime}</dd></div>
+              <div><dt>Published</dt><dd>{article.date}</dd></div>
+              <div><dt>Updated</dt><dd>{article.updatedAt}</dd></div>
+            </dl>
+          </div>
+        </aside>
+        <article className="blog-article">
+          <section className="blog-key-takeaways">
+            <p className="blog-section-kicker">At a glance</p>
+            <h2>Key takeaways</h2>
+            <ul>{article.keyTakeaways.map((item) => <li key={item}>{item}</li>)}</ul>
+          </section>
+          <EditorialContent sections={article.body} />
+          <section className="blog-product-context">
+            <p className="blog-section-kicker">Product context</p>
+            <h2>Explore suitable equipment</h2>
+            <p>{article.productFit}</p>
+            <Link href="/products" className="button primary">Explore products</Link>
+          </section>
+          {article.sources.length ? <section className="blog-references">
+            <p className="blog-section-kicker">References</p>
+            <h2>Sources used for this guide</h2>
+            <ul>
+              {article.sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} target="_blank" rel="noreferrer">{source.name}: {source.title}</a>
+                  <p>Published: {source.publishedDate}. Accessed: {source.accessedDate}. {source.note}</p>
+                </li>
+              ))}
+            </ul>
+          </section> : null}
+        </article>
+      </div>
     </main>
   );
 }

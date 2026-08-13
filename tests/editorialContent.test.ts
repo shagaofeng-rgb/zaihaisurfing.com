@@ -26,3 +26,11 @@ test('editorial content preserves headings and list blocks without exposing fenc
   assert.deepEqual(listItems(sections[0].paragraphs[1]), ['Check local rules', 'Brief every rider']);
   assert.equal(sections.flatMap((section) => section.paragraphs).join('\n').includes('script'), false);
 });
+
+test('editorial content separates HTML headings and paragraphs from publishing plugins', () => {
+  const sections = editorialSections('<h2>Selection factors</h2><p>Start with the operating environment.</p><p>Confirm local requirements before purchase.</p>');
+
+  assert.equal(sections.length, 1);
+  assert.equal(sections[0].heading, 'Selection factors');
+  assert.deepEqual(sections[0].paragraphs, ['Start with the operating environment.', 'Confirm local requirements before purchase.']);
+});
