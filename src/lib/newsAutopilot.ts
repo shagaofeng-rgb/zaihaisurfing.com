@@ -354,7 +354,7 @@ export function newsModelRuntimeConfig(env: NewsModelEnvironment = process.env) 
   const directKey = env.OPENAI_API_KEY || '';
   const gatewayKey = env.AI_GATEWAY_API_KEY || env.VERCEL_OIDC_TOKEN || '';
   if (directKey) return {apiKey: directKey, endpoint: 'https://api.openai.com/v1/chat/completions', model: env.NEWS_AUTOMATION_CONTENT_MODEL || 'gpt-4.1-mini'};
-  if (gatewayKey) return {apiKey: gatewayKey, endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions', model: env.NEWS_AUTOMATION_CONTENT_MODEL || 'openai/gpt-4.1-mini'};
+  if (gatewayKey) return {apiKey: gatewayKey, endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions', model: env.NEWS_AUTOMATION_CONTENT_MODEL || 'openai/gpt-5.4'};
   return null;
 }
 
@@ -364,7 +364,7 @@ async function resolveNewsModelRuntimeConfig() {
   if (process.env.VERCEL !== '1') return null;
   try {
     const oidcToken = await getVercelOidcToken();
-    return oidcToken ? {apiKey: oidcToken, endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions', model: process.env.NEWS_AUTOMATION_CONTENT_MODEL || 'openai/gpt-4.1-mini'} : null;
+    return oidcToken ? {apiKey: oidcToken, endpoint: 'https://ai-gateway.vercel.sh/v1/chat/completions', model: process.env.NEWS_AUTOMATION_CONTENT_MODEL || 'openai/gpt-5.4'} : null;
   } catch {
     return null;
   }
@@ -378,7 +378,7 @@ async function composeCandidate(site: NewsSiteConfig, candidate: NewsCandidate, 
     method: 'POST', headers: {'Content-Type': 'application/json', Authorization: `Bearer ${runtime.apiKey}`},
     body: JSON.stringify({model: runtime.model, response_format: {type: 'json_object'}, temperature: 0.2, messages: [{role: 'system', content: 'Return only valid JSON. Follow the supplied editorial and safety constraints.'}, {role: 'user', content: prompt}]}), cache: 'no-store'
   });
-  if (!response.ok) throw new Error(`Content model returned HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`Content model returned HTTP ${response.status}: ${(await response.text()).slice(0, 500)}`);
   const payload = await response.json() as {choices?: Array<{message?: {content?: string}}>};
   return jsonFromModel(payload.choices?.[0]?.message?.content || '');
 }

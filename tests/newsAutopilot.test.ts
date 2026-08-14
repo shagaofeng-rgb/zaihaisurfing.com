@@ -54,7 +54,7 @@ test('rejected candidates can be reevaluated after source or scoring repairs', (
 test('news composition can use Vercel AI Gateway OIDC without a stored OpenAI key', () => {
   const config = newsModelRuntimeConfig({VERCEL_OIDC_TOKEN: 'test-oidc-token'});
   assert.equal(config?.endpoint, 'https://ai-gateway.vercel.sh/v1/chat/completions');
-  assert.equal(config?.model, 'openai/gpt-4.1-mini');
+  assert.equal(config?.model, 'openai/gpt-5.4');
 });
 
 test('quality gate rejects promotional and under-length News copy', () => {
