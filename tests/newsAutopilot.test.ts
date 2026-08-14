@@ -33,6 +33,17 @@ test('candidate scoring rewards current authoritative in-scope material', () => 
   assert.ok(score >= site!.news.min_score);
 });
 
+test('candidate scoring recognizes current electric marine technology coverage', () => {
+  assert.ok(site);
+  const score = scoreNewsCandidate({
+    title: 'Marine manufacturers partner on electric yacht propulsion',
+    summary: 'The companies will develop battery-powered watercraft technology for marina operators and commercial fleets.',
+    publishedAt: new Date().toISOString(),
+    source: site!.sources.primary_whitelist[1]
+  });
+  assert.ok(score >= site!.news.min_score);
+});
+
 test('quality gate rejects promotional and under-length News copy', () => {
   const issues = validateDraft({
     title: 'Discounted electric surfboards for sale',

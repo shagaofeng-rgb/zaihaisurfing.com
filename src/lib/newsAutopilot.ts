@@ -202,18 +202,18 @@ function keywordMatches(value: string, keywords: string[]) {
 }
 function candidateTopics(value: string) {
   const topics: Array<[string, RegExp]> = [
-    ['Safety and Regulation', /safety|regulat|rule|standard|coast guard|permit|battery transport/i],
-    ['Marine Technology', /electric|battery|charging|technology|innovation/i],
-    ['Resort and Rental Operations', /resort|rental|marina|water park|tourism|operator/i],
-    ['Marine Industry', /boating|marine|water sports|boat show|recreational boating/i]
+    ['Safety and Regulation', /safety|regulat|rule|standard|coast guard|permit|battery transport|life jacket/i],
+    ['Marine Technology', /electric|battery|charging|technology|innovation|propulsion|watercraft/i],
+    ['Resort and Rental Operations', /resort|rental|marina|water park|tourism|operator|fleet/i],
+    ['Marine Industry', /boating|marine|water sports|boat show|recreational boating|yacht|vessel|manufacturer|dealer/i]
   ];
   return topics.filter(([, pattern]) => pattern.test(value)).map(([topic]) => topic);
 }
 
 export function scoreNewsCandidate(input: {title: string; summary: string; publishedAt: string; source: NewsSourceConfig}) {
   const text = `${input.title} ${input.summary}`;
-  const relevance = Math.min(30, keywordMatches(text, ['water', 'boating', 'boat', 'marine', 'resort', 'rental', 'marina', 'surf', 'battery', 'safety', 'regulation', 'recreational']) * 4);
-  const operational = Math.min(20, keywordMatches(text, ['safety', 'rule', 'regulation', 'standard', 'technology', 'battery', 'rental', 'resort', 'marina', 'operator']) * 3);
+  const relevance = Math.min(30, keywordMatches(text, ['water', 'watercraft', 'boating', 'boat', 'marine', 'yacht', 'vessel', 'resort', 'rental', 'marina', 'surf', 'electric', 'battery', 'propulsion', 'safety', 'regulation', 'recreational']) * 4);
+  const operational = Math.min(20, keywordMatches(text, ['safety', 'rule', 'regulation', 'standard', 'technology', 'innovation', 'electric', 'battery', 'propulsion', 'rental', 'resort', 'marina', 'operator', 'fleet', 'manufacturer', 'dealer']) * 3);
   const ageHours = Math.max(0, (Date.now() - Date.parse(input.publishedAt)) / 3600000);
   const freshness = ageHours <= 24 ? 15 : ageHours <= 72 ? 11 : ageHours <= 168 ? 6 : 0;
   const verifiability = Math.min(15, Math.round(input.source.source_trust_score * 0.15));

@@ -52,8 +52,8 @@
         {"domain": "marineindustrynews.co.uk", "type": "trade-media", "allowed_topics": ["marine industry", "boating", "water sports", "marinas", "marine technology"], "allowed_languages": ["en"], "rss_or_api_url": "https://marineindustrynews.co.uk/feed/", "source_trust_score": 85}
       ],
       "fallback_whitelist": [
-        {"domain": "boatindustry.com", "type": "trade-media", "allowed_topics": ["boating industry", "marine equipment", "water sports"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.boatindustry.com/feed/", "source_trust_score": 80},
-        {"domain": "rbaw.org", "type": "trade-association", "allowed_topics": ["recreational boating", "boating regulation", "water safety"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.rbaw.org/feed/", "source_trust_score": 80}
+        {"domain": "boatingindustry.com", "type": "trade-media", "allowed_topics": ["boating industry", "marine equipment", "water sports", "dealers"], "allowed_languages": ["en"], "rss_or_api_url": "https://boatingindustry.com/feed/", "source_trust_score": 80},
+        {"domain": "bia.org.au", "type": "trade-association", "allowed_topics": ["recreational boating", "marine industry", "water safety", "tourism"], "allowed_languages": ["en"], "rss_or_api_url": "https://bia.org.au/feed/", "source_trust_score": 85}
       ]
     },
     "publishing": {
