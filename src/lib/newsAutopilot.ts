@@ -236,8 +236,12 @@ function cycleId(site: NewsSiteConfig, timestamp = Date.now()) {
   return `${site.site_id}:${Math.floor(timestamp / (site.news.publish_interval_hours * 3600000))}`;
 }
 
+export function candidateStatusBlocksReevaluation(status: CandidateStatus) {
+  return status !== 'rejected';
+}
+
 function candidateDuplicate(candidate: NewsCandidate, existing: NewsCandidate[], existingPosts: ContentPost[]) {
-  if (existing.some((row) => row.urlHash === candidate.urlHash || row.titleHash === candidate.titleHash || row.summaryFingerprint === candidate.summaryFingerprint)) return true;
+  if (existing.some((row) => candidateStatusBlocksReevaluation(row.status) && (row.urlHash === candidate.urlHash || row.titleHash === candidate.titleHash || row.summaryFingerprint === candidate.summaryFingerprint))) return true;
   return existingPosts.some((post) => {
     const titleSimilarity = lexicalSimilarity(candidate.title, post.title);
     const sourceUrl = normalizeUrl(post.sourceUrl || post.source.match(/https?:\/\/\S+/)?.[0] || '');

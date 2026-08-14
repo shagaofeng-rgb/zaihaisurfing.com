@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {canPublishAt, lexicalSimilarity, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
 import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
 const site = defaultNewsSite();
@@ -42,6 +42,12 @@ test('candidate scoring recognizes current electric marine technology coverage',
     source: site!.sources.primary_whitelist[1]
   });
   assert.ok(score >= site!.news.min_score);
+});
+
+test('rejected candidates can be reevaluated after source or scoring repairs', () => {
+  assert.equal(candidateStatusBlocksReevaluation('rejected'), false);
+  assert.equal(candidateStatusBlocksReevaluation('candidate'), true);
+  assert.equal(candidateStatusBlocksReevaluation('used'), true);
 });
 
 test('quality gate rejects promotional and under-length News copy', () => {
