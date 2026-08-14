@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {BlobNotFoundError, get, put} from '@vercel/blob';
+import {BlobNotFoundError, del, get, put} from '@vercel/blob';
 
 type RedisResult<T> = {
   result?: T;
@@ -26,7 +26,7 @@ export function durableStoreStatus() {
 }
 
 export function durableStoreHasDistributedLock() {
-  return Boolean(KV_URL && KV_TOKEN);
+  return Boolean((KV_URL && KV_TOKEN) || BLOB_TOKEN);
 }
 
 function storeKey(fileName: string) {
@@ -69,9 +69,43 @@ async function kvPipeline<T>(commands: string[][]) {
   return payload.map((item) => item.result);
 }
 
-/** Redis-backed lease used by scheduled jobs that may execute in parallel. */
+type StoreLease = {token: string; expiresAt: number};
+
+async function readBlobLease(fileName: string) {
+  return safeJson<StoreLease>(await readBlobText(fileName));
+}
+
+async function createBlobLease(fileName: string, lease: StoreLease) {
+  try {
+    await put(blobPath(fileName), JSON.stringify(lease), {
+      access: 'private',
+      addRandomSuffix: false,
+      allowOverwrite: false,
+      contentType: 'application/json; charset=utf-8',
+      cacheControlMaxAge: 60,
+      token: BLOB_TOKEN
+    });
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/already exists|conflict|overwrite|409/i.test(message)) return false;
+    throw error;
+  }
+}
+
+/** Durable lease used by scheduled jobs that may execute in parallel. */
 export async function acquireStoreLock(name: string, token: string, ttlMs: number) {
   if (!durableStoreHasDistributedLock()) return false;
+  if (BLOB_TOKEN && !(KV_URL && KV_TOKEN)) {
+    const fileName = `lock-${name}.json`;
+    const lease = {token, expiresAt: Date.now() + Math.max(1_000, Math.floor(ttlMs))};
+    if (await createBlobLease(fileName, lease)) return true;
+
+    const existing = await readBlobLease(fileName);
+    if (!existing || existing.expiresAt > Date.now()) return false;
+    await del(blobPath(fileName), {token: BLOB_TOKEN});
+    return createBlobLease(fileName, lease);
+  }
   const [result] = await kvPipeline<string | null>([[
     'SET',
     storeKey(`lock-${name}`),
@@ -85,6 +119,13 @@ export async function acquireStoreLock(name: string, token: string, ttlMs: numbe
 
 export async function releaseStoreLock(name: string, token: string) {
   if (!durableStoreHasDistributedLock()) return false;
+  if (BLOB_TOKEN && !(KV_URL && KV_TOKEN)) {
+    const fileName = `lock-${name}.json`;
+    const existing = await readBlobLease(fileName);
+    if (existing?.token !== token) return false;
+    await del(blobPath(fileName), {token: BLOB_TOKEN});
+    return true;
+  }
   const script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
   const [result] = await kvPipeline<number>([['EVAL', script, '1', storeKey(`lock-${name}`), token]]);
   return Number(result) === 1;
@@ -117,6 +158,7 @@ async function readBlobText(fileName: string) {
 async function writeBlobText(fileName: string, text: string, contentType = 'text/plain; charset=utf-8') {
   await put(blobPath(fileName), text, {
     access: 'private',
+    addRandomSuffix: false,
     allowOverwrite: true,
     contentType,
     cacheControlMaxAge: 60,
