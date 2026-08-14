@@ -48,6 +48,7 @@ test('rejected candidates can be reevaluated after source or scoring repairs', (
   assert.equal(candidateStatusBlocksReevaluation('rejected'), false);
   assert.equal(candidateStatusBlocksReevaluation('candidate'), true);
   assert.equal(candidateStatusBlocksReevaluation('used'), true);
+  assert.equal(candidateStatusBlocksReevaluation('retry_pending', 2), false);
 });
 
 test('news composition can use Vercel AI Gateway OIDC without a stored OpenAI key', () => {
