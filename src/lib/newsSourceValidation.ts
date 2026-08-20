@@ -19,11 +19,12 @@ type QueueEntry = {
 export type SourceValidationRecord = {
   sourceId: string;
   checkedAt: string;
-  status: 'ready_for_review' | 'unsupported' | 'retry_pending' | 'skipped';
+  status: 'ready_for_review' | 'validating' | 'unsupported' | 'retry_pending' | 'skipped';
   feedUrl?: string;
   itemCount?: number;
   latestPublishedAt?: string;
   attempts: number;
+  successes?: number;
   error?: string;
 };
 
@@ -105,7 +106,7 @@ export async function runNewsSourceValidation(limit = 5) {
   const candidates = sourceOrder(hour % Math.max(1, queue.entries.filter((entry) => entry.mode !== 'signal-only').length))
     .filter((entry) => {
       const existing = state.records[entry.id];
-      return !existing || existing.status === 'retry_pending' || existing.status === 'unsupported';
+      return !existing || existing.status === 'validating' || existing.status === 'retry_pending' || existing.status === 'unsupported';
     })
     .slice(0, Math.max(1, Math.min(limit, 5)));
 
@@ -132,8 +133,10 @@ export async function runNewsSourceValidation(limit = 5) {
         unsupported += 1;
         continue;
       }
-      records[entry.id] = {sourceId: entry.id, checkedAt: now(), status: 'ready_for_review', feedUrl, itemCount: dates.length, latestPublishedAt: new Date(Math.max(...dates)).toISOString(), attempts: 0};
-      ready += 1;
+      const successes = (previous?.successes || 0) + 1;
+      const status = successes >= 3 ? 'ready_for_review' : 'validating';
+      records[entry.id] = {sourceId: entry.id, checkedAt: now(), status, feedUrl, itemCount: dates.length, latestPublishedAt: new Date(Math.max(...dates)).toISOString(), attempts: 0, successes};
+      if (status === 'ready_for_review') ready += 1;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Validation fetch failed.';
       records[entry.id] = {sourceId: entry.id, checkedAt: now(), status: attempts >= MAX_ATTEMPTS ? 'unsupported' : 'retry_pending', attempts, error: message.slice(0, 500)};
