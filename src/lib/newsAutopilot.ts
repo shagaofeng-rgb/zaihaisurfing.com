@@ -3,6 +3,7 @@ import {getVercelOidcToken} from '@vercel/oidc';
 import {listAdminPosts, writeAdminStore, type ContentPost} from '@/lib/backendStore';
 import {acquireStoreLock, durableStoreHasDistributedLock, durableStoreStatus, readStoreObject, releaseStoreLock, writeStoreObject} from '@/lib/durableStore';
 import {defaultNewsSite, getNewsSite, newsSites, type NewsSiteConfig, type NewsSourceConfig, validateNewsSiteConfig} from '@/lib/newsSiteConfig';
+import {getValidatedNewsSources} from '@/lib/newsSourceValidation';
 
 const STORE_FILE = 'news-automation-v3.json';
 const LOCK_TTL_MS = 20 * 60 * 1000;
@@ -309,7 +310,10 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
   if (!lock) return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'Another News ingest or publish task holds the site lock.', attempts: 0}, dryRun);
   try {
     const existingPosts = await listAdminPosts('news'); const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
-    const sources = rotatingSourceBatch(site.sources.primary_whitelist, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain])); let additions: NewsCandidate[] = []; let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
+    // A source is only promoted after the independent health worker has verified its feed on three checks.
+    const promotedSources = await getValidatedNewsSources(site.site_id);
+    const uniqueSources = [...new Map([...site.sources.primary_whitelist, ...promotedSources].map((source) => [source.domain.replace(/^www\./, '').toLowerCase(), source])).values()];
+    const sources = rotatingSourceBatch(uniqueSources, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain])); let additions: NewsCandidate[] = []; let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
     for (const source of sources) {
       let items: FeedItem[] = [];
       try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) { const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason); rejected += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${reason}`); continue; }
