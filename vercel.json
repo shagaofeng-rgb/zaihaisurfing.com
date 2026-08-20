@@ -13,6 +13,10 @@
       "schedule": "0 2 1 * *"
     },
     {
+      "path": "/api/cron/news-source-health",
+      "schedule": "15 1 * * *"
+    },
+    {
       "path": "/api/cron/news-ingest",
       "schedule": "0 */12 * * *"
     },
