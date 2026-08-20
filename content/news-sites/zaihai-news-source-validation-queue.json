@@ -1,0 +1,619 @@
+{
+  "schema_version": 1,
+  "site_id": "zaihai-global",
+  "purpose": "Phase-one source validation queue. Entries are not publishable until feed/API, robots, freshness, relevance, attribution and health checks pass.",
+  "rules": {
+    "automatic_publication_requires": [
+      "verified_feed_or_api",
+      "robots_and_terms_compatible",
+      "recent_timestamped_items",
+      "score_at_least_70",
+      "three_or_more_consecutive_fetches_without_failure",
+      "non_duplicative_industry_relevance"
+    ],
+    "community_sources": "signal-only",
+    "third_party_images": "never automatically republished"
+  },
+  "entries": [
+    {
+      "id": "wsl",
+      "name": "World Surf League",
+      "discovery_url": "https://www.worldsurfleague.com",
+      "source_type": "official-event",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "events",
+        "tourism"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "isa",
+      "name": "International Surfing Association",
+      "discovery_url": "https://isasurf.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "standards",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "surfing-australia",
+      "name": "Surfing Australia",
+      "discovery_url": "https://surfingaustralia.com",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "training",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "usa-surfing",
+      "name": "USA Surfing",
+      "discovery_url": "https://usasurfing.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "safety",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "global-sup-association",
+      "name": "Global SUP Association",
+      "discovery_url": "https://globalsupassociation.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "SUP",
+        "industry",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "icf-sup",
+      "name": "International Canoe Federation SUP",
+      "discovery_url": "https://www.canoeicf.com/stand-up-paddling",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "SUP",
+        "events",
+        "standards"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "world-foil-association",
+      "name": "World Foil Association",
+      "discovery_url": "https://worldfoilassociation.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "foil",
+        "technology",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "global-kitesports",
+      "name": "Global Kitesports Association",
+      "discovery_url": "https://www.globalkitesports.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "kiteboarding",
+        "foil",
+        "events"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "iwa",
+      "name": "International Windsurfing Association",
+      "discovery_url": "https://www.iwa-sports.org",
+      "source_type": "official-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "windsurfing",
+        "events",
+        "standards"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "olympic-surfing",
+      "name": "Olympic Surfing",
+      "discovery_url": "https://olympics.com/en/sports/surfing",
+      "source_type": "official-event",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "events",
+        "international"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "surfer",
+      "name": "Surfer",
+      "discovery_url": "https://www.surfer.com",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "equipment",
+        "culture"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "the-inertia",
+      "name": "The Inertia",
+      "discovery_url": "https://www.theinertia.com",
+      "source_type": "specialist-media",
+      "mode": "already-active",
+      "topics": [
+        "surfing",
+        "water sports",
+        "safety"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "sup-boarder",
+      "name": "SUP Boarder Magazine",
+      "discovery_url": "https://supboardermag.com",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "SUP",
+        "equipment",
+        "foil"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "surfline",
+      "name": "Surfline News",
+      "discovery_url": "https://www.surfline.com/surf-news",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "surfing",
+        "weather",
+        "destinations"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "foiling-magazine",
+      "name": "The Foiling Magazine",
+      "discovery_url": "https://thefoilingmagazine.com",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "foil",
+        "technology",
+        "equipment"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "sup-connect",
+      "name": "SUP Connect",
+      "discovery_url": "https://supconnect.com",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "SUP",
+        "equipment",
+        "industry"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "paddling-magazine",
+      "name": "Paddling Magazine",
+      "discovery_url": "https://paddlingmag.com",
+      "source_type": "specialist-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "paddling",
+        "SUP",
+        "equipment"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "boardsport-source",
+      "name": "Boardsport SOURCE",
+      "discovery_url": "https://www.boardsportsource.com",
+      "source_type": "b2b-media",
+      "mode": "already-active",
+      "topics": [
+        "boardsports",
+        "distribution",
+        "retail"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "watercraft-journal",
+      "name": "Watercraft Journal",
+      "discovery_url": "https://watercraftjournal.com",
+      "source_type": "specialist-media",
+      "mode": "already-active",
+      "topics": [
+        "personal watercraft",
+        "powered surfboards",
+        "safety"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "surfer-today",
+      "name": "Surfer Today",
+      "discovery_url": "https://www.surfertoday.com",
+      "source_type": "specialist-media",
+      "mode": "already-active",
+      "topics": [
+        "surfing",
+        "water sports",
+        "equipment"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "noaa-ocean-service",
+      "name": "NOAA Ocean Service",
+      "discovery_url": "https://oceanservice.noaa.gov",
+      "source_type": "government-science",
+      "mode": "publication-candidate",
+      "topics": [
+        "ocean safety",
+        "weather",
+        "coastal science"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "nws-marine",
+      "name": "National Weather Service Marine",
+      "discovery_url": "https://www.weather.gov/marine",
+      "source_type": "government-science",
+      "mode": "publication-candidate",
+      "topics": [
+        "marine weather",
+        "safety",
+        "warnings"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "copernicus-marine",
+      "name": "Copernicus Marine Service",
+      "discovery_url": "https://marine.copernicus.eu",
+      "source_type": "government-science",
+      "mode": "publication-candidate",
+      "topics": [
+        "ocean monitoring",
+        "climate",
+        "marine data"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "ocean-prediction-center",
+      "name": "NOAA Ocean Prediction Center",
+      "discovery_url": "https://www.opc.ncep.noaa.gov",
+      "source_type": "government-science",
+      "mode": "publication-candidate",
+      "topics": [
+        "marine weather",
+        "safety",
+        "waves"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "scripps",
+      "name": "Scripps Institution of Oceanography",
+      "discovery_url": "https://scripps.ucsd.edu",
+      "source_type": "research-institute",
+      "mode": "publication-candidate",
+      "topics": [
+        "ocean science",
+        "coastal research",
+        "climate"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "whoi",
+      "name": "Woods Hole Oceanographic Institution",
+      "discovery_url": "https://www.whoi.edu",
+      "source_type": "research-institute",
+      "mode": "publication-candidate",
+      "topics": [
+        "ocean science",
+        "marine technology",
+        "climate"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "wmo",
+      "name": "World Meteorological Organization",
+      "discovery_url": "https://wmo.int",
+      "source_type": "government-science",
+      "mode": "publication-candidate",
+      "topics": [
+        "weather",
+        "ocean",
+        "climate"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "marine-technology-society",
+      "name": "Marine Technology Society",
+      "discovery_url": "https://mtsociety.org",
+      "source_type": "trade-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "marine technology",
+        "engineering",
+        "innovation"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "composites-world",
+      "name": "CompositesWorld",
+      "discovery_url": "https://www.compositesworld.com",
+      "source_type": "materials-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "composites",
+        "manufacturing",
+        "marine materials"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "jec-group",
+      "name": "JEC Group",
+      "discovery_url": "https://www.jeccomposites.com",
+      "source_type": "trade-association",
+      "mode": "publication-candidate",
+      "topics": [
+        "composites",
+        "materials",
+        "manufacturing"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "reinforced-plastics",
+      "name": "Reinforced Plastics",
+      "discovery_url": "https://www.reinforcedplastics.com",
+      "source_type": "materials-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "composites",
+        "polymers",
+        "manufacturing"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "materials-today",
+      "name": "Materials Today",
+      "discovery_url": "https://www.materialstoday.com",
+      "source_type": "materials-media",
+      "mode": "publication-candidate",
+      "topics": [
+        "materials",
+        "batteries",
+        "engineering"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "surfrider",
+      "name": "Surfrider Foundation",
+      "discovery_url": "https://www.surfrider.org",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "coastal policy",
+        "water quality",
+        "surfing"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "sustainable-surf",
+      "name": "Sustainable Surf",
+      "discovery_url": "https://sustainablesurf.org",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "sustainable materials",
+        "surfing",
+        "ecoboard"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "ocean-conservancy",
+      "name": "Ocean Conservancy",
+      "discovery_url": "https://oceanconservancy.org",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "ocean conservation",
+        "plastic pollution",
+        "policy"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "ocean-cleanup",
+      "name": "The Ocean Cleanup",
+      "discovery_url": "https://theoceancleanup.com",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "marine technology",
+        "plastic pollution",
+        "sustainability"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "save-the-waves",
+      "name": "Save The Waves Coalition",
+      "discovery_url": "https://www.savethewaves.org",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "coastal protection",
+        "surfing",
+        "policy"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "marine-conservation-society",
+      "name": "Marine Conservation Society",
+      "discovery_url": "https://www.mcsuk.org",
+      "source_type": "nonprofit",
+      "mode": "publication-candidate",
+      "topics": [
+        "marine conservation",
+        "water quality",
+        "policy"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "reddit-surfing",
+      "name": "Reddit r/surfing",
+      "discovery_url": "https://www.reddit.com/r/surfing",
+      "source_type": "community",
+      "mode": "signal-only",
+      "topics": [
+        "consumer sentiment",
+        "surfing",
+        "topic discovery"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    },
+    {
+      "id": "reddit-paddleboarding",
+      "name": "Reddit r/Paddleboarding",
+      "discovery_url": "https://www.reddit.com/r/Paddleboarding",
+      "source_type": "community",
+      "mode": "signal-only",
+      "topics": [
+        "consumer sentiment",
+        "SUP",
+        "topic discovery"
+      ],
+      "language": "en",
+      "status": "pending_validation",
+      "last_verified_at": null
+    }
+  ]
+}
