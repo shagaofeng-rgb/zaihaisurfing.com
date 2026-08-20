@@ -255,7 +255,10 @@ function candidateTooOld(candidate: NewsCandidate, site: NewsSiteConfig, fallbac
   return !Number.isFinite(publishedAt) || Date.now() - publishedAt > limit || publishedAt > Date.now() + 3600000;
 }
 function currentTheme(site: NewsSiteConfig, timestamp = new Date()) {
-  const day = timestamp.toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat('en', {timeZone: site.timezone, year: 'numeric', month: '2-digit', day: '2-digit'})
+    .formatToParts(timestamp)
+    .reduce<Record<string, string>>((result, part) => ({...result, [part.type]: part.value}), {});
+  const day = `${parts.year}-${parts.month}-${parts.day}`;
   const active = site.product_theme_plan.filter((theme) => theme.status === 'active' && theme.start_at <= day && theme.end_at >= day);
   return active.length ? active[Math.floor(timestamp.getTime() / (48 * 3600000)) % active.length] : null;
 }
@@ -310,6 +313,7 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
   if (!lock) return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'Another News ingest or publish task holds the site lock.', attempts: 0}, dryRun);
   try {
     const existingPosts = await listAdminPosts('news'); const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
+    if (!current.enabled) return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'News automation is paused in the admin state.', attempts: 0}, dryRun);
     // A source is only promoted after the independent health worker has verified its feed on three checks.
     const promotedSources = await getValidatedNewsSources(site.site_id);
     const uniqueSources = [...new Map([...site.sources.primary_whitelist, ...promotedSources].map((source) => [source.domain.replace(/^www\./, '').toLowerCase(), source])).values()];
@@ -467,6 +471,7 @@ export async function runNewsPublish(siteId = defaultNewsSite()?.site_id || '', 
   if (!lock) return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'Another News ingest or publish task holds the site lock.', attempts: 0}, dryRun);
   try {
     const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
+    if (!current.enabled) return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'News automation is paused in the admin state.', attempts: 0}, dryRun);
     if (!canPublishAt(current.lastPublishedAt, Date.now(), site.news.publish_interval_hours)) return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'skipped', candidateCount: current.candidates.filter((item) => item.status === 'candidate').length, rejectedCount: 0, reason: `The ${site.news.publish_interval_hours}-hour publication interval has not elapsed.`, attempts: 0}, dryRun);
     let selectionState = current;
     let candidate = chooseCandidate(site, selectionState);
