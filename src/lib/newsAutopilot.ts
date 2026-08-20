@@ -430,8 +430,8 @@ export function validateDraft(draft: Pick<ComposedNews, 'title' | 'excerpt' | 'c
   return issues;
 }
 
-function chooseCandidate(site: NewsSiteConfig, state: SiteNewsState) {
-  const eligible = (candidate: NewsCandidate) => (candidate.status === 'candidate' || (candidate.status === 'retry_pending' && (candidate.attempts || 0) < 2));
+function chooseCandidate(site: NewsSiteConfig, state: SiteNewsState, excludedCandidateIds = new Set<string>()) {
+  const eligible = (candidate: NewsCandidate) => !excludedCandidateIds.has(candidate.id) && (candidate.status === 'candidate' || (candidate.status === 'retry_pending' && (candidate.attempts || 0) < 2));
   const current = state.candidates.filter((candidate) => eligible(candidate) && !candidateTooOld(candidate, site));
   const fallback = state.candidates.filter((candidate) => eligible(candidate) && candidateTooOld(candidate, site, false) === true && candidateTooOld(candidate, site, true) === false);
   const sorted = [...current, ...fallback].sort((a, b) => b.score - a.score || b.sourcePublishedAt.localeCompare(a.sourcePublishedAt));
@@ -486,35 +486,69 @@ export async function runNewsPublish(siteId = defaultNewsSite()?.site_id || '', 
     }
     const theme = currentTheme(site); if (!theme) return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'failed', candidateCount: 1, rejectedCount: 0, reason: 'No active product theme is configured.', attempts: 1}, dryRun);
     if (dryRun) return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'scheduled', candidateCount: 1, rejectedCount: 0, publishedSlug: slugify(candidate.title), reason: `Dry run selected ${candidate.sourceUrl}; no model, CMS, cache, sitemap or public write occurred.`, attempts: 0}, true);
-    const reserved = {...candidate, status: 'reserved_for_cycle' as const, reservedCycle: cycleId(site), updatedAt: now()};
-    const stateBeforeReserve = await readNewsAutopilotState();
-    const currentBeforeReserve = siteState(stateBeforeReserve, site.site_id);
-    await saveState(withSiteState(stateBeforeReserve, site.site_id, {...currentBeforeReserve, candidates: currentBeforeReserve.candidates.map((item) => item.id === candidate.id ? reserved : item)}));
-    let composed: ComposedNews;
-    try { composed = await composeCandidate(site, reserved, theme); } catch (error) { return failCandidate(site, reserved.id, startedAt, trigger, error, 'composing'); }
-    const qualityIssues = validateDraft(composed, site);
-    if (qualityIssues.length) return failCandidate(site, reserved.id, startedAt, trigger, new Error(qualityIssues.join(' ')), 'preflight_validating');
-    const articleSlug = `${slugify(composed.title)}-${reserved.urlHash.slice(0, 8)}`;
-    const existingPosts = await listAdminPosts('news'); const existing = existingPosts.find((post) => post.slug === articleSlug || post.contentFingerprint === reserved.summaryFingerprint);
-    const usedImages = new Set(existingPosts.filter((post) => post.siteId === site.site_id).map((post) => post.coverImage));
-    const coverImage = site.news.neutral_images.find((image) => !usedImages.has(image)) || site.news.neutral_images[0];
-    const article: ContentPost = {
-      id: existing?.id || `news-${crypto.randomUUID()}`, type: 'news', siteId: site.site_id, slug: existing?.slug || articleSlug, title: composed.title, excerpt: composed.excerpt, coverImage, coverImageSourceUrl: `${site.site_url}${coverImage}`, coverImagePageUrl: `${site.site_url}${coverImage}`, coverImageAlt: 'ZAIHAI-owned neutral editorial visual; not a depiction of the cited event.', coverImageStatus: 'illustrative', imageLicense: reserved.imageLicense, category: composed.category || reserved.topics[0] || 'Industry News', content: composed.content, publishDate: now().slice(0, 10), author: site.news.default_author_type, source: `${reserved.sourceName}: ${reserved.sourceUrl}`, sourceName: reserved.sourceName, sourceUrl: reserved.sourceUrl, sourcePublishedAt: reserved.sourcePublishedAt, sourceAuthor: reserved.sourceAuthor, sourceTitle: reserved.title, editorialDisclaimer: 'This News page is an independent editorial summary and analysis based on the original source. It does not republish the source article or claim that the cited event involved ZAIHAI.', contentFingerprint: reserved.summaryFingerprint, newsCandidateId: reserved.id, tags: composed.tags, seoTitle: composed.seoTitle, seoDescription: composed.seoDescription, status: 'published', createdAt: existing?.createdAt || now(), updatedAt: now()
-    };
-    await writeAdminStore((store) => ({...store, posts: existing ? store.posts.map((post) => post.id === existing.id ? article : post) : [...store.posts, article]}));
-    const delivery = await verifyFrontend(site, article);
-    const after = await readNewsAutopilotState(); const afterSite = siteState(after, site.site_id);
-    if (!delivery.passed) {
-      await writeAdminStore((store) => ({...store, posts: store.posts.map((post) => post.id === article.id ? {...post, status: 'draft', updatedAt: now()} : post)}));
-      const retryCandidate = {...reserved, status: 'retry_pending' as const, attempts: (reserved.attempts || 0) + 1, updatedAt: now()};
-      await saveState(withSiteState(after, site.site_id, {...afterSite, candidates: afterSite.candidates.map((item) => item.id === retryCandidate.id ? retryCandidate : item), deliveryChecks: [...afterSite.deliveryChecks, delivery]}));
-      await alert(site, 'News frontend verification failed', delivery.error || article.slug);
-      return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'retry_pending', candidateCount: 1, rejectedCount: 0, publishedSlug: article.slug, reason: delivery.error || 'Frontend verification failed.', attempts: 1}, false);
+
+    const attemptedCandidateIds = new Set<string>();
+    let lastFailure = 'No candidate could complete publication and frontend verification.';
+    for (let publicationAttempt = 1; candidate && publicationAttempt <= 3; publicationAttempt += 1) {
+      attemptedCandidateIds.add(candidate.id);
+      const reserved = {...candidate, status: 'reserved_for_cycle' as const, reservedCycle: cycleId(site), updatedAt: now()};
+      const stateBeforeReserve = await readNewsAutopilotState();
+      const currentBeforeReserve = siteState(stateBeforeReserve, site.site_id);
+      await saveState(withSiteState(stateBeforeReserve, site.site_id, {...currentBeforeReserve, candidates: currentBeforeReserve.candidates.map((item) => item.id === candidate!.id ? reserved : item)}));
+
+      let composed: ComposedNews;
+      try {
+        composed = await composeCandidate(site, reserved, theme);
+      } catch (error) {
+        lastFailure = error instanceof Error ? error.message : 'News composition failed.';
+        await markCandidateRetry(site, reserved.id, lastFailure);
+        selectionState = siteState(await readNewsAutopilotState(), site.site_id);
+        candidate = chooseCandidate(site, selectionState, attemptedCandidateIds);
+        continue;
+      }
+      const qualityIssues = validateDraft(composed, site);
+      if (qualityIssues.length) {
+        lastFailure = qualityIssues.join(' ');
+        await markCandidateRetry(site, reserved.id, lastFailure);
+        selectionState = siteState(await readNewsAutopilotState(), site.site_id);
+        candidate = chooseCandidate(site, selectionState, attemptedCandidateIds);
+        continue;
+      }
+
+      const articleSlug = `${slugify(composed.title)}-${reserved.urlHash.slice(0, 8)}`;
+      const existingPosts = await listAdminPosts('news');
+      const existing = existingPosts.find((post) => post.slug === articleSlug || post.contentFingerprint === reserved.summaryFingerprint);
+      const usedImages = new Set(existingPosts.filter((post) => post.siteId === site.site_id).map((post) => post.coverImage));
+      const coverImage = site.news.neutral_images.find((image) => !usedImages.has(image)) || site.news.neutral_images[0];
+      const article: ContentPost = {
+        id: existing?.id || `news-${crypto.randomUUID()}`, type: 'news', siteId: site.site_id, slug: existing?.slug || articleSlug, title: composed.title, excerpt: composed.excerpt, coverImage, coverImageSourceUrl: `${site.site_url}${coverImage}`, coverImagePageUrl: `${site.site_url}${coverImage}`, coverImageAlt: 'ZAIHAI-owned neutral editorial visual; not a depiction of the cited event.', coverImageStatus: 'illustrative', imageLicense: reserved.imageLicense, category: composed.category || reserved.topics[0] || 'Industry News', content: composed.content, publishDate: now().slice(0, 10), author: site.news.default_author_type, source: `${reserved.sourceName}: ${reserved.sourceUrl}`, sourceName: reserved.sourceName, sourceUrl: reserved.sourceUrl, sourcePublishedAt: reserved.sourcePublishedAt, sourceAuthor: reserved.sourceAuthor, sourceTitle: reserved.title, editorialDisclaimer: 'This News page is an independent editorial summary and analysis based on the original source. It does not republish the source article or claim that the cited event involved ZAIHAI.', contentFingerprint: reserved.summaryFingerprint, newsCandidateId: reserved.id, tags: composed.tags, seoTitle: composed.seoTitle, seoDescription: composed.seoDescription, status: 'published', createdAt: existing?.createdAt || now(), updatedAt: now()
+      };
+      await writeAdminStore((store) => ({...store, posts: existing ? store.posts.map((post) => post.id === existing.id ? article : post) : [...store.posts, article]}));
+      const delivery = await verifyFrontend(site, article);
+      if (!delivery.passed) {
+        lastFailure = delivery.error || 'Frontend verification failed.';
+        await writeAdminStore((store) => ({...store, posts: store.posts.map((post) => post.id === article.id ? {...post, status: 'draft', updatedAt: now()} : post)}));
+        await markCandidateRetry(site, reserved.id, lastFailure);
+        const afterFailure = await readNewsAutopilotState(); const afterFailureSite = siteState(afterFailure, site.site_id);
+        await saveState(withSiteState(afterFailure, site.site_id, {...afterFailureSite, deliveryChecks: [...afterFailureSite.deliveryChecks, delivery]}));
+        await alert(site, 'News frontend verification failed', lastFailure);
+        selectionState = siteState(await readNewsAutopilotState(), site.site_id);
+        candidate = chooseCandidate(site, selectionState, attemptedCandidateIds);
+        continue;
+      }
+      const after = await readNewsAutopilotState(); const afterSite = siteState(after, site.site_id);
+      const used = {...reserved, status: 'used' as const, usedArticleId: article.id, updatedAt: now()};
+      await saveState(withSiteState(after, site.site_id, {...afterSite, lastPublishedAt: now(), candidates: afterSite.candidates.map((item) => item.id === used.id ? used : item), deliveryChecks: [...afterSite.deliveryChecks, delivery], audit: [...afterSite.audit, {at: now(), action: 'published-success', detail: `${article.slug} passed frontend delivery verification.`}]}));
+      return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'published_success', candidateCount: 1, rejectedCount: publicationAttempt - 1, publishedSlug: article.slug, reason: 'News was published and verified on the public list, detail page, sitemap and RSS.', attempts: publicationAttempt}, false);
     }
-    const used = {...reserved, status: 'used' as const, usedArticleId: article.id, updatedAt: now()};
-    await saveState(withSiteState(after, site.site_id, {...afterSite, lastPublishedAt: now(), candidates: afterSite.candidates.map((item) => item.id === used.id ? used : item), deliveryChecks: [...afterSite.deliveryChecks, delivery], audit: [...afterSite.audit, {at: now(), action: 'published-success', detail: `${article.slug} passed frontend delivery verification.`}]}));
-    return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'published_success', candidateCount: 1, rejectedCount: 0, publishedSlug: article.slug, reason: 'News was published and verified on the public list, detail page, sitemap and RSS.', attempts: 1}, false);
+    await alert(site, 'News publish retry pending', lastFailure);
+    return recordRun(site, {kind: 'publish', trigger, startedAt, status: 'retry_pending', candidateCount: attemptedCandidateIds.size, rejectedCount: attemptedCandidateIds.size, reason: lastFailure, attempts: attemptedCandidateIds.size}, false);
   } finally { if (!dryRun && lock !== 'dry-run') await releaseLock(site.site_id, lock); }
+}
+
+async function markCandidateRetry(site: NewsSiteConfig, candidateId: string, reason: string) {
+  const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
+  await saveState(withSiteState(state, site.site_id, {...current, candidates: current.candidates.map((candidate) => candidate.id === candidateId ? {...candidate, status: 'retry_pending', attempts: (candidate.attempts || 0) + 1, updatedAt: now(), rejectReason: reason} : candidate)}));
 }
 
 async function failCandidate(site: NewsSiteConfig, candidateId: string, startedAt: string, trigger: 'cron' | 'manual', error: unknown, phase: string) {
