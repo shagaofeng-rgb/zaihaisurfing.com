@@ -199,6 +199,12 @@ function normalizeUrl(value: string) {
 function sourceMatches(url: string, source: NewsSourceConfig) {
   try { return new URL(url).hostname.toLowerCase().replace(/^www\./, '') === source.domain.toLowerCase().replace(/^www\./, ''); } catch { return false; }
 }
+function rotatingSourceBatch(sources: NewsSourceConfig[], intervalHours: number, maxSources = 6) {
+  if (sources.length <= maxSources) return sources;
+  const cycle = Math.floor(Date.now() / (Math.max(1, intervalHours) * 60 * 60 * 1000));
+  const offset = cycle % sources.length;
+  return [...sources.slice(offset), ...sources.slice(0, offset)].slice(0, maxSources);
+}
 function keywordMatches(value: string, keywords: string[]) {
   const lower = value.toLowerCase(); return keywords.filter((keyword) => lower.includes(keyword)).length;
 }
@@ -252,7 +258,7 @@ function candidateDuplicate(candidate: NewsCandidate, existing: NewsCandidate[],
 }
 
 async function fetchFeed(source: NewsSourceConfig) {
-  const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 10_000);
+  const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 7_000);
   try {
     const response = await fetch(source.rss_or_api_url, {headers: {'User-Agent': 'ZAIHAI-News-Ingest/3.0 (+https://www.zaihaisurfing.com)'}, cache: 'no-store', signal: controller.signal});
     if (!response.ok) throw new Error(`Source returned HTTP ${response.status}`);
@@ -285,7 +291,7 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
   if (!lock) return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'Another News ingest or publish task holds the site lock.', attempts: 0}, dryRun);
   try {
     const existingPosts = await listAdminPosts('news'); const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
-    const sources = site.sources.primary_whitelist; let additions: NewsCandidate[] = []; let rejected = 0;
+    const sources = rotatingSourceBatch(site.sources.primary_whitelist, site.news.ingest_interval_hours); let additions: NewsCandidate[] = []; let rejected = 0;
     for (const source of sources) {
       let items: FeedItem[] = [];
       try { items = await fetchFeed(source); } catch (error) { rejected += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${error instanceof Error ? error.message : 'fetch failed'}`); continue; }
@@ -318,7 +324,7 @@ async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string
   const existingPosts = await listAdminPosts('news');
   const additions: NewsCandidate[] = [];
   let rejected = 0;
-  for (const source of site.sources.fallback_whitelist) {
+  for (const source of rotatingSourceBatch(site.sources.fallback_whitelist, site.news.ingest_interval_hours)) {
     let items: FeedItem[] = [];
     try { items = await fetchFeed(source); } catch (error) {
       rejected += 1;
