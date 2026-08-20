@@ -55,6 +55,13 @@ export type NewsAutomationRun = {
   attempts: number;
 };
 
+export type SourceHealth = {
+  lastCheckedAt: string;
+  lastSuccessAt?: string;
+  consecutiveFailures: number;
+  status: 'healthy' | 'degraded' | 'disabled';
+  lastError?: string;
+};
 export type NewsDeliveryCheck = {
   id: string;
   siteId: string;
@@ -76,6 +83,7 @@ type SiteNewsState = {
   candidates: NewsCandidate[];
   runs: NewsAutomationRun[];
   deliveryChecks: NewsDeliveryCheck[];
+  sourceHealth?: Record<string, SourceHealth>;
   audit: Array<{at: string; action: string; detail: string}>;
 };
 
@@ -205,6 +213,16 @@ function rotatingSourceBatch(sources: NewsSourceConfig[], intervalHours: number,
   const offset = cycle % sources.length;
   return [...sources.slice(offset), ...sources.slice(0, offset)].slice(0, maxSources);
 }
+function sourceAvailable(health?: SourceHealth) {
+  if (!health || health.consecutiveFailures < 3) return true;
+  const lastChecked = Date.parse(health.lastCheckedAt);
+  return !Number.isFinite(lastChecked) || Date.now() - lastChecked >= 7 * 24 * 60 * 60 * 1000;
+}
+function updateSourceHealth(previous: SourceHealth | undefined, succeeded: boolean, error?: string): SourceHealth {
+  if (succeeded) return {lastCheckedAt: now(), lastSuccessAt: now(), consecutiveFailures: 0, status: 'healthy'};
+  const consecutiveFailures = (previous?.consecutiveFailures || 0) + 1;
+  return {lastCheckedAt: now(), lastSuccessAt: previous?.lastSuccessAt, consecutiveFailures, status: consecutiveFailures >= 3 ? 'disabled' : 'degraded', lastError: error?.slice(0, 500) || 'Source fetch failed.'};
+}
 function keywordMatches(value: string, keywords: string[]) {
   const lower = value.toLowerCase(); return keywords.filter((keyword) => lower.includes(keyword)).length;
 }
@@ -291,10 +309,10 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
   if (!lock) return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'skipped', candidateCount: 0, rejectedCount: 0, reason: 'Another News ingest or publish task holds the site lock.', attempts: 0}, dryRun);
   try {
     const existingPosts = await listAdminPosts('news'); const state = await readNewsAutopilotState(); const current = siteState(state, site.site_id);
-    const sources = rotatingSourceBatch(site.sources.primary_whitelist, site.news.ingest_interval_hours); let additions: NewsCandidate[] = []; let rejected = 0;
+    const sources = rotatingSourceBatch(site.sources.primary_whitelist, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain])); let additions: NewsCandidate[] = []; let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
     for (const source of sources) {
       let items: FeedItem[] = [];
-      try { items = await fetchFeed(source); } catch (error) { rejected += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${error instanceof Error ? error.message : 'fetch failed'}`); continue; }
+      try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) { const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason); rejected += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${reason}`); continue; }
       for (const item of items.slice(0, 25)) {
         const normalizedUrl = normalizeUrl(item.url);
         const candidate: NewsCandidate = {
@@ -311,7 +329,7 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
         candidate.status = 'candidate'; additions.push(candidate);
       }
     }
-    const next: SiteNewsState = {...current, lastIngestAt: now(), candidates: [...current.candidates, ...additions], audit: [...current.audit, {at: now(), action: 'ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} candidates accepted; ${rejected} rejected.`}]};
+    const next: SiteNewsState = {...current, lastIngestAt: now(), candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} candidates accepted; ${rejected} rejected.`}]};
     if (!dryRun) await saveState(withSiteState(state, site.site_id, next));
     return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'completed', candidateCount: additions.filter((item) => item.status === 'candidate').length, rejectedCount: rejected, reason: 'Ingest only: no LLM, CMS, sitemap, RSS or public publishing call was made.', attempts: 1}, dryRun);
   } finally { if (!dryRun && lock !== 'dry-run') await releaseLock(site.site_id, lock); }
@@ -323,12 +341,13 @@ async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string
   const current = siteState(state, site.site_id);
   const existingPosts = await listAdminPosts('news');
   const additions: NewsCandidate[] = [];
-  let rejected = 0;
-  for (const source of rotatingSourceBatch(site.sources.fallback_whitelist, site.news.ingest_interval_hours)) {
+  let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
+  for (const source of rotatingSourceBatch(site.sources.fallback_whitelist, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain]))) {
     let items: FeedItem[] = [];
-    try { items = await fetchFeed(source); } catch (error) {
+    try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) {
+      const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason);
       rejected += 1;
-      await appendAudit(site.site_id, 'fallback-source-health-failed', `${source.domain}: ${error instanceof Error ? error.message : 'fetch failed'}`);
+      await appendAudit(site.site_id, 'fallback-source-health-failed', `${source.domain}: ${reason}`);
       continue;
     }
     for (const item of items.slice(0, 25)) {
@@ -347,7 +366,7 @@ async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string
       candidate.status = 'candidate'; additions.push(candidate);
     }
   }
-  const next: SiteNewsState = {...current, candidates: [...current.candidates, ...additions], audit: [...current.audit, {at: now(), action: 'fallback-ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} fallback candidates accepted; ${rejected} rejected.`}]};
+  const next: SiteNewsState = {...current, candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'fallback-ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} fallback candidates accepted; ${rejected} rejected.`}]};
   await saveState(withSiteState(state, site.site_id, next));
   return next;
 }
