@@ -1,5 +1,6 @@
 import rawQueue from '../../content/news-sites/zaihai-news-source-validation-queue.json';
 import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import type {NewsSourceConfig} from '@/lib/newsSiteConfig';
 
 const STORE_FILE = 'news-source-validation-v1.json';
 const MAX_ATTEMPTS = 3;
@@ -103,12 +104,16 @@ export async function readNewsSourceValidationState(): Promise<ValidationState> 
 export async function runNewsSourceValidation(limit = 5) {
   const state = await readNewsSourceValidationState();
   const hour = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
-  const candidates = sourceOrder(hour % Math.max(1, queue.entries.filter((entry) => entry.mode !== 'signal-only').length))
-    .filter((entry) => {
-      const existing = state.records[entry.id];
-      return !existing || existing.status === 'validating' || existing.status === 'retry_pending' || existing.status === 'unsupported';
-    })
-    .slice(0, Math.max(1, Math.min(limit, 5)));
+  const ordered = sourceOrder(hour % Math.max(1, queue.entries.filter((entry) => entry.mode !== 'signal-only').length));
+  const readyForAnotherCheck = ordered.filter((entry) => {
+    const existing = state.records[entry.id];
+    return existing?.status === 'validating' || (existing?.status === 'retry_pending' && existing.attempts < MAX_ATTEMPTS);
+  });
+  const notYetChecked = ordered.filter((entry) => {
+    const existing = state.records[entry.id];
+    return !existing || (existing.status === 'unsupported' && existing.attempts < MAX_ATTEMPTS);
+  });
+  const candidates = [...readyForAnotherCheck, ...notYetChecked].slice(0, Math.max(1, Math.min(limit, 5)));
 
   const records = {...state.records};
   let ready = 0;
@@ -151,4 +156,35 @@ export async function runNewsSourceValidation(limit = 5) {
   };
   await writeStoreObject(STORE_FILE, next);
   return {checked: candidates.length, ready, unsupported, retryPending, records: candidates.map((entry) => records[entry.id])};
+}
+
+function trustScore(type: string) {
+  if (type === 'official-association' || type === 'official-event' || type === 'government-science') return 92;
+  if (type === 'research-institute' || type === 'trade-association') return 88;
+  if (type === 'b2b-media' || type === 'materials-media' || type === 'specialist-media') return 80;
+  if (type === 'nonprofit') return 76;
+  return 72;
+}
+
+export async function getValidatedNewsSources(siteId: string): Promise<NewsSourceConfig[]> {
+  if (siteId !== 'zaihai-global') return [];
+  const state = await readNewsSourceValidationState();
+  return queue.entries.flatMap((entry) => {
+    if (entry.mode === 'signal-only') return [];
+    const record = state.records[entry.id];
+    if (record?.status !== 'ready_for_review' || !record.feedUrl) return [];
+    try {
+      const domain = new URL(entry.discovery_url).hostname.replace(/^www\\./, '');
+      return [{
+        domain,
+        type: entry.source_type,
+        allowed_topics: entry.topics,
+        allowed_languages: [entry.language],
+        rss_or_api_url: record.feedUrl,
+        source_trust_score: trustScore(entry.source_type)
+      }];
+    } catch {
+      return [];
+    }
+  });
 }
