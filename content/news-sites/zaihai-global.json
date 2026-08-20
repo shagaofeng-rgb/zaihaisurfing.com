@@ -6,7 +6,12 @@
     "site_url": "https://www.zaihaisurfing.com",
     "industry": "commercial water sports equipment",
     "industry_scope": "Commercial electric surfboards, fuel-powered surfboards, electric go-kart boats, resort and rental operations, water parks, marinas, marine safety, boating regulation, lithium battery transport, distribution and OEM procurement. Excludes consumer gossip, celebrity coverage, unrelated shipping, political content and competitor promotions.",
-    "target_markets": ["US", "EU", "GCC", "Asia-Pacific"],
+    "target_markets": [
+      "US",
+      "EU",
+      "GCC",
+      "Asia-Pacific"
+    ],
     "publication_language": "en",
     "locale": "en-US",
     "timezone": "Asia/Manila",
@@ -16,7 +21,10 @@
       "detail_route_pattern": "/en/news/[slug]",
       "rss_route": "/news/rss.xml",
       "sitemap_route": "/news-sitemap.xml",
-      "desired_word_count": {"min": 700, "max": 1000},
+      "desired_word_count": {
+        "min": 700,
+        "max": 1000
+      },
       "ingest_interval_hours": 12,
       "publish_interval_hours": 48,
       "candidate_max_age_hours": 72,
@@ -40,20 +48,387 @@
       "allow_news_automation": false
     },
     "product_theme_plan": [
-      {"theme_id": "x1-resort-fleet", "product_url": "/en/products/x1", "product_name": "ZAIHAI X1 Electric Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
-      {"theme_id": "x1-pro-demo", "product_url": "/en/products/x1-pro", "product_name": "ZAIHAI X1 Pro Electric Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
-      {"theme_id": "rage-water-park", "product_url": "/en/products/rage-shark-x", "product_name": "Rage Shark X Electric Go-Kart Boat", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
-      {"theme_id": "p1-open-water", "product_url": "/en/products/p1", "product_name": "ZAIHAI P1 Fuel-Powered Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"},
-      {"theme_id": "p1-pro-adventure", "product_url": "/en/products/p1-pro", "product_name": "ZAIHAI P1 Pro Fuel-Powered Surfboard", "start_at": "2026-01-01", "end_at": "2027-12-31", "status": "active"}
+      {
+        "theme_id": "x1-resort-fleet",
+        "product_url": "/en/products/x1",
+        "product_name": "ZAIHAI X1 Electric Surfboard",
+        "start_at": "2026-01-01",
+        "end_at": "2027-12-31",
+        "status": "active"
+      },
+      {
+        "theme_id": "x1-pro-demo",
+        "product_url": "/en/products/x1-pro",
+        "product_name": "ZAIHAI X1 Pro Electric Surfboard",
+        "start_at": "2026-01-01",
+        "end_at": "2027-12-31",
+        "status": "active"
+      },
+      {
+        "theme_id": "rage-water-park",
+        "product_url": "/en/products/rage-shark-x",
+        "product_name": "Rage Shark X Electric Go-Kart Boat",
+        "start_at": "2026-01-01",
+        "end_at": "2027-12-31",
+        "status": "active"
+      },
+      {
+        "theme_id": "p1-open-water",
+        "product_url": "/en/products/p1",
+        "product_name": "ZAIHAI P1 Fuel-Powered Surfboard",
+        "start_at": "2026-01-01",
+        "end_at": "2027-12-31",
+        "status": "active"
+      },
+      {
+        "theme_id": "p1-pro-adventure",
+        "product_url": "/en/products/p1-pro",
+        "product_name": "ZAIHAI P1 Pro Fuel-Powered Surfboard",
+        "start_at": "2026-01-01",
+        "end_at": "2027-12-31",
+        "status": "active"
+      }
     ],
     "sources": {
       "primary_whitelist": [
-        {"domain": "news.uscg.mil", "type": "regulator", "allowed_topics": ["boating safety", "recreational boating", "water safety", "marine regulation"], "allowed_languages": ["en"], "rss_or_api_url": "https://www.news.uscg.mil/RSS/", "source_trust_score": 95},
-        {"domain": "marineindustrynews.co.uk", "type": "trade-media", "allowed_topics": ["marine industry", "boating", "water sports", "marinas", "marine technology"], "allowed_languages": ["en"], "rss_or_api_url": "https://marineindustrynews.co.uk/feed/", "source_trust_score": 85}
+        {
+          "domain": "news.uscg.mil",
+          "type": "regulator",
+          "allowed_topics": [
+            "boating safety",
+            "recreational boating",
+            "water safety",
+            "marine regulation",
+            "vessel operations"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.news.uscg.mil/RSS/",
+          "source_trust_score": 95
+        },
+        {
+          "domain": "marineindustrynews.co.uk",
+          "type": "trade-media",
+          "allowed_topics": [
+            "marine industry",
+            "boating",
+            "water sports",
+            "marinas",
+            "marine technology"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://marineindustrynews.co.uk/feed/",
+          "source_trust_score": 90
+        },
+        {
+          "domain": "boatingindustry.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "boating industry",
+            "marine equipment",
+            "water sports",
+            "dealers",
+            "recreational boating"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://boatingindustry.com/feed/",
+          "source_trust_score": 88
+        },
+        {
+          "domain": "blooloop.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "water parks",
+            "resort operations",
+            "tourism attractions",
+            "leisure technology",
+            "guest experience"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://blooloop.com/feed/",
+          "source_trust_score": 88
+        },
+        {
+          "domain": "theinertia.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "surfing",
+            "water sports",
+            "foil technology",
+            "outdoor equipment",
+            "marine safety"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.theinertia.com/feed/",
+          "source_trust_score": 82
+        },
+        {
+          "domain": "cleantechnica.com",
+          "type": "technology-media",
+          "allowed_topics": [
+            "electric watercraft",
+            "marine electrification",
+            "battery technology",
+            "clean propulsion",
+            "energy storage"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://cleantechnica.com/feed/",
+          "source_trust_score": 82
+        },
+        {
+          "domain": "electrek.co",
+          "type": "technology-media",
+          "allowed_topics": [
+            "electric watercraft",
+            "marine electrification",
+            "battery technology",
+            "clean propulsion",
+            "electric mobility"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://electrek.co/feed/",
+          "source_trust_score": 80
+        },
+        {
+          "domain": "chargedevs.com",
+          "type": "technology-media",
+          "allowed_topics": [
+            "marine batteries",
+            "battery technology",
+            "electric propulsion",
+            "charging systems",
+            "energy storage"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://chargedevs.com/feed/",
+          "source_trust_score": 84
+        },
+        {
+          "domain": "newatlas.com",
+          "type": "technology-media",
+          "allowed_topics": [
+            "electric watercraft",
+            "water sports technology",
+            "marine innovation",
+            "electric propulsion",
+            "outdoor equipment"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://newatlas.com/feed/",
+          "source_trust_score": 82
+        },
+        {
+          "domain": "gearjunkie.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "water sports",
+            "outdoor equipment",
+            "surfing",
+            "foil technology",
+            "marine recreation"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://gearjunkie.com/feed",
+          "source_trust_score": 78
+        },
+        {
+          "domain": "outdoorsportswire.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "water sports",
+            "outdoor industry",
+            "equipment distribution",
+            "retail trends",
+            "trade events"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://outdoorsportswire.com/feed/",
+          "source_trust_score": 80
+        }
       ],
       "fallback_whitelist": [
-        {"domain": "boatingindustry.com", "type": "trade-media", "allowed_topics": ["boating industry", "marine equipment", "water sports", "dealers"], "allowed_languages": ["en"], "rss_or_api_url": "https://boatingindustry.com/feed/", "source_trust_score": 80},
-        {"domain": "bia.org.au", "type": "trade-association", "allowed_topics": ["recreational boating", "marine industry", "water safety", "tourism"], "allowed_languages": ["en"], "rss_or_api_url": "https://bia.org.au/feed/", "source_trust_score": 85}
+        {
+          "domain": "bia.org.au",
+          "type": "trade-association",
+          "allowed_topics": [
+            "recreational boating",
+            "marine industry",
+            "water safety",
+            "tourism",
+            "boat shows"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://bia.org.au/feed/",
+          "source_trust_score": 88
+        },
+        {
+          "domain": "watercraftjournal.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "personal watercraft",
+            "powered surfboards",
+            "water sports",
+            "marine equipment",
+            "recreational boating"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://watercraftjournal.com/feed/",
+          "source_trust_score": 78
+        },
+        {
+          "domain": "boardsportsource.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "boardsports",
+            "surfing",
+            "foil technology",
+            "equipment distribution",
+            "water sports retail"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.boardsportsource.com/feed/",
+          "source_trust_score": 78
+        },
+        {
+          "domain": "surfertoday.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "surfing",
+            "water sports",
+            "surf equipment",
+            "coastal safety",
+            "foil technology"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.surfertoday.com/rss",
+          "source_trust_score": 76
+        },
+        {
+          "domain": "hospitalitynet.org",
+          "type": "trade-media",
+          "allowed_topics": [
+            "resort operations",
+            "hotel technology",
+            "tourism",
+            "guest experience",
+            "water sports facilities"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.hospitalitynet.org/rss.xml",
+          "source_trust_score": 82
+        },
+        {
+          "domain": "iaapa.org",
+          "type": "trade-association",
+          "allowed_topics": [
+            "water parks",
+            "attractions",
+            "guest safety",
+            "leisure technology",
+            "tourism operations"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.iaapa.org/rss.xml",
+          "source_trust_score": 90
+        },
+        {
+          "domain": "outdoorindustry.org",
+          "type": "trade-association",
+          "allowed_topics": [
+            "outdoor industry",
+            "water sports",
+            "equipment distribution",
+            "trade events",
+            "sustainability"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://outdoorindustry.org/feed/",
+          "source_trust_score": 86
+        },
+        {
+          "domain": "eurosima.com",
+          "type": "trade-association",
+          "allowed_topics": [
+            "boardsports",
+            "surfing",
+            "water sports",
+            "equipment distribution",
+            "industry research"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.eurosima.com/feed/",
+          "source_trust_score": 82
+        },
+        {
+          "domain": "waterparks.org",
+          "type": "trade-association",
+          "allowed_topics": [
+            "water parks",
+            "water attractions",
+            "guest safety",
+            "tourism",
+            "leisure operations"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.waterparks.org/feed/",
+          "source_trust_score": 86
+        },
+        {
+          "domain": "marinebusinessworld.com",
+          "type": "trade-media",
+          "allowed_topics": [
+            "marine industry",
+            "water sports",
+            "marine technology",
+            "boating",
+            "trade events"
+          ],
+          "allowed_languages": [
+            "en"
+          ],
+          "rss_or_api_url": "https://www.marinebusinessworld.com/feed/",
+          "source_trust_score": 80
+        }
       ]
     },
     "publishing": {
