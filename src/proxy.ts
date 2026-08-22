@@ -4,6 +4,7 @@ import {routing} from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 const blockedCountries = new Set(['CN', 'IN']);
+const englishEditorialLocales = new Set(['es', 'fr', 'de', 'ar', 'pt', 'ru']);
 const crawlerUserAgentPattern = /\b(Googlebot(?:-Image|-News|-Video)?|GoogleOther(?:-Image|-Video)?|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
 
 export default function proxy(request: NextRequest) {
@@ -23,6 +24,19 @@ export default function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/api/webhook/send_article';
     return NextResponse.rewrite(url);
+  }
+
+  // News and Blog are currently authored in English only. Redirecting non-English
+  // route variants avoids exposing duplicate, noindex pages through language links.
+  const pathParts = request.nextUrl.pathname.split('/');
+  const isNonEnglishEditorialRoute =
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    englishEditorialLocales.has(pathParts[1]) &&
+    (pathParts[2] === 'news' || pathParts[2] === 'blog');
+  if (isNonEnglishEditorialRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/en/${pathParts.slice(2).join('/')}`;
+    return NextResponse.redirect(url, 308);
   }
 
   const userAgent = request.headers.get('user-agent') || '';

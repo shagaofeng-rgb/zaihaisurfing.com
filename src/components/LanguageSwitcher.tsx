@@ -5,6 +5,8 @@ import {localeNames, locales, type Locale} from '@/i18n/routing';
 
 export default function LanguageSwitcher({locale}: {locale: Locale}) {
   const pathname = usePathname();
+  const isEnglishOnlyEditorial = /^\/(?:en|es|fr|de|ar|pt|ru)\/(?:news|blog)(?:\/|$)/.test(pathname);
+  const availableLocales: readonly Locale[] = isEnglishOnlyEditorial ? ['en'] : locales;
 
   function saveLanguage(nextLocale: Locale) {
     try {
@@ -17,6 +19,9 @@ export default function LanguageSwitcher({locale}: {locale: Locale}) {
 
   function pathFor(nextLocale: Locale) {
     const parts = pathname.split('/');
+    if (isEnglishOnlyEditorial && locales.includes(parts[1] as Locale)) {
+      return `/en/${parts.slice(2).join('/')}`;
+    }
     if (locales.includes(parts[1] as Locale)) {
       parts[1] = nextLocale;
       return parts.join('/') || `/${nextLocale}`;
@@ -30,7 +35,7 @@ export default function LanguageSwitcher({locale}: {locale: Locale}) {
         <span>{locale.toUpperCase()}</span>
       </button>
       <div className="language-menu">
-        {locales.map((item) => (
+        {availableLocales.map((item) => (
           <a key={item} href={pathFor(item)} aria-current={item === locale ? 'page' : undefined} onClick={() => saveLanguage(item)}>
             <span>{item.toUpperCase()}</span>
             <strong>{localeNames[item]}</strong>
