@@ -59,7 +59,11 @@ export async function buildSitemapEntries() {
     getAllBlogArticles()
   ]);
 
-  const publicStaticPaths = pathnames.filter((path) => !String(path).startsWith('/products/'));
+  const englishOnlyEditorialPaths = new Set(['/news', '/blog']);
+  const publicStaticPaths = pathnames.filter((path) => {
+    const value = String(path);
+    return !value.startsWith('/products/') && !englishOnlyEditorialPaths.has(value);
+  });
   const pages = publicStaticPaths.flatMap((path) => localizedEntries('pages', String(path), STATIC_PAGE_LASTMOD));
 
   const newsLastmod = newestDate(newsArticles.map((article) => article.updatedAt || article.date), STATIC_PAGE_LASTMOD);
