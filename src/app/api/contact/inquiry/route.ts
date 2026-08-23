@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       id: eventId,
       type: 'contact_inquiry',
       visitorId: clean(payload.visitorId || 'contact-inquiry', 80),
-      sessionId: eventId,
+      sessionId: clean(payload.sessionId || eventId, 80),
       page: clean(payload.page || '/contact', 240),
       pageTitle: 'Contact inquiry',
       referrer: clean(payload.referrer, 240),
