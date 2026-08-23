@@ -5,6 +5,7 @@ export default function WhatsAppFloatingButton() {
   return (
     <a
       className="whatsapp-float"
+      data-whatsapp-placement="floating_widget"
       href={WHATSAPP_URL}
       target="_blank"
       rel="noopener noreferrer"
