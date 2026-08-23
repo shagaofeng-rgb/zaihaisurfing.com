@@ -39,6 +39,7 @@ const navSections = [
     items: [
       {key: 'analytics', label: '访问分析', href: '/admin/analytics'},
       {key: 'acquisition', label: '来源归因', href: '/admin/analytics/acquisition'},
+      {key: 'whatsapp', label: 'WhatsApp 点击', href: '/admin/analytics/whatsapp'},
       {key: 'funnel', label: '转化漏斗', href: '/admin/funnel'},
       {key: 'seo', label: 'SEO 数据', href: '/admin/seo'},
       {key: 'sync', label: '数据同步', href: '/admin/sync'},
