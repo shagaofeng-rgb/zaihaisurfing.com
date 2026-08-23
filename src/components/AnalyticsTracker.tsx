@@ -58,6 +58,29 @@ function safeLinkTarget(link: HTMLAnchorElement) {
   }
 }
 
+function whatsappPlacement(link: HTMLAnchorElement) {
+  const explicit = link.dataset.whatsappPlacement?.trim();
+  if (explicit) return explicit.slice(0, 80);
+  if (link.classList.contains('whatsapp-float')) return 'floating_widget';
+  if (link.classList.contains('mobile-header-whatsapp')) return 'mobile_header';
+  if (link.classList.contains('contact-whatsapp-link')) return 'contact_page';
+  return 'unmarked_link';
+}
+
+function productSlugFromPath(pathname: string) {
+  const match = pathname.match(/\/products\/([^/?#]+)/);
+  return match?.[1] || '';
+}
+
+function shouldTrackWhatsAppClick(placement: string, page: string) {
+  const key = `zaihai_whatsapp_click:${placement}:${page}`;
+  const previous = Number(window.sessionStorage.getItem(key) || 0);
+  const now = Date.now();
+  if (Number.isFinite(previous) && now - previous < 8_000) return false;
+  window.sessionStorage.setItem(key, String(now));
+  return true;
+}
+
 function readAttribution(visitorId: string, sessionId: string, page: string): AttributionSnapshot {
   const now = new Date().toISOString();
   const touch = classifyTraffic({
@@ -121,20 +144,43 @@ export default function AnalyticsTracker() {
       if (!link) return;
       const text = link.textContent?.trim().slice(0, 120) || '';
       const targetKind = safeLinkTarget(link);
-      if (/buy now|checkout|quote|whatsapp|get project quote|contact|send/i.test(text) || ['email', 'phone', 'whatsapp'].includes(targetKind)) {
-        const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
-        const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+      const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+      const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+      const page = window.location.pathname;
+      const attribution = readAttribution(visitorId, sessionId, page);
+
+      if (targetKind === 'whatsapp') {
+        const placement = whatsappPlacement(link);
+        if (!shouldTrackWhatsAppClick(placement, page)) return;
+        sendEvent({
+          type: 'whatsapp_click',
+          visitorId,
+          sessionId,
+          page,
+          pageTitle: document.title,
+          targetText: text || 'WhatsApp',
+          targetKind,
+          whatsappPlacement: placement,
+          productSlug: link.dataset.productSlug || productSlugFromPath(page),
+          language: document.documentElement.lang || navigator.language,
+          timestamp: new Date().toISOString(),
+          attribution
+        });
+        return;
+      }
+
+      if (/buy now|checkout|quote|get project quote|contact|send/i.test(text) || ['email', 'phone'].includes(targetKind)) {
         sendEvent({
           type: 'commerce_click',
           visitorId,
           sessionId,
-          page: window.location.pathname,
+          page,
           pageTitle: document.title,
           targetText: text,
           targetKind,
           language: document.documentElement.lang || navigator.language,
           timestamp: new Date().toISOString(),
-          attribution: readAttribution(visitorId, sessionId, window.location.pathname)
+          attribution
         });
       }
     }
