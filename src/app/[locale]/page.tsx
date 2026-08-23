@@ -34,7 +34,7 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
           </div>
           <a
             className="button primary"
-            href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0"
+            data-whatsapp-placement="home_hero" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0"
             target="_blank"
             rel="noopener noreferrer"
           >

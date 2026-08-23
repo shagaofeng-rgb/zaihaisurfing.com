@@ -28,7 +28,7 @@ export default async function Header({locale}: {locale: Locale}) {
         <span>ZAIHAI SURFING</span>
       </Link>
       <MobileMenu items={mobileNavItems} />
-      <a className="mobile-header-whatsapp" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+      <a className="mobile-header-whatsapp" data-whatsapp-placement="mobile_header" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
         WhatsApp
       </a>
       <Link className="mobile-header-quote" href="/contact">

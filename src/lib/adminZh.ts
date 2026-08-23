@@ -78,6 +78,7 @@ export function zhEventType(type: string) {
     page_view: '页面访问',
     product_view: '产品详情访问',
     commerce_click: '商业按钮点击',
+    whatsapp_click: 'WhatsApp 点击',
     checkout_start: '进入结账',
     checkout_submit: '提交结账',
     checkout_duplicate_submit: '重复提交拦截',

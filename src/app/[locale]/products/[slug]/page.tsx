@@ -248,7 +248,7 @@ export default async function ProductDetailPage({
             <a className="button dark" href={`/${locale}/contact`}>
               {copy.requestQuote}
             </a>
-            <a className="button ghost light" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+            <a className="button ghost light" data-whatsapp-placement="product_detail_cta" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
               {copy.whatsapp}
             </a>
             <a className="button ghost light" href={`/${locale}/contact`}>
