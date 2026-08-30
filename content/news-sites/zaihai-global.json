@@ -27,9 +27,10 @@
       },
       "ingest_interval_hours": 12,
       "publish_interval_hours": 48,
-      "candidate_max_age_hours": 72,
-      "fallback_candidate_max_age_days": 7,
-      "min_score": 70,
+      "candidate_max_age_hours": 120,
+      "fallback_candidate_max_age_days": 14,
+      "min_score": 58,
+      "fallback_min_score": 55,
       "max_internal_product_links": 1,
       "default_author_type": "Editorial Team",
       "neutral_images": [
@@ -92,22 +93,6 @@
     "sources": {
       "primary_whitelist": [
         {
-          "domain": "news.uscg.mil",
-          "type": "regulator",
-          "allowed_topics": [
-            "boating safety",
-            "recreational boating",
-            "water safety",
-            "marine regulation",
-            "vessel operations"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.news.uscg.mil/RSS/",
-          "source_trust_score": 95
-        },
-        {
           "domain": "marineindustrynews.co.uk",
           "type": "trade-media",
           "allowed_topics": [
@@ -156,22 +141,6 @@
           "source_trust_score": 88
         },
         {
-          "domain": "theinertia.com",
-          "type": "trade-media",
-          "allowed_topics": [
-            "surfing",
-            "water sports",
-            "foil technology",
-            "outdoor equipment",
-            "marine safety"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.theinertia.com/feed/",
-          "source_trust_score": 82
-        },
-        {
           "domain": "cleantechnica.com",
           "type": "technology-media",
           "allowed_topics": [
@@ -218,38 +187,6 @@
           ],
           "rss_or_api_url": "https://chargedevs.com/feed/",
           "source_trust_score": 84
-        },
-        {
-          "domain": "newatlas.com",
-          "type": "technology-media",
-          "allowed_topics": [
-            "electric watercraft",
-            "water sports technology",
-            "marine innovation",
-            "electric propulsion",
-            "outdoor equipment"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://newatlas.com/feed/",
-          "source_trust_score": 82
-        },
-        {
-          "domain": "gearjunkie.com",
-          "type": "trade-media",
-          "allowed_topics": [
-            "water sports",
-            "outdoor equipment",
-            "surfing",
-            "foil technology",
-            "marine recreation"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://gearjunkie.com/feed",
-          "source_trust_score": 78
         },
         {
           "domain": "outdoorsportswire.com",
@@ -318,38 +255,6 @@
           "source_trust_score": 78
         },
         {
-          "domain": "surfertoday.com",
-          "type": "trade-media",
-          "allowed_topics": [
-            "surfing",
-            "water sports",
-            "surf equipment",
-            "coastal safety",
-            "foil technology"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.surfertoday.com/rss",
-          "source_trust_score": 76
-        },
-        {
-          "domain": "hospitalitynet.org",
-          "type": "trade-media",
-          "allowed_topics": [
-            "resort operations",
-            "hotel technology",
-            "tourism",
-            "guest experience",
-            "water sports facilities"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.hospitalitynet.org/rss.xml",
-          "source_trust_score": 82
-        },
-        {
           "domain": "iaapa.org",
           "type": "trade-association",
           "allowed_topics": [
@@ -396,38 +301,6 @@
           ],
           "rss_or_api_url": "https://www.eurosima.com/feed/",
           "source_trust_score": 82
-        },
-        {
-          "domain": "waterparks.org",
-          "type": "trade-association",
-          "allowed_topics": [
-            "water parks",
-            "water attractions",
-            "guest safety",
-            "tourism",
-            "leisure operations"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.waterparks.org/feed/",
-          "source_trust_score": 86
-        },
-        {
-          "domain": "marinebusinessworld.com",
-          "type": "trade-media",
-          "allowed_topics": [
-            "marine industry",
-            "water sports",
-            "marine technology",
-            "boating",
-            "trade events"
-          ],
-          "allowed_languages": [
-            "en"
-          ],
-          "rss_or_api_url": "https://www.marinebusinessworld.com/feed/",
-          "source_trust_score": 80
         }
       ]
     },

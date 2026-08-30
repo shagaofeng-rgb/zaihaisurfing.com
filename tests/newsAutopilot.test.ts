@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, newsModelRuntimeConfig, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, newsModelRuntimeConfig, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
 import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
 const site = defaultNewsSite();
@@ -42,6 +42,33 @@ test('candidate scoring recognizes current electric marine technology coverage',
     source: site!.sources.primary_whitelist[1]
   });
   assert.ok(score >= site!.news.min_score);
+});
+
+test('News source thresholds preserve strict primary and separate fallback quality gates', () => {
+  assert.ok(site);
+  assert.equal(site!.news.candidate_max_age_hours, 120);
+  assert.equal(site!.news.fallback_candidate_max_age_days, 14);
+  assert.equal(site!.news.min_score, 58);
+  assert.equal(site!.news.fallback_min_score, 55);
+  assert.ok(site!.news.fallback_min_score <= site!.news.min_score);
+});
+
+test('active source pools exclude endpoints confirmed to return blocked or non-feed responses', () => {
+  assert.ok(site);
+  const domains = [...site!.sources.primary_whitelist, ...site!.sources.fallback_whitelist].map((source) => source.domain);
+  for (const inactive of ['news.uscg.mil', 'theinertia.com', 'newatlas.com', 'gearjunkie.com', 'surfertoday.com', 'hospitalitynet.org', 'waterparks.org', 'marinebusinessworld.com']) {
+    assert.equal(domains.includes(inactive), false);
+  }
+  assert.ok(site!.sources.primary_whitelist.length >= 6);
+  assert.ok(site!.sources.fallback_whitelist.length >= 5);
+});
+
+test('industry scope blocks generic EV and incident news while allowing commercial marine operations', () => {
+  assert.equal(candidateInIndustryScope('LG battery cells for grid storage and passenger EV production'), false);
+  assert.equal(candidateInIndustryScope('Stolen sailboat hunt ends in tragedy after police search'), false);
+  assert.equal(candidateInIndustryScope('Police investigation into stolen yacht tragedy includes a general safety reminder'), false);
+  assert.equal(candidateInIndustryScope('PWC market trends shape marina rental fleets and dealer planning'), true);
+  assert.equal(candidateInIndustryScope('Electric watercraft safety standard for resort operators'), true);
 });
 
 test('rejected candidates can be reevaluated after source or scoring repairs', () => {

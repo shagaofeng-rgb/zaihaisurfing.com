@@ -32,6 +32,7 @@ export type NewsSiteConfig = {
     candidate_max_age_hours: number;
     fallback_candidate_max_age_days: number;
     min_score: number;
+    fallback_min_score: number;
     max_internal_product_links: number;
     default_author_type: string;
     neutral_images: string[];
@@ -83,6 +84,7 @@ export function validateNewsSiteConfig(site: NewsSiteConfig) {
   if (!site.timezone || !site.publication_language) issues.push('timezone and publication_language are required.');
   if (!site.product_theme_plan.some((item) => item.status === 'active')) issues.push('At least one active product theme is required.');
   if (!site.sources.primary_whitelist.length || !site.sources.fallback_whitelist.length) issues.push('Primary and fallback source whitelists are required.');
+  if (site.news.min_score < 1 || site.news.fallback_min_score < 1 || site.news.fallback_min_score > site.news.min_score) issues.push('News score thresholds are invalid.');
   if (site.blog.allow_news_automation) issues.push('Blog must not allow News automation.');
   return issues;
 }

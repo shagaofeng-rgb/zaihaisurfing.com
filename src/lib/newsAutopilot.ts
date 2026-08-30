@@ -96,6 +96,7 @@ export type NewsAutomationState = {
 type FeedItem = {title: string; url: string; summary: string; publishedAt: string; author?: string};
 type ComposedNews = {title: string; excerpt: string; content: string; category: string; tags: string[]; seoTitle: string; seoDescription: string};
 type NewsModelEnvironment = Record<string, string | undefined>;
+type RejectionBreakdown = {sourceFetch: number; invalidOrStale: number; duplicate: number; belowThreshold: number};
 
 function now() { return new Date().toISOString(); }
 function hash(value: string) { return crypto.createHash('sha256').update(value).digest('hex'); }
@@ -217,7 +218,7 @@ function rotatingSourceBatch(sources: NewsSourceConfig[], intervalHours: number,
 function sourceAvailable(health?: SourceHealth) {
   if (!health || health.consecutiveFailures < 3) return true;
   const lastChecked = Date.parse(health.lastCheckedAt);
-  return !Number.isFinite(lastChecked) || Date.now() - lastChecked >= 7 * 24 * 60 * 60 * 1000;
+  return !Number.isFinite(lastChecked) || Date.now() - lastChecked >= 24 * 60 * 60 * 1000;
 }
 function updateSourceHealth(previous: SourceHealth | undefined, succeeded: boolean, error?: string): SourceHealth {
   if (succeeded) return {lastCheckedAt: now(), lastSuccessAt: now(), consecutiveFailures: 0, status: 'healthy'};
@@ -235,6 +236,13 @@ function candidateTopics(value: string) {
     ['Marine Industry', /boating|marine|water sports|boat show|recreational boating|yacht|vessel|manufacturer|dealer/i]
   ];
   return topics.filter(([, pattern]) => pattern.test(value)).map(([topic]) => topic);
+}
+
+export function candidateInIndustryScope(value: string) {
+  const marineContext = /watercraft|boating|\bboat(?:s|ing)?\b|marine|yacht|vessel|surf(?:ing|board)?|\bpwc\b|marina|water park|water sports?|ocean|coast guard/i.test(value);
+  const businessOrOperationalIntent = /electric|battery|charging|propulsion|safety|regulat|standard|resort|rental|operator|fleet|manufacturer|dealer|distribution|industry|technology|innovation|launch|market|tourism|attraction/i.test(value);
+  const offScopeIncident = /stolen|theft|police|tragedy|killed|fatal|death|celebrity|gossip/i.test(value);
+  return marineContext && businessOrOperationalIntent && !offScopeIncident;
 }
 
 export function scoreNewsCandidate(input: {title: string; summary: string; publishedAt: string; source: NewsSourceConfig}) {
@@ -284,8 +292,14 @@ async function fetchFeed(source: NewsSourceConfig) {
   try {
     const response = await fetch(source.rss_or_api_url, {headers: {'User-Agent': 'ZAIHAI-News-Ingest/3.0 (+https://www.zaihaisurfing.com)'}, cache: 'no-store', signal: controller.signal});
     if (!response.ok) throw new Error(`Source returned HTTP ${response.status}`);
-    return parseNewsFeed(await response.text());
+    const items = parseNewsFeed(await response.text());
+    if (!items.length) throw new Error('Source did not return a parseable RSS or Atom feed with dated items.');
+    return items;
   } finally { clearTimeout(timer); }
+}
+
+function rejectionSummary(accepted: number, rejected: number, breakdown: RejectionBreakdown, pool: 'primary' | 'primary+fallback') {
+  return `${accepted} candidates accepted from ${pool}; ${rejected} rejected (source fetch ${breakdown.sourceFetch}, invalid/stale ${breakdown.invalidOrStale}, duplicate ${breakdown.duplicate}, below threshold/topic/scope ${breakdown.belowThreshold}).`;
 }
 
 async function appendAudit(siteId: string, action: string, detail: string) {
@@ -318,9 +332,10 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
     const promotedSources = await getValidatedNewsSources(site.site_id);
     const uniqueSources = [...new Map([...site.sources.primary_whitelist, ...promotedSources].map((source) => [source.domain.replace(/^www\./, '').toLowerCase(), source])).values()];
     const sources = rotatingSourceBatch(uniqueSources, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain])); let additions: NewsCandidate[] = []; let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
+    const breakdown: RejectionBreakdown = {sourceFetch: 0, invalidOrStale: 0, duplicate: 0, belowThreshold: 0};
     for (const source of sources) {
       let items: FeedItem[] = [];
-      try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) { const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason); rejected += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${reason}`); continue; }
+      try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) { const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason); rejected += 1; breakdown.sourceFetch += 1; if (!dryRun) await appendAudit(site.site_id, 'source-health-failed', `${source.domain}: ${reason}`); continue; }
       for (const item of items.slice(0, 25)) {
         const normalizedUrl = normalizeUrl(item.url);
         const candidate: NewsCandidate = {
@@ -328,34 +343,46 @@ export async function runNewsIngest(siteId = defaultNewsSite()?.site_id || '', t
           urlHash: hash(normalizedUrl), title: compact(item.title, 220), titleHash: hash(compact(item.title, 220).toLowerCase()), summary: compact(item.summary, 2800), summaryFingerprint: hash(compact(item.summary, 2800).toLowerCase()), sourcePublishedAt: item.publishedAt, sourceAuthor: item.author, language: site.publication_language,
           topics: candidateTopics(`${item.title} ${item.summary}`), score: scoreNewsCandidate({title: item.title, summary: item.summary, publishedAt: item.publishedAt, source}), status: 'discovered', imageLicense: 'owned-neutral-illustration', createdAt: startedAt, updatedAt: startedAt
         };
-        if (!normalizedUrl || !sourceMatches(normalizedUrl, source) || candidateTooOld(candidate, site) || !candidate.summary) { rejected += 1; continue; }
+        if (!normalizedUrl || !sourceMatches(normalizedUrl, source) || candidateTooOld(candidate, site) || !candidate.summary) { rejected += 1; breakdown.invalidOrStale += 1; continue; }
         candidate.status = 'normalized';
-        if (candidateDuplicate(candidate, [...current.candidates, ...additions], existingPosts)) { candidate.status = 'rejected'; candidate.rejectReason = 'Duplicate URL, title, fingerprint or semantic title match.'; additions.push(candidate); rejected += 1; continue; }
+        if (candidateDuplicate(candidate, [...current.candidates, ...additions], existingPosts)) { candidate.status = 'rejected'; candidate.rejectReason = 'Duplicate URL, title, fingerprint or semantic title match.'; additions.push(candidate); rejected += 1; breakdown.duplicate += 1; continue; }
         candidate.status = 'verified';
         candidate.status = 'scored';
-        if (candidate.score < site.news.min_score || !candidate.topics.length) { candidate.status = 'rejected'; candidate.rejectReason = 'Below relevance or source-quality threshold.'; additions.push(candidate); rejected += 1; continue; }
+        if (candidate.score < site.news.min_score || !candidate.topics.length || !candidateInIndustryScope(`${candidate.title} ${candidate.summary}`)) { candidate.status = 'rejected'; candidate.rejectReason = 'Below relevance, source-quality or industry-scope threshold.'; additions.push(candidate); rejected += 1; breakdown.belowThreshold += 1; continue; }
         candidate.status = 'candidate'; additions.push(candidate);
       }
     }
-    const next: SiteNewsState = {...current, lastIngestAt: now(), candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} candidates accepted; ${rejected} rejected.`}]};
+    const primaryAccepted = additions.filter((item) => item.status === 'candidate').length;
+    const next: SiteNewsState = {...current, lastIngestAt: now(), candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'ingest-complete', detail: rejectionSummary(primaryAccepted, rejected, breakdown, 'primary')}]};
     if (!dryRun) await saveState(withSiteState(state, site.site_id, next));
-    return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'completed', candidateCount: additions.filter((item) => item.status === 'candidate').length, rejectedCount: rejected, reason: 'Ingest only: no LLM, CMS, sitemap, RSS or public publishing call was made.', attempts: 1}, dryRun);
+    let fallback: Awaited<ReturnType<typeof collectFallbackCandidates>> | null = null;
+    if (!primaryAccepted) fallback = await collectFallbackCandidates(site, startedAt, dryRun);
+    const accepted = primaryAccepted + (fallback?.acceptedCount || 0);
+    const totalRejected = rejected + (fallback?.rejectedCount || 0);
+    const totalBreakdown: RejectionBreakdown = {
+      sourceFetch: breakdown.sourceFetch + (fallback?.breakdown.sourceFetch || 0),
+      invalidOrStale: breakdown.invalidOrStale + (fallback?.breakdown.invalidOrStale || 0),
+      duplicate: breakdown.duplicate + (fallback?.breakdown.duplicate || 0),
+      belowThreshold: breakdown.belowThreshold + (fallback?.breakdown.belowThreshold || 0)
+    };
+    return recordRun(site, {kind: 'ingest', trigger, startedAt, status: 'completed', candidateCount: accepted, rejectedCount: totalRejected, reason: rejectionSummary(accepted, totalRejected, totalBreakdown, fallback ? 'primary+fallback' : 'primary'), attempts: 1}, dryRun);
   } finally { if (!dryRun && lock !== 'dry-run') await releaseLock(site.site_id, lock); }
 }
 
 /** Used only by the 48-hour publisher after the primary candidate pool is empty. */
-async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string) {
+async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string, dryRun = false) {
   const state = await readNewsAutopilotState();
   const current = siteState(state, site.site_id);
   const existingPosts = await listAdminPosts('news');
   const additions: NewsCandidate[] = [];
   let rejected = 0; const sourceHealthUpdates: Record<string, SourceHealth> = {};
+  const breakdown: RejectionBreakdown = {sourceFetch: 0, invalidOrStale: 0, duplicate: 0, belowThreshold: 0};
   for (const source of rotatingSourceBatch(site.sources.fallback_whitelist, site.news.ingest_interval_hours).filter((source) => sourceAvailable(current.sourceHealth?.[source.domain]))) {
     let items: FeedItem[] = [];
     try { items = await fetchFeed(source); sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], true); } catch (error) {
       const reason = error instanceof Error ? error.message : 'fetch failed'; sourceHealthUpdates[source.domain] = updateSourceHealth(current.sourceHealth?.[source.domain], false, reason);
-      rejected += 1;
-      await appendAudit(site.site_id, 'fallback-source-health-failed', `${source.domain}: ${reason}`);
+      rejected += 1; breakdown.sourceFetch += 1;
+      if (!dryRun) await appendAudit(site.site_id, 'fallback-source-health-failed', `${source.domain}: ${reason}`);
       continue;
     }
     for (const item of items.slice(0, 25)) {
@@ -365,18 +392,19 @@ async function collectFallbackCandidates(site: NewsSiteConfig, startedAt: string
         urlHash: hash(normalizedUrl), title: compact(item.title, 220), titleHash: hash(compact(item.title, 220).toLowerCase()), summary: compact(item.summary, 2800), summaryFingerprint: hash(compact(item.summary, 2800).toLowerCase()), sourcePublishedAt: item.publishedAt, sourceAuthor: item.author, language: site.publication_language,
         topics: candidateTopics(`${item.title} ${item.summary}`), score: scoreNewsCandidate({title: item.title, summary: item.summary, publishedAt: item.publishedAt, source}), status: 'discovered', imageLicense: 'owned-neutral-illustration', createdAt: startedAt, updatedAt: startedAt
       };
-      if (!normalizedUrl || !sourceMatches(normalizedUrl, source) || candidateTooOld(candidate, site, true) || !candidate.summary) { rejected += 1; continue; }
+      if (!normalizedUrl || !sourceMatches(normalizedUrl, source) || candidateTooOld(candidate, site, true) || !candidate.summary) { rejected += 1; breakdown.invalidOrStale += 1; continue; }
       candidate.status = 'normalized';
-      if (candidateDuplicate(candidate, [...current.candidates, ...additions], existingPosts)) { candidate.status = 'rejected'; candidate.rejectReason = 'Duplicate URL, title, fingerprint or semantic title match.'; additions.push(candidate); rejected += 1; continue; }
+      if (candidateDuplicate(candidate, [...current.candidates, ...additions], existingPosts)) { candidate.status = 'rejected'; candidate.rejectReason = 'Duplicate URL, title, fingerprint or semantic title match.'; additions.push(candidate); rejected += 1; breakdown.duplicate += 1; continue; }
       candidate.status = 'verified';
       candidate.status = 'scored';
-      if (candidate.score < site.news.min_score || !candidate.topics.length) { candidate.status = 'rejected'; candidate.rejectReason = 'Below relevance or source-quality threshold.'; additions.push(candidate); rejected += 1; continue; }
+      if (candidate.score < site.news.fallback_min_score || !candidate.topics.length || !candidateInIndustryScope(`${candidate.title} ${candidate.summary}`)) { candidate.status = 'rejected'; candidate.rejectReason = 'Below fallback relevance, source-quality or industry-scope threshold.'; additions.push(candidate); rejected += 1; breakdown.belowThreshold += 1; continue; }
       candidate.status = 'candidate'; additions.push(candidate);
     }
   }
-  const next: SiteNewsState = {...current, candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'fallback-ingest-complete', detail: `${additions.filter((item) => item.status === 'candidate').length} fallback candidates accepted; ${rejected} rejected.`}]};
-  await saveState(withSiteState(state, site.site_id, next));
-  return next;
+  const acceptedCount = additions.filter((item) => item.status === 'candidate').length;
+  const next: SiteNewsState = {...current, candidates: [...current.candidates, ...additions], sourceHealth: {...current.sourceHealth, ...sourceHealthUpdates}, audit: [...current.audit, {at: now(), action: 'fallback-ingest-complete', detail: rejectionSummary(acceptedCount, rejected, breakdown, 'primary+fallback')}]};
+  if (!dryRun) await saveState(withSiteState(state, site.site_id, next));
+  return {state: next, acceptedCount, rejectedCount: rejected, breakdown};
 }
 
 function jsonFromModel(value: string) {
@@ -476,7 +504,7 @@ export async function runNewsPublish(siteId = defaultNewsSite()?.site_id || '', 
     let selectionState = current;
     let candidate = chooseCandidate(site, selectionState);
     if (!candidate) {
-      selectionState = await collectFallbackCandidates(site, startedAt);
+      selectionState = (await collectFallbackCandidates(site, startedAt, dryRun)).state;
       candidate = chooseCandidate(site, selectionState);
     }
     if (!candidate) {

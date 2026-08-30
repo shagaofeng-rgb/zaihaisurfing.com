@@ -11,6 +11,7 @@ type QueueEntry = {
   id: string;
   name: string;
   discovery_url: string;
+  feed_url?: string;
   source_type: string;
   mode: 'publication-candidate' | 'already-active' | 'signal-only';
   topics: string[];
@@ -164,7 +165,7 @@ export async function runNewsSourceValidation(limit = 5) {
   });
   const fresh = ordered.filter((entry) => {
     const record = state.records[entry.id];
-    return !record || (record.status === 'unsupported' && record.attempts < MAX_ATTEMPTS);
+    return !record || (record.status === 'unsupported' && (record.attempts < MAX_ATTEMPTS || Boolean(entry.feed_url)));
   });
   const candidates = [...repeat, ...fresh].slice(0, Math.max(1, Math.min(limit, 5)));
   const records = {...state.records};
@@ -180,8 +181,7 @@ export async function runNewsSourceValidation(limit = 5) {
         unsupported += 1;
         continue;
       }
-      const page = await fetchText(entry.discovery_url);
-      const feedUrl = extractFeedUrl(page, entry.discovery_url);
+      const feedUrl = entry.feed_url || extractFeedUrl(await fetchText(entry.discovery_url), entry.discovery_url);
       if (!feedUrl) {
         records[entry.id] = {sourceId: entry.id, checkedAt: now(), status: 'unsupported', attempts, successes: 0, robotsStatus: robots.status, error: 'No HTTPS RSS or Atom discovery link was found.'};
         unsupported += 1;
