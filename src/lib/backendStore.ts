@@ -3,7 +3,7 @@ import {revalidatePath} from 'next/cache';
 import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
 import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
-import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {mutateStoreObject, readStoreObject, writeStoreObject} from '@/lib/durableStore';
 import {markSitemapDirty} from '@/lib/sitemapState';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
 
@@ -230,9 +230,12 @@ function syncCatalogPrices(store: AdminStore) {
 }
 
 export async function writeAdminStore(updater: (store: AdminStore) => AdminStore) {
-  const current = await readAdminStore();
-  const next = updater(current);
-  await writeStoreObject(STORE_FILE, next);
+  let current = createSeedStore();
+  const next = await mutateStoreObject<AdminStore>(STORE_FILE, (stored) => {
+    const catalog = syncCatalogPrices(stored || createSeedStore());
+    current = migrateLegacyEditorialPosts(catalog.store).store;
+    return updater(current);
+  });
   if (sitemapFingerprint(current) !== sitemapFingerprint(next)) {
     await markSitemapDirty('Published catalog or editorial content changed.').catch(() => undefined);
     revalidatePath('/', 'layout');

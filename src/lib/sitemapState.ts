@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import {appendStoreLine, readStoreLines, readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {appendStoreLine, mutateStoreObject, readStoreLines, readStoreObject} from '@/lib/durableStore';
 import type {SitemapEntry} from '@/lib/sitemapXml';
 
 const STATE_FILE = 'sitemap-state.json';
@@ -66,52 +66,58 @@ export async function readSitemapRunLogs(limit = 30) {
 }
 
 export async function markSitemapDirty(reason: string) {
-  const state = await readSitemapState();
-  await writeStoreObject(STATE_FILE, {
-    ...state,
+  await mutateStoreObject<SitemapState>(STATE_FILE, (stored) => ({
+    ...(stored || emptyState),
     dirtyAt: new Date().toISOString(),
     dirtyReason: reason.slice(0, 240)
-  } satisfies SitemapState);
+  } satisfies SitemapState));
 }
 
 export async function acquireSitemapLock() {
-  const state = await readSitemapState();
-  if (!canAcquireSitemapLock(state.lock)) return null;
   const token = crypto.randomUUID();
   const acquiredAt = new Date();
-  const next: SitemapState = {
-    ...state,
-    lock: {
-      token,
-      acquiredAt: acquiredAt.toISOString(),
-      expiresAt: new Date(acquiredAt.getTime() + LOCK_TTL_MS).toISOString()
-    }
-  };
-  await writeStoreObject(STATE_FILE, next);
-  const verified = await readSitemapState();
-  return verified.lock?.token === token ? token : null;
+  let acquired = false;
+  await mutateStoreObject<SitemapState>(STATE_FILE, (stored) => {
+    const state = stored || emptyState;
+    if (!canAcquireSitemapLock(state.lock)) return state;
+    acquired = true;
+    return {
+      ...state,
+      lock: {
+        token,
+        acquiredAt: acquiredAt.toISOString(),
+        expiresAt: new Date(acquiredAt.getTime() + LOCK_TTL_MS).toISOString()
+      }
+    };
+  });
+  return acquired ? token : null;
 }
 
 export async function finishSitemapRun(token: string, result: SitemapRunResult, snapshot?: SitemapEntry[]) {
-  const state = await readSitemapState();
-  if (state.lock?.token !== token) return;
-  const next: SitemapState = {
-    ...state,
-    dirtyAt: result.success && !result.dryRun ? '' : state.dirtyAt,
-    dirtyReason: result.success && !result.dryRun ? '' : state.dirtyReason,
-    snapshot: result.success && !result.dryRun && snapshot ? snapshot : state.snapshot,
-    lastRun: result,
-    lastSuccessfulGoogleSubmissionAt: result.googleSubmission.success
-      ? result.finishedAt
-      : state.lastSuccessfulGoogleSubmissionAt,
-    lock: undefined
-  };
-  await writeStoreObject(STATE_FILE, next);
+  let finished = false;
+  await mutateStoreObject<SitemapState>(STATE_FILE, (stored) => {
+    const state = stored || emptyState;
+    if (state.lock?.token !== token) return state;
+    finished = true;
+    return {
+      ...state,
+      dirtyAt: result.success && !result.dryRun ? '' : state.dirtyAt,
+      dirtyReason: result.success && !result.dryRun ? '' : state.dirtyReason,
+      snapshot: result.success && !result.dryRun && snapshot ? snapshot : state.snapshot,
+      lastRun: result,
+      lastSuccessfulGoogleSubmissionAt: result.googleSubmission.success
+        ? result.finishedAt
+        : state.lastSuccessfulGoogleSubmissionAt,
+      lock: undefined
+    };
+  });
+  if (!finished) return;
   await appendStoreLine(LOG_FILE, result);
 }
 
 export async function releaseSitemapLock(token: string) {
-  const state = await readSitemapState();
-  if (state.lock?.token !== token) return;
-  await writeStoreObject(STATE_FILE, {...state, lock: undefined});
+  await mutateStoreObject<SitemapState>(STATE_FILE, (stored) => {
+    const state = stored || emptyState;
+    return state.lock?.token === token ? {...state, lock: undefined} : state;
+  });
 }

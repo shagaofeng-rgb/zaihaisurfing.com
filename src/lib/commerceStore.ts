@@ -1,4 +1,4 @@
-import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
+import {appendStoreLine, mutateStoreLines, readStoreLines} from '@/lib/durableStore';
 import {shippingEstimateFor} from '@/lib/shipping';
 import {oneTimePaymentSlug, type CheckoutProductSlug} from '@/lib/site';
 import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
@@ -51,6 +51,7 @@ export type StoreOrder = {
   paymentGateway: string;
   gatewayStatus: GatewayStatus;
   idempotencyKey: string;
+  orderAccessTokenHash: string;
   paymentId: string;
   transactionId: string;
   refundStatus: string;
@@ -210,6 +211,7 @@ function withOrderDefaults(order: StoreOrder): StoreOrder {
   return {
     ...order,
     idempotencyKey: order.idempotencyKey || '',
+    orderAccessTokenHash: order.orderAccessTokenHash || '',
     paymentId: order.paymentId || '',
     transactionId: order.transactionId || '',
     refundStatus: order.refundStatus || '',
@@ -253,6 +255,7 @@ export async function createStoreOrder(input: {
   customer: StoreOrder['customer'];
   checkout?: Partial<StoreOrder['checkout']>;
   idempotencyKey?: string;
+  orderAccessTokenHash?: string;
   userId?: string;
   attribution?: AttributionSnapshot | null;
 }) {
@@ -316,6 +319,7 @@ export async function createStoreOrder(input: {
     paymentGateway: input.paymentMethod?.startsWith('oceanpayment') ? 'oceanpayment' : input.paymentMethod === 'qianhai_card' ? 'qianhai' : 'manual',
     gatewayStatus: 'not_submitted',
     idempotencyKey,
+    orderAccessTokenHash: input.orderAccessTokenHash || '',
     paymentId: '',
     transactionId: '',
     refundStatus: '',
@@ -394,22 +398,23 @@ export async function updateStoreOrderPayment(
     checkout?: Partial<StoreOrder['checkout']>;
   }
 ): Promise<StoreOrder | null> {
-  const orders = await readStoreOrders();
   let updated: StoreOrder | null = null;
   const now = new Date().toISOString();
-  const next = orders.map((order) => {
-    if (order.id !== orderId) return order;
-    const protectedPatch = protectFinalPaymentState(order, patch);
-    updated = {
-      ...order,
-      ...protectedPatch,
-      checkout: {...order.checkout, ...(patch.checkout || {})},
-      updatedAt: now
-    };
-    return updated;
+  await mutateStoreLines<StoreOrder>(ORDERS_FILE, (storedOrders) => {
+    const orders = storedOrders.map(withOrderDefaults);
+    return orders.map((order) => {
+      if (order.id !== orderId) return order;
+      const protectedPatch = protectFinalPaymentState(order, patch);
+      updated = {
+        ...order,
+        ...protectedPatch,
+        checkout: {...order.checkout, ...(patch.checkout || {})},
+        updatedAt: now
+      };
+      return updated;
+    });
   });
   if (!updated) return null;
-  await writeStoreLines(ORDERS_FILE, next);
   return updated;
 }
 
@@ -494,24 +499,25 @@ export async function readRefundRecords() {
 }
 
 export async function upsertShipmentRecord(input: Omit<ShipmentRecord, 'id' | 'createdAt' | 'updatedAt'>) {
-  const shipments = await readShipmentRecords();
   const now = new Date().toISOString();
   let nextRecord: ShipmentRecord | null = null;
-  const next = shipments.map((shipment) => {
-    if (shipment.orderId !== input.orderId) return shipment;
-    nextRecord = {...shipment, ...input, updatedAt: now};
-    return nextRecord;
+  await mutateStoreLines<ShipmentRecord>(SHIPMENTS_FILE, (shipments) => {
+    const next = shipments.map((shipment) => {
+      if (shipment.orderId !== input.orderId) return shipment;
+      nextRecord = {...shipment, ...input, updatedAt: now};
+      return nextRecord;
+    });
+    if (!nextRecord) {
+      nextRecord = {
+        id: `ship-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+        createdAt: now,
+        updatedAt: now,
+        ...input
+      };
+      next.push(nextRecord);
+    }
+    return next;
   });
-  if (!nextRecord) {
-    nextRecord = {
-      id: `ship-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
-      createdAt: now,
-      updatedAt: now,
-      ...input
-    };
-    next.push(nextRecord);
-  }
-  await writeStoreLines(SHIPMENTS_FILE, next);
   return nextRecord;
 }
 

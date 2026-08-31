@@ -1,4 +1,4 @@
-import {readStoreLines, writeStoreLines, appendStoreLine} from '@/lib/durableStore';
+import {appendStoreLine, mutateStoreLines, readStoreLines} from '@/lib/durableStore';
 
 const PROMOTIONS_FILE = 'admin-promotions.jsonl';
 const REVIEWS_FILE = 'admin-reviews.jsonl';
@@ -57,10 +57,10 @@ export async function createPromotion(input: Omit<PromotionRecord, 'id' | 'creat
 }
 
 export async function updatePromotionStatus(id: string, status: PromotionRecord['status']) {
-  const records = await listPromotions();
   const now = new Date().toISOString();
-  const next = records.map((record) => record.id === id ? {...record, status, updatedAt: now} : record);
-  await writeStoreLines(PROMOTIONS_FILE, next);
+  await mutateStoreLines<PromotionRecord>(PROMOTIONS_FILE, (records) => records.map((record) => (
+    record.id === id ? {...record, status, updatedAt: now} : record
+  )));
 }
 
 export async function listReviews() {

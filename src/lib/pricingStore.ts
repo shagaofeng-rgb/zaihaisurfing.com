@@ -1,4 +1,4 @@
-import {readStoreObject, writeStoreObject} from '@/lib/durableStore';
+import {mutateStoreObject, readStoreObject, writeStoreObject} from '@/lib/durableStore';
 import {calculatePricing, tierForQuantity, type PricingTierKey} from '@/lib/pricingMath';
 
 const PRICING_STORE_FILE = 'pricing-admin-store.json';
@@ -95,10 +95,12 @@ export async function readPricingStore() {
 }
 
 export async function writePricingStore(updater: (store: PricingStore) => PricingStore) {
-  const current = await readPricingStore();
-  const next = updater(current);
-  await writeStoreObject(PRICING_STORE_FILE, next);
-  return next;
+  return mutateStoreObject<PricingStore>(PRICING_STORE_FILE, (stored) => {
+    const base = stored || seedStore();
+    const merged = mergeProducts(base.products || []);
+    const current = {...base, products: merged.products, orders: base.orders || [], manualExchangeRate: base.manualExchangeRate ?? null};
+    return updater(current);
+  });
 }
 
 export {calculatePricing, tierForQuantity};

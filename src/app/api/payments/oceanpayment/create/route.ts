@@ -1,5 +1,6 @@
 import {appendAnalyticsEvent, findStoreOrder, updateStoreOrderPayment} from '@/lib/commerceStore';
 import {buildOceanpaymentPayload, oceanpaymentToStoreMethod, paymentMethodToOceanpayment, type OceanpaymentScene} from '@/lib/oceanpayment';
+import {hasOrderAccess, withoutOrderAccessHash} from '@/lib/orderAccess';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,9 @@ export async function POST(request: Request) {
     const orderId = String(payload.orderId || '').trim();
     const order = await findStoreOrder(orderId);
     if (!order) {
+      return Response.json({message: 'Order not found'}, {status: 404});
+    }
+    if (!await hasOrderAccess(order)) {
       return Response.json({message: 'Order not found'}, {status: 404});
     }
     if (
@@ -87,7 +91,7 @@ export async function POST(request: Request) {
     return Response.json({
       ok: true,
       status: oceanpayment.configured ? 'ready_to_submit' : 'waiting_for_credentials',
-      order: updated || order,
+      order: withoutOrderAccessHash(updated || order),
       oceanpayment: {
         configured: oceanpayment.configured,
         testMode: oceanpayment.testMode,

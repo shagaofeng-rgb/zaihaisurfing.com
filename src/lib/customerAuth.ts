@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import {cookies} from 'next/headers';
-import {readStoreOrders, updateStoreOrderPayment, type StoreOrder} from '@/lib/commerceStore';
-import {appendStoreLine, readStoreLines, writeStoreLines} from '@/lib/durableStore';
+import type {StoreOrder} from '@/lib/commerceStore';
+import {appendStoreLine, mutateStoreLines, readStoreLines} from '@/lib/durableStore';
 
 const USERS_FILE = 'customer-users.jsonl';
 const TOKENS_FILE = 'customer-tokens.jsonl';
@@ -96,49 +96,52 @@ export async function createOrUpdateCustomerUser(input: {
   activate?: boolean;
 }) {
   const normalized = input.email.trim().toLowerCase();
-  const users = await readCustomerUsers();
   const now = new Date().toISOString();
-  let user = users.find((item) => item.email === normalized) || null;
-  if (user) {
-    user = {
-      ...user,
-      name: input.name || user.name,
-      firstName: input.firstName ?? user.firstName ?? '',
-      lastName: input.lastName ?? user.lastName ?? '',
-      country: input.country ?? user.country ?? '',
-      passwordHash: input.password ? hashCustomerPassword(input.password) : user.passwordHash,
-      status: input.activate || input.password ? 'active' : user.status,
-      emailVerifiedAt: input.activate || input.password ? (user.emailVerifiedAt || now) : user.emailVerifiedAt,
+  const nextUsers = await mutateStoreLines<CustomerUser>(USERS_FILE, (users) => {
+    const existing = users.find((item) => item.email === normalized) || null;
+    if (existing) {
+      const updated: CustomerUser = {
+        ...existing,
+        name: input.name || existing.name,
+        firstName: input.firstName ?? existing.firstName ?? '',
+        lastName: input.lastName ?? existing.lastName ?? '',
+        country: input.country ?? existing.country ?? '',
+        passwordHash: input.password ? hashCustomerPassword(input.password) : existing.passwordHash,
+        status: input.activate || input.password ? 'active' : existing.status,
+        emailVerifiedAt: input.activate || input.password ? (existing.emailVerifiedAt || now) : existing.emailVerifiedAt,
+        updatedAt: now
+      };
+      return users.map((item) => item.id === existing.id ? updated : item);
+    }
+    const created: CustomerUser = {
+      id: `cus-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      email: normalized,
+      name: input.name,
+      firstName: input.firstName || input.name.split(/\s+/)[0] || '',
+      lastName: input.lastName || input.name.split(/\s+/).slice(1).join(' ') || '',
+      country: input.country || '',
+      passwordHash: input.password ? hashCustomerPassword(input.password) : '',
+      status: input.activate || input.password ? 'active' : 'pending_setup',
+      emailVerifiedAt: input.activate || input.password ? now : '',
+      createdAt: now,
       updatedAt: now
     };
-    await writeStoreLines(USERS_FILE, users.map((item) => item.id === user?.id ? user : item));
-    return user;
-  }
-  user = {
-    id: `cus-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
-    email: normalized,
-    name: input.name,
-    firstName: input.firstName || input.name.split(/\s+/)[0] || '',
-    lastName: input.lastName || input.name.split(/\s+/).slice(1).join(' ') || '',
-    country: input.country || '',
-    passwordHash: input.password ? hashCustomerPassword(input.password) : '',
-    status: input.activate || input.password ? 'active' : 'pending_setup',
-    emailVerifiedAt: input.activate || input.password ? now : '',
-    createdAt: now,
-    updatedAt: now
-  };
-  await appendStoreLine(USERS_FILE, user);
-  return user;
+    return [...users, created];
+  });
+  const result = nextUsers.find((user) => user.email === normalized);
+  if (!result) throw new Error('CUSTOMER_ACCOUNT_WRITE_FAILED');
+  return result;
 }
 
 export async function bindOrdersToCustomer(email: string, userId: string) {
-  const orders = await readStoreOrders();
   const normalized = email.trim().toLowerCase();
-  const matching = orders.filter((order) => order.customer.email.trim().toLowerCase() === normalized && order.userId !== userId);
-  for (const order of matching) {
-    await updateStoreOrderPayment(order.id, {userId});
-  }
-  return matching.length;
+  let matchingCount = 0;
+  await mutateStoreLines<StoreOrder>('orders.jsonl', (orders) => orders.map((order) => {
+    if (order.customer.email.trim().toLowerCase() !== normalized || order.userId === userId) return order;
+    matchingCount += 1;
+    return {...order, userId, updatedAt: new Date().toISOString()};
+  }));
+  return matchingCount;
 }
 
 export function customerOwnsOrder(order: StoreOrder, session: {userId?: string; email?: string}) {
@@ -148,14 +151,12 @@ export function customerOwnsOrder(order: StoreOrder, session: {userId?: string; 
 }
 
 export async function updateCustomerProfile(userId: string, patch: {name?: string; firstName?: string; lastName?: string; country?: string}): Promise<CustomerUser | null> {
-  const users = await readCustomerUsers();
   const now = new Date().toISOString();
-  let updated: CustomerUser | null = null;
-  const next: CustomerUser[] = users.map((user) => {
+  const nextUsers = await mutateStoreLines<CustomerUser>(USERS_FILE, (users) => users.map((user) => {
     if (user.id !== userId) return user;
     const firstName = patch.firstName ?? user.firstName;
     const lastName = patch.lastName ?? user.lastName;
-    const nextUser: CustomerUser = {
+    const updated: CustomerUser = {
       ...user,
       name: patch.name || `${firstName} ${lastName}`.trim() || user.name,
       firstName,
@@ -163,12 +164,9 @@ export async function updateCustomerProfile(userId: string, patch: {name?: strin
       country: patch.country ?? user.country,
       updatedAt: now
     };
-    updated = nextUser;
-    return nextUser;
-  });
-  if (!updated) return null;
-  await writeStoreLines(USERS_FILE, next);
-  return updated;
+    return updated;
+  }));
+  return nextUsers.find((user) => user.id === userId) || null;
 }
 
 export async function ensureCustomerAccountForOrder(order: StoreOrder) {
@@ -197,16 +195,21 @@ export async function createCustomerToken(user: CustomerUser, type: CustomerToke
 
 export async function consumeCustomerToken(rawToken: string, password: string) {
   const tokenHash = sha256(rawToken);
-  const tokens = await readStoreLines<CustomerToken>(TOKENS_FILE);
   const now = new Date().toISOString();
-  const token = tokens.find((item) => item.tokenHash === tokenHash && !item.usedAt && item.expiresAt > now);
+  let claimed = false;
+  const nextTokens = await mutateStoreLines<CustomerToken>(TOKENS_FILE, (tokens) => tokens.map((item) => {
+    if (item.tokenHash !== tokenHash || item.usedAt || item.expiresAt <= now || claimed) return item;
+    claimed = true;
+    return {...item, usedAt: now};
+  }));
+  const token = nextTokens.find((item) => item.tokenHash === tokenHash && item.usedAt === now);
   if (!token) return null;
-  const users = await readCustomerUsers();
-  const user = users.find((item) => item.id === token.userId);
-  if (!user) return null;
-  const updatedUser = {...user, passwordHash: hashCustomerPassword(password), status: 'active' as const, updatedAt: now};
-  await writeStoreLines(USERS_FILE, users.map((item) => item.id === user.id ? updatedUser : item));
-  await writeStoreLines(TOKENS_FILE, tokens.map((item) => item.id === token.id ? {...item, usedAt: now} : item));
+  const nextUsers = await mutateStoreLines<CustomerUser>(USERS_FILE, (users) => users.map((user) => {
+    if (user.id !== token.userId) return user;
+    return {...user, passwordHash: hashCustomerPassword(password), status: 'active', updatedAt: now};
+  }));
+  const updatedUser = nextUsers.find((user) => user.id === token.userId) || null;
+  if (!updatedUser) return null;
   await bindOrdersToCustomer(updatedUser.email, updatedUser.id);
   return updatedUser;
 }

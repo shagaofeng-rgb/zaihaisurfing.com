@@ -10,7 +10,6 @@ type MailPayload = {
 
 const DEFAULT_SMTP_HOST = 'smtp.exmail.qq.com';
 const DEFAULT_SENDER_EMAIL = 'davidsha@zaihaisurfing.com';
-const ADMIN_NOTIFICATION_EMAIL = 'davidsha@zaihaisurfing.com';
 
 function smtpConfig() {
   return {
@@ -37,7 +36,15 @@ function escapeHtml(value: unknown) {
 }
 
 function adminNotificationEmail() {
-  return ADMIN_NOTIFICATION_EMAIL;
+  return process.env.ADMIN_NOTIFICATION_EMAIL || DEFAULT_SENDER_EMAIL;
+}
+
+function validMailbox(value: string) {
+  return value.length <= 254 && !/[\r\n]/.test(value) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function dotStuff(value: string) {
+  return value.replace(/(^|\r?\n)\./g, '$1..');
 }
 
 function orderRows(order: StoreOrder) {
@@ -79,6 +86,9 @@ async function sendSmtpMail(message: MailPayload) {
   const config = smtpConfig();
   if (!config.host || !config.user || !config.pass) {
     return {ok: false, skipped: true, message: 'SMTP is not configured'};
+  }
+  if (!validMailbox(config.from) || !validMailbox(message.to)) {
+    return {ok: false, skipped: false, message: 'Invalid email address'};
   }
 
   const socket = tls.connect({host: config.host, port: config.port, servername: config.host});
@@ -147,13 +157,13 @@ async function sendSmtpMail(message: MailPayload) {
     'Content-Type: text/plain; charset=UTF-8',
     'Content-Transfer-Encoding: 8bit',
     '',
-    message.text,
+    dotStuff(message.text),
     '',
     `--${boundary}`,
     'Content-Type: text/html; charset=UTF-8',
     'Content-Transfer-Encoding: 8bit',
     '',
-    message.html,
+    dotStuff(message.html),
     '',
     `--${boundary}--`,
     '.'

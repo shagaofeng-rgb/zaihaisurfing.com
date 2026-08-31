@@ -60,11 +60,17 @@ export async function buildSitemapEntries() {
   ]);
 
   const englishOnlyEditorialPaths = new Set(['/news', '/blog']);
+  const englishOnlySupportPaths = new Set(['/faq', '/shipping', '/warranty', '/returns', '/privacy', '/terms']);
   const publicStaticPaths = pathnames.filter((path) => {
     const value = String(path);
     return !value.startsWith('/products/') && !englishOnlyEditorialPaths.has(value);
   });
-  const pages = publicStaticPaths.flatMap((path) => localizedEntries('pages', String(path), STATIC_PAGE_LASTMOD));
+  const pages = publicStaticPaths.flatMap((path) => localizedEntries(
+    'pages',
+    String(path),
+    STATIC_PAGE_LASTMOD,
+    englishOnlySupportPaths.has(String(path))
+  ));
 
   const newsLastmod = newestDate(newsArticles.map((article) => article.updatedAt || article.date), STATIC_PAGE_LASTMOD);
   const blogLastmod = newestDate(blogArticles.map((article) => article.updatedAt || article.date), STATIC_PAGE_LASTMOD);

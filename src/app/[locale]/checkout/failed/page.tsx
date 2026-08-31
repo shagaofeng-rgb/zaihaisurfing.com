@@ -1,5 +1,6 @@
 import type {Locale} from '@/i18n/routing';
 import {findStoreOrder} from '@/lib/commerceStore';
+import {hasOrderAccess} from '@/lib/orderAccess';
 
 export default async function CheckoutFailedPage({
   params,
@@ -10,7 +11,8 @@ export default async function CheckoutFailedPage({
 }) {
   const {locale} = await params;
   const {order: orderId, payment} = await searchParams;
-  const order = orderId ? await findStoreOrder(orderId) : null;
+  const foundOrder = orderId ? await findStoreOrder(orderId) : null;
+  const order = foundOrder && await hasOrderAccess(foundOrder) ? foundOrder : null;
   const paymentId = order?.paymentId || order?.transactionId || '';
   const reason = payment === 'unverified'
     ? 'Payment return could not be verified.'

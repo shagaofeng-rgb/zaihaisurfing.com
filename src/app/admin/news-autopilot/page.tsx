@@ -41,7 +41,7 @@ export default async function NewsAutopilotPage() {
       <div className="admin-metrics">
         <article><span>Automation switch</span><strong>{runtime.schedulingEnabled && siteState?.enabled !== false ? 'Enabled' : 'Paused'}</strong><small>Production environment and site switch</small></article>
         <article><span>Publication switch</span><strong>{runtime.publishingEnabled ? 'Enabled' : 'Paused'}</strong><small>Direct publishing is disabled when this switch is off</small></article>
-        <article><span>Persistent storage</span><strong>{runtime.durableStore}</strong><small>{runtime.hasDistributedLock ? 'KV/Redis lease available' : 'A KV/Redis lease is required'}</small></article>
+        <article><span>Persistent storage</span><strong>{runtime.durableStore}</strong><small>{runtime.hasDistributedLock ? 'Distributed lease available' : 'A distributed lease is required'}</small></article>
         <article><span>Candidate pool</span><strong>{candidates.filter((candidate) => candidate.status === 'candidate').length}</strong><small>Eligible, source-attributed records only</small></article>
       </div>
     </section>

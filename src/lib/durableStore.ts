@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {BlobNotFoundError, del, get, put} from '@vercel/blob';
@@ -12,6 +13,7 @@ const KV_URL = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_UR
 const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
 const STORE_PREFIX = process.env.COMMERCE_STORE_PREFIX || 'zaihai-commerce';
+const localMutationTails = new Map<string, Promise<void>>();
 
 export function durableStoreConfigured() {
   return Boolean((KV_URL && KV_TOKEN) || BLOB_TOKEN);
@@ -171,21 +173,41 @@ async function writeLocalLines(fileName: string, values: unknown[]) {
   await fs.writeFile(localFile(fileName), `${values.map((value) => JSON.stringify(value)).join('\n')}${values.length ? '\n' : ''}`, 'utf8');
 }
 
-export async function appendStoreLine(fileName: string, value: unknown) {
-  if (durableStoreConfigured()) {
-    if (KV_URL && KV_TOKEN) {
-      await kvPipeline([['RPUSH', storeKey(fileName), JSON.stringify(value)]]);
-      return;
-    }
-    const current = await readBlobText(fileName);
-    await writeBlobText(fileName, `${current}${JSON.stringify(value)}\n`);
-    return;
+async function withLocalMutationLock<T>(fileName: string, action: () => Promise<T>) {
+  const previous = localMutationTails.get(fileName) || Promise.resolve();
+  let release: () => void = () => {};
+  const hold = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const tail = previous.then(() => hold);
+  localMutationTails.set(fileName, tail);
+  await previous;
+  try {
+    return await action();
+  } finally {
+    release();
+    if (localMutationTails.get(fileName) === tail) localMutationTails.delete(fileName);
   }
-  await fs.mkdir(LOCAL_DATA_DIR, {recursive: true});
-  await fs.appendFile(localFile(fileName), `${JSON.stringify(value)}\n`, 'utf8');
 }
 
-export async function readStoreLines<T>(fileName: string) {
+async function withStoreMutationLock<T>(fileName: string, action: () => Promise<T>) {
+  if (!durableStoreHasDistributedLock()) return withLocalMutationLock(fileName, action);
+  const name = `mutation-${fileName.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+  const token = crypto.randomUUID();
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (await acquireStoreLock(name, token, 20_000)) {
+      try {
+        return await action();
+      } finally {
+        await releaseStoreLock(name, token).catch(() => false);
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50 + Math.floor(Math.random() * 180)));
+  }
+  throw new Error(`Durable store mutation lock timed out: ${fileName}`);
+}
+
+async function readStoreLinesUnlocked<T>(fileName: string) {
   if (durableStoreConfigured()) {
     if (KV_URL && KV_TOKEN) {
       const [items] = await kvPipeline<string[]>([['LRANGE', storeKey(fileName), '0', '-1']]);
@@ -196,7 +218,7 @@ export async function readStoreLines<T>(fileName: string) {
   return readLocalLines<T>(fileName);
 }
 
-export async function writeStoreLines(fileName: string, values: unknown[]) {
+async function writeStoreLinesUnlocked(fileName: string, values: unknown[]) {
   if (durableStoreConfigured()) {
     if (KV_URL && KV_TOKEN) {
       const key = storeKey(fileName);
@@ -212,7 +234,43 @@ export async function writeStoreLines(fileName: string, values: unknown[]) {
   await writeLocalLines(fileName, values);
 }
 
+export async function appendStoreLine(fileName: string, value: unknown) {
+  await withStoreMutationLock(fileName, async () => {
+    if (durableStoreConfigured()) {
+      if (KV_URL && KV_TOKEN) {
+        await kvPipeline([['RPUSH', storeKey(fileName), JSON.stringify(value)]]);
+        return;
+      }
+      const current = await readBlobText(fileName);
+      await writeBlobText(fileName, `${current}${JSON.stringify(value)}\n`);
+      return;
+    }
+    await fs.mkdir(LOCAL_DATA_DIR, {recursive: true});
+    await fs.appendFile(localFile(fileName), `${JSON.stringify(value)}\n`, 'utf8');
+  });
+}
+
+export async function readStoreLines<T>(fileName: string) {
+  return readStoreLinesUnlocked<T>(fileName);
+}
+
+export async function writeStoreLines(fileName: string, values: unknown[]) {
+  await withStoreMutationLock(fileName, () => writeStoreLinesUnlocked(fileName, values));
+}
+
+export async function mutateStoreLines<T>(fileName: string, mutation: (values: T[]) => T[] | Promise<T[]>) {
+  return withStoreMutationLock(fileName, async () => {
+    const next = await mutation(await readStoreLinesUnlocked<T>(fileName));
+    await writeStoreLinesUnlocked(fileName, next);
+    return next;
+  });
+}
+
 export async function readStoreObject<T>(fileName: string) {
+  return readStoreObjectUnlocked<T>(fileName);
+}
+
+async function readStoreObjectUnlocked<T>(fileName: string) {
   if (durableStoreConfigured()) {
     if (KV_URL && KV_TOKEN) {
       const [value] = await kvPipeline<string | null>([['GET', storeKey(fileName)]]);
@@ -228,6 +286,10 @@ export async function readStoreObject<T>(fileName: string) {
 }
 
 export async function writeStoreObject(fileName: string, value: unknown) {
+  await withStoreMutationLock(fileName, () => writeStoreObjectUnlocked(fileName, value));
+}
+
+async function writeStoreObjectUnlocked(fileName: string, value: unknown) {
   if (durableStoreConfigured()) {
     if (KV_URL && KV_TOKEN) {
       await kvPipeline([['SET', storeKey(fileName), JSON.stringify(value)]]);
@@ -238,4 +300,12 @@ export async function writeStoreObject(fileName: string, value: unknown) {
   }
   await fs.mkdir(LOCAL_DATA_DIR, {recursive: true});
   await fs.writeFile(localFile(fileName), JSON.stringify(value, null, 2), 'utf8');
+}
+
+export async function mutateStoreObject<T>(fileName: string, mutation: (value: T | null) => T | Promise<T>) {
+  return withStoreMutationLock(fileName, async () => {
+    const next = await mutation(await readStoreObjectUnlocked<T>(fileName));
+    await writeStoreObjectUnlocked(fileName, next);
+    return next;
+  });
 }

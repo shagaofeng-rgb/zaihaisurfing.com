@@ -1,4 +1,5 @@
 import {appendAnalyticsEvent, type AnalyticsEvent} from '@/lib/commerceStore';
+import {checkRateLimit} from '@/lib/rateLimit';
 import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
@@ -100,6 +101,10 @@ function clientIp(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const ip = clientIp(request) || 'unknown';
+    if (!checkRateLimit(`analytics:${ip}`, 120, 60_000)) {
+      return Response.json({ok: false, message: 'Rate limit exceeded'}, {status: 429});
+    }
     const payload = await request.json();
     const userAgent = request.headers.get('user-agent') || '';
     if (isBot(userAgent)) {

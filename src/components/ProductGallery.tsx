@@ -1,3 +1,8 @@
+'use client';
+
+import Image from 'next/image';
+import {useState} from 'react';
+
 type ProductGalleryProps = {
   images: string[];
   mainAlt: string;
@@ -5,40 +10,42 @@ type ProductGalleryProps = {
 };
 
 export default function ProductGallery({images, mainAlt, productName}: ProductGalleryProps) {
-  const galleryId = productName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedImage = images[selectedIndex] || images[0];
+
+  if (!selectedImage) return null;
 
   return (
     <div className="product-gallery product-gallery-interactive">
-      {images.map((image, index) => (
-        <input
-          className="product-gallery-radio"
-          defaultChecked={index === 0}
-          id={`${galleryId}-image-${index}`}
-          key={`radio-${image}`}
-          name={`${galleryId}-gallery`}
-          type="radio"
-        />
-      ))}
       <div className="product-main-stack">
-        {images.map((image, index) => (
-          <img
-            className="main-product-image gallery-main-image"
-            src={image}
-            alt={index === 0 ? mainAlt : `${productName} detail view ${index + 1}`}
-            key={`main-${image}`}
-          />
-        ))}
+        <Image
+          className="main-product-image"
+          src={selectedImage}
+          alt={selectedIndex === 0 ? mainAlt : `${productName} detail view ${selectedIndex + 1}`}
+          width={1400}
+          height={1400}
+          priority={selectedIndex === 0}
+          sizes="(max-width: 760px) calc(100vw - 64px), (max-width: 1100px) 55vw, 700px"
+        />
       </div>
       <div className="product-thumbs" role="group" aria-label="Product detail images">
         {images.map((image, index) => (
-          <label
+          <button
+            type="button"
             aria-label={`View ${productName} image ${index + 1}`}
-            className="product-thumb-button"
-            htmlFor={`${galleryId}-image-${index}`}
+            aria-pressed={selectedIndex === index}
+            className={`product-thumb-button${selectedIndex === index ? ' is-active' : ''}`}
+            onClick={() => setSelectedIndex(index)}
             key={`thumb-${image}`}
           >
-            <img src={image} alt={`${productName} detail view ${index + 1}`} />
-          </label>
+            <Image
+              src={image}
+              alt={`${productName} detail view ${index + 1}`}
+              width={240}
+              height={218}
+              sizes="(max-width: 760px) 28vw, 180px"
+            />
+          </button>
         ))}
       </div>
     </div>
