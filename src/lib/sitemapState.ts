@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import {appendStoreLine, mutateStoreObject, readStoreLines, readStoreObject} from '@/lib/durableStore';
+import type {GoogleSitemapReadback} from '@/lib/googleSeo';
 import type {SitemapEntry} from '@/lib/sitemapXml';
 
 const STATE_FILE = 'sitemap-state.json';
@@ -33,6 +34,7 @@ export type SitemapRunResult = {
     status: number;
     message: string;
   };
+  googleReadback: GoogleSitemapReadback;
   errors: string[];
 };
 

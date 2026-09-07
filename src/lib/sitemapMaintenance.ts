@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import {submitSitemapToGoogle, googleSeoConfigStatus} from '@/lib/googleSeo';
+import {readGoogleSitemapStatus, submitSitemapToGoogle, googleSeoConfigStatus} from '@/lib/googleSeo';
 import {buildSitemapManifest, sitemapStats} from '@/lib/sitemapData';
 import {
   acquireSitemapLock,
@@ -93,6 +93,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
     const googleSubmission = shouldSubmit
       ? await submitSitemapToGoogle(googleConfig.sitemapUrl)
       : {attempted: false, success: false, status: 0, message: 'Submission was not requested.'};
+    const googleReadback = await readGoogleSitemapStatus(googleConfig.sitemapUrl);
 
     const finishedAt = new Date().toISOString();
     const result: SitemapRunResult = {
@@ -117,6 +118,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       robotsValid,
       publicValidation: publicChecks.map(({url, status, ok, error}) => ({url, status, ok, ...(error ? {error} : {})})),
       googleSubmission,
+      googleReadback,
       errors
     };
     if (!options.dryRun) await finishSitemapRun(token, result, manifest.entries);
@@ -145,6 +147,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       robotsValid: false,
       publicValidation: [],
       googleSubmission: {attempted: false, success: false, status: 0, message: 'Submission skipped because sitemap generation failed.'},
+      googleReadback: {attempted: false, success: false, status: 0, sitemapUrl: googleSeoConfigStatus().sitemapUrl, message: 'Google status check skipped because sitemap generation failed.'},
       errors: [message]
     };
     if (!options.dryRun) await finishSitemapRun(token, result);

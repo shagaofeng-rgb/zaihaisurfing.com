@@ -34,6 +34,20 @@ export type GoogleSeoSnapshot = {
   error: string;
 };
 
+export type GoogleSitemapReadback = {
+  attempted: boolean;
+  success: boolean;
+  status: number;
+  message: string;
+  sitemapUrl: string;
+  submittedAt?: string;
+  lastDownloadedAt?: string;
+  pending?: boolean;
+  warnings?: number;
+  errors?: number;
+  discoveredPages?: number;
+};
+
 type SearchAnalyticsRow = {
   keys?: string[];
   clicks?: number;
@@ -265,6 +279,82 @@ export async function submitSitemapToGoogle(sitemapUrl = configuredSitemapUrl())
       success: false,
       status: 0,
       message: error instanceof Error ? error.message : 'Unknown Google sitemap submission error.'
+    };
+  }
+}
+
+/**
+ * Read the Sitemap resource back from Search Console after a health run.
+ * A successful PUT confirms acceptance; this GET confirms that the same
+ * property and service account can subsequently observe Google's processing.
+ */
+export async function readGoogleSitemapStatus(sitemapUrl = configuredSitemapUrl()): Promise<GoogleSitemapReadback> {
+  const credentials = readCredentials();
+  if (!credentials) {
+    return {
+      attempted: false,
+      success: false,
+      status: 0,
+      sitemapUrl,
+      message: 'Google service account credentials are not configured.'
+    };
+  }
+
+  try {
+    const accessToken = await getAccessToken(credentials);
+    const siteProperty = getConfiguredSiteUrl();
+    const endpoint = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteProperty)}/sitemaps/${encodeURIComponent(sitemapUrl)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(endpoint, {
+        headers: {Authorization: `Bearer ${accessToken}`},
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      const payload = await response.json().catch(() => ({})) as {
+        path?: string;
+        lastSubmitted?: string;
+        lastDownloaded?: string;
+        isPending?: boolean;
+        warnings?: number;
+        errors?: number;
+        contents?: {type?: string; submitted?: number}[];
+        error?: {message?: string};
+      };
+      if (!response.ok) {
+        return {
+          attempted: true,
+          success: false,
+          status: response.status,
+          sitemapUrl,
+          message: payload.error?.message || `Google sitemap status request failed: ${response.status}`
+        };
+      }
+      const discoveredPages = (payload.contents || []).reduce((total, item) => total + (item.type === 'web' ? Number(item.submitted || 0) : 0), 0);
+      return {
+        attempted: true,
+        success: true,
+        status: response.status,
+        sitemapUrl: payload.path || sitemapUrl,
+        message: payload.isPending ? 'Google has accepted the sitemap and is processing it.' : 'Google Search Console sitemap status is available.',
+        submittedAt: payload.lastSubmitted,
+        lastDownloadedAt: payload.lastDownloaded,
+        pending: Boolean(payload.isPending),
+        warnings: Number(payload.warnings || 0),
+        errors: Number(payload.errors || 0),
+        discoveredPages
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    return {
+      attempted: true,
+      success: false,
+      status: 0,
+      sitemapUrl,
+      message: error instanceof Error ? error.message : 'Unable to read Google sitemap status.'
     };
   }
 }

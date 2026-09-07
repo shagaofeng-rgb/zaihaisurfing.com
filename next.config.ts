@@ -85,6 +85,26 @@ const nextConfig: NextConfig = {
         permanent: true
       },
       {
+        source: '/blog/middle-east-luxury-tourism-water-attractions',
+        destination: '/en/news/middle-east-luxury-tourism-water-attractions',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/blog/middle-east-luxury-tourism-water-attractions',
+        destination: '/en/news/middle-east-luxury-tourism-water-attractions',
+        permanent: true
+      },
+      {
+        source: '/blog/guide-electric-boating-growth-rental-fleets',
+        destination: '/en/news/electric-boating-growth-rental-fleets',
+        permanent: true
+      },
+      {
+        source: '/:locale(en|es|fr|de|ar|pt|ru)/blog/guide-electric-boating-growth-rental-fleets',
+        destination: '/en/news/electric-boating-growth-rental-fleets',
+        permanent: true
+      },
+      {
         source: '/news/category/:category/:slug',
         destination: '/en/news/:slug',
         permanent: true

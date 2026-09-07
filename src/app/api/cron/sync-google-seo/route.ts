@@ -35,7 +35,9 @@ export async function GET(request: Request) {
     });
   }
   const snapshot = await syncGoogleSeoSnapshot();
-  const acceptable = snapshot.status === 'ok' || snapshot.status === 'not_configured';
+  // A missing Search Console configuration must be observable as a failed
+  // scheduled integration, rather than appearing healthy through a 200 response.
+  const acceptable = snapshot.status === 'ok';
   await appendStoreLine('google-seo-sync-runs.jsonl', {
     trigger: 'cron',
     executedAt: new Date().toISOString(),

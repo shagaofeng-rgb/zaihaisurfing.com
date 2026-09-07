@@ -1,6 +1,6 @@
 import {listAdminPosts, type ContentPost} from '@/lib/backendStore';
 import {editorialSections, isListBlock, listItems} from '@/lib/editorialContent';
-import type {NewsArticle} from '@/lib/news';
+import {newsArticles as legacyNewsArticles, type NewsArticle} from '@/lib/news';
 import {siteUrl} from '@/lib/site';
 
 function slugify(value: string) {
@@ -79,7 +79,11 @@ export async function getAllNewsArticles() {
     .map(postToArticle);
   const seen = new Set<string>();
   const seenTopics = new Set<string>();
-  const articles = published
+  // These source-attributed articles were published before the CMS migration.
+  // Keep them addressable so historic, externally discovered URLs remain useful
+  // editorial pages instead of becoming 404s. CMS content takes precedence when
+  // it has the same canonical topic fingerprint.
+  const articles = [...published, ...legacyNewsArticles]
     .filter((article) => {
       if (seen.has(article.slug)) return false;
       const topic = newsContentFingerprint(article);

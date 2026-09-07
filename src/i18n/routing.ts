@@ -16,7 +16,12 @@ export const localeNames: Record<Locale, string> = {
 export const routing = defineRouting({
   locales,
   defaultLocale: 'en',
-  localePrefix: 'always'
+  localePrefix: 'always',
+  // next-intl otherwise emits an HTTP Link header for every locale on every
+  // route. Editorial routes intentionally exist only in English, so those
+  // generated headers advertised language URLs that immediately redirect.
+  // Page metadata and the XML sitemap remain the authoritative hreflang data.
+  alternateLinks: false
 });
 
 export const pathnames = [

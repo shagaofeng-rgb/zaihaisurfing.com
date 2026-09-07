@@ -75,6 +75,16 @@ export default async function AdminSeoPage({
   const params = await searchParams;
   const [snapshot, config, sitemap] = await Promise.all([readGoogleSeoSnapshot(), googleSeoConfigStatus(), readSitemapState()]);
   const synced = params.synced === '1';
+  // Older durable sitemap runs predate the readback field. Treat them as an
+  // unavailable status instead of allowing historical state to break the page.
+  const googleReadback = sitemap.lastRun?.googleReadback;
+  const sitemapStatus = !sitemap.lastRun
+    ? '等待首次站点地图检查'
+    : !sitemap.lastRun.success
+      ? '站点地图需要处理'
+      : googleReadback?.success
+        ? '站点地图与 Google 回读正常'
+        : '站点地图已验证，等待 Google 回读';
 
   return (
     <AdminShell active="seo">
@@ -103,12 +113,18 @@ export default async function AdminSeoPage({
       <section className="admin-panel">
         <div>
           <p className="eyebrow">Sitemap 状态</p>
-          <h2>{sitemap.lastRun?.success ? '站点地图运行正常' : sitemap.lastRun ? '站点地图需要处理' : '等待首次站点地图检查'}</h2>
+          <h2>{sitemapStatus}</h2>
           <p>正式地址：{config.sitemapUrl}</p>
           <p>最近检查：{sitemap.lastRun?.finishedAt ? sitemap.lastRun.finishedAt.slice(0, 19).replace('T', ' ') : '-'}</p>
           <p>URL 数量：{sitemap.lastRun?.processedUrls || sitemap.snapshot.length}</p>
           <p>文件数量：{sitemap.lastRun?.files.length || 0}</p>
           <p>Google 提交：{sitemap.lastRun?.googleSubmission.success ? '已由 API 接受' : sitemap.lastRun?.googleSubmission.message || '尚未提交'}</p>
+          <p>Google 回读：{googleReadback?.success
+            ? `正常（最后读取：${googleReadback.lastDownloadedAt?.slice(0, 19).replace('T', ' ') || '等待 Google 读取'}；发现页面：${googleReadback.discoveredPages ?? 0}）`
+            : googleReadback?.message || '尚未读取'}</p>
+          {googleReadback?.success && (googleReadback.errors || googleReadback.warnings) ? (
+            <p>Google Sitemap 提示：错误 {googleReadback.errors || 0}；警告 {googleReadback.warnings || 0}</p>
+          ) : null}
           {sitemap.lastRun?.errors.length ? <p>错误：{sitemap.lastRun.errors.join('；')}</p> : null}
         </div>
         <form action={refreshSitemapAction} className="admin-actions">

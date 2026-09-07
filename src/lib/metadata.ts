@@ -58,13 +58,31 @@ export function englishOnlyEditorialMetadata(
   description: string,
   image: MetadataImage = defaultOgImage
 ): Metadata {
-  const metadata = localizedMetadata(locale, path, title, description, image);
   const canonical = canonicalFor('en', path);
-  metadata.alternates = {
-    canonical,
-    languages: {en: canonical, 'x-default': canonical}
+  // Build this metadata independently so English-only editorial routes never
+  // inherit language alternates for variants that intentionally redirect.
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {en: canonical, 'x-default': canonical}
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'ZAIHAI SURFING',
+      images: [image],
+      type: 'website',
+      locale: 'en'
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image.url]
+    },
+    ...(locale !== 'en' ? {robots: {index: false, follow: true}} : {})
   };
-  metadata.openGraph = {...metadata.openGraph, url: canonical, locale: 'en'};
-  if (locale !== 'en') metadata.robots = {index: false, follow: true};
-  return metadata;
 }

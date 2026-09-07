@@ -82,14 +82,14 @@ export default async function LocaleLayout({
       },
       {
         '@type': 'WebPage',
-        name: 'Water sports industry news and buyer insights',
-        url: `${siteUrl}/${locale}/news`
-      },
-      {
-        '@type': 'WebPage',
         name: 'Project quotation and distributor contact',
         url: `${siteUrl}/${locale}/contact`
-      }
+      },
+      ...(locale === 'en' ? [{
+        '@type': 'WebPage',
+        name: 'Water sports industry news and buyer insights',
+        url: `${siteUrl}/en/news`
+      }] : [])
     ]
   };
 
