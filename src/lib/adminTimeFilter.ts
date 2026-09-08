@@ -45,6 +45,11 @@ function endOfShanghaiDate(value: string | undefined, fallback: Date) {
   return toUtcFromShanghai(parts.year, parts.month, parts.day, 23, 59, 59, 999);
 }
 
+export function isAdminTimestampInRange(timestamp: string, from: Date, to: Date) {
+  const value = new Date(timestamp).getTime();
+  return Number.isFinite(value) && value >= from.getTime() && value <= to.getTime();
+}
+
 export function parseAdminTimeFilter(searchParams: Record<string, string | string[] | undefined>) {
   const now = shanghaiNow();
   const year = now.getUTCFullYear();
