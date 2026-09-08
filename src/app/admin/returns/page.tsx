@@ -1,16 +1,20 @@
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate, money} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {readRefundRecords, readStoreOrders} from '@/lib/commerceStore';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminReturnsPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const [refunds, orders] = await Promise.all([readRefundRecords(), readStoreOrders()]);
+  const [allRefunds, orders] = await Promise.all([readRefundRecords(), readStoreOrders()]);
+  const refunds = allRefunds.filter((refund) => isAdminTimestampInRange(refund.createdAt, timeFilter.from, timeFilter.to));
   const orderMap = new Map(orders.map((order) => [order.id, order]));
   const paged = paginate(refunds.slice().reverse(), page, perPage);
 
@@ -20,6 +24,7 @@ export default async function AdminReturnsPage({searchParams}: {searchParams: Pr
         <p className="eyebrow">退换货管理</p>
         <h1>退款与售后记录</h1>
         <p>这里展示真实退款记录。新增退款请进入订单详情页处理，避免脱离订单和支付状态单独改账。</p>
+        <AdminTimeFilter action="/admin/returns" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="退款创建时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
