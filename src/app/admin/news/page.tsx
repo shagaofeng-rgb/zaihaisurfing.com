@@ -1,6 +1,8 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhPublishStatus} from '@/lib/adminZh';
 import {listAdminPosts} from '@/lib/backendStore';
 
@@ -13,7 +15,8 @@ export default async function AdminNewsPage({
 }) {
   const params = await searchParams;
   const {page, perPage} = parseAdminPagination(params);
-  const posts = await listAdminPosts('news');
+  const timeFilter = parseAdminTimeFilter(params);
+  const posts = (await listAdminPosts('news')).filter((post) => isAdminTimestampInRange(post.publishDate || post.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(posts, page, perPage);
   return (
     <AdminShell active="news">
@@ -21,6 +24,7 @@ export default async function AdminNewsPage({
         <p className="eyebrow">Industry News CMS</p>
         <h1>新闻管理</h1>
         <p>发布公司新闻、行业事实、海外市场动态和带来源说明的内容。建议只发布原创整理内容，并标明主要参考来源。</p>
+        <AdminTimeFilter action="/admin/news" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="新闻发布时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div>
