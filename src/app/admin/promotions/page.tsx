@@ -1,7 +1,9 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {listPromotions} from '@/lib/adminExtraStore';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +23,8 @@ function zhPromotionStatus(status: string) {
 export default async function AdminPromotionsPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
   const {page, perPage} = parseAdminPagination(params);
-  const promotions = await listPromotions();
+  const timeFilter = parseAdminTimeFilter(params);
+  const promotions = (await listPromotions()).filter((item) => isAdminTimestampInRange(item.updatedAt, timeFilter.from, timeFilter.to));
   const paged = paginate(promotions, page, perPage);
 
   return (
@@ -30,6 +33,7 @@ export default async function AdminPromotionsPage({searchParams}: {searchParams:
         <p className="eyebrow">优惠与促销</p>
         <h1>优惠码与报价优惠</h1>
         <p>促销记录写入独立持久化数据源。当前前台若未接入优惠码核销，本页会先作为运营配置与审计依据保留。</p>
+        <AdminTimeFilter action="/admin/promotions" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="促销更新时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <h2>新增促销</h2>
