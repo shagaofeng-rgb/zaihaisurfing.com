@@ -1,16 +1,19 @@
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate, getRetailAdminHealth, money} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhOrderStatus, zhPaymentMethod, zhPaymentStatus} from '@/lib/adminZh';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPaymentsPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const health = await getRetailAdminHealth();
+  const health = await getRetailAdminHealth({from: timeFilter.from, to: timeFilter.to});
   const orders = health.orders.slice().reverse();
   const paged = paginate(orders, page, perPage);
 
@@ -26,6 +29,7 @@ export default async function AdminPaymentsPage({searchParams}: {searchParams: P
         <article><span>待处理</span><strong>{health.orders.filter((item) => ['pending', 'processing', 'not_submitted'].includes(item.gatewayStatus)).length}</strong><small>待支付或处理中</small></article>
         <article><span>退款记录</span><strong>{health.refunds.length}</strong><small>真实退款日志</small></article>
         <article><span>支付通知</span><strong>{health.notices.length}</strong><small>Oceanpayment notice</small></article>
+        <AdminTimeFilter action="/admin/payments" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="支付订单时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
