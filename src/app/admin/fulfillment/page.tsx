@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhOrderStatus, zhShipmentStatus} from '@/lib/adminZh';
 import {readStoreOrders} from '@/lib/commerceStore';
 
@@ -10,8 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminFulfillmentPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const orders = (await readStoreOrders()).filter((order) => order.status !== 'cancelled').slice().reverse();
+  const orders = (await readStoreOrders()).filter((order) => order.status !== 'cancelled' && isAdminTimestampInRange(order.updatedAt || order.createdAt, timeFilter.from, timeFilter.to)).slice().reverse();
   const paged = paginate(orders, page, perPage);
 
   return (
@@ -20,6 +23,7 @@ export default async function AdminFulfillmentPage({searchParams}: {searchParams
         <p className="eyebrow">发货与物流</p>
         <h1>发货、跟踪号与物流状态</h1>
         <p>物流信息在订单详情页保存，会同步到订单、物流记录和访客事件，方便客服跟踪交付进度。</p>
+        <AdminTimeFilter action="/admin/fulfillment" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="订单更新时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
