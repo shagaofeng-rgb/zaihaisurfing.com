@@ -1,7 +1,9 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {listReviews} from '@/lib/adminExtraStore';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +11,8 @@ export const dynamic = 'force-dynamic';
 export default async function AdminReviewsPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
   const {page, perPage} = parseAdminPagination(params);
-  const reviews = await listReviews();
+  const timeFilter = parseAdminTimeFilter(params);
+  const reviews = (await listReviews()).filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(reviews, page, perPage);
 
   return (
@@ -18,6 +21,7 @@ export default async function AdminReviewsPage({searchParams}: {searchParams: Pr
         <p className="eyebrow">评价管理</p>
         <h1>商品评价与审核</h1>
         <p>本页读取真实评价数据源。当前前台未开放公开评价时保持空表，不使用虚假评价填充。</p>
+        <AdminTimeFilter action="/admin/reviews" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="评价创建时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
