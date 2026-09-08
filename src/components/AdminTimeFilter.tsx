@@ -21,11 +21,15 @@ const quickRanges = [
   {value: 'custom', label: '自定义'}
 ];
 
-const reservedKeys = new Set(['range', 'start', 'end', 'page']);
+const reservedKeys = new Set(['range', 'start', 'end']);
+
+function isPageKey(key: string) {
+  return key === 'page' || key.endsWith('Page');
+}
 
 function appendPreserved(search: URLSearchParams, params: QueryParams) {
   Object.entries(params).forEach(([key, value]) => {
-    if (reservedKeys.has(key)) return;
+    if (reservedKeys.has(key) || isPageKey(key)) return;
     if (Array.isArray(value)) value.forEach((item) => item && search.append(key, item));
     else if (value) search.set(key, value);
   });
@@ -55,7 +59,7 @@ export default function AdminTimeFilter({action, range, start, end, label, summa
   return (
     <form ref={formRef} className="admin-time-filter" action={action} method="get" aria-label={`${label}时间筛选`}>
       {Object.entries(params).map(([key, value]) => {
-        if (reservedKeys.has(key) || key === 'perPage') return null;
+        if (reservedKeys.has(key) || isPageKey(key) || key === 'perPage') return null;
         if (Array.isArray(value)) return value.map((item) => item ? <input key={`${key}-${item}`} name={key} type="hidden" value={item} /> : null);
         return value ? <input key={key} name={key} type="hidden" value={value} /> : null;
       })}
