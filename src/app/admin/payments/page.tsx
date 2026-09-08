@@ -4,7 +4,7 @@ import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate, getRetailAdminHealth, money} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
-import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhOrderStatus, zhPaymentMethod, zhPaymentStatus} from '@/lib/adminZh';
 
 export const dynamic = 'force-dynamic';
@@ -13,8 +13,10 @@ export default async function AdminPaymentsPage({searchParams}: {searchParams: P
   const params = await searchParams;
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const health = await getRetailAdminHealth({from: timeFilter.from, to: timeFilter.to});
-  const orders = health.orders.slice().reverse();
+  const health = await getRetailAdminHealth();
+  const orders = orders.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to)).slice().reverse();
+  const refunds = health.refunds.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
+  const notices = health.notices.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(orders, page, perPage);
 
   return (
@@ -25,10 +27,10 @@ export default async function AdminPaymentsPage({searchParams}: {searchParams: P
         <p>读取订单支付状态、Oceanpayment 通知、退款记录和预授权记录。退款操作在订单详情页执行并写入真实退款日志。</p>
       </div>
       <div className="admin-metrics">
-        <article><span>支付成功</span><strong>{health.orders.filter((item) => item.gatewayStatus === 'success').length}</strong><small>网关成功状态</small></article>
-        <article><span>待处理</span><strong>{health.orders.filter((item) => ['pending', 'processing', 'not_submitted'].includes(item.gatewayStatus)).length}</strong><small>待支付或处理中</small></article>
-        <article><span>退款记录</span><strong>{health.refunds.length}</strong><small>真实退款日志</small></article>
-        <article><span>支付通知</span><strong>{health.notices.length}</strong><small>Oceanpayment notice</small></article>
+        <article><span>支付成功</span><strong>{orders.filter((item) => item.gatewayStatus === 'success').length}</strong><small>网关成功状态</small></article>
+        <article><span>待处理</span><strong>{orders.filter((item) => ['pending', 'processing', 'not_submitted'].includes(item.gatewayStatus)).length}</strong><small>待支付或处理中</small></article>
+        <article><span>退款记录</span><strong>{refunds.length}</strong><small>真实退款日志</small></article>
+        <article><span>支付通知</span><strong>{notices.length}</strong><small>Oceanpayment notice</small></article>
         <AdminTimeFilter action="/admin/payments" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="支付订单时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
