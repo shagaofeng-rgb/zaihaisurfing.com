@@ -1,6 +1,8 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {listAdminMedia} from '@/lib/backendStore';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +14,8 @@ export default async function AdminMediaPage({
 }) {
   const params = await searchParams;
   const {page, perPage} = parseAdminPagination(params);
-  const media = await listAdminMedia();
+  const timeFilter = parseAdminTimeFilter(params);
+  const media = (await listAdminMedia()).filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(media, page, perPage);
   return (
     <AdminShell active="媒体库">
@@ -20,6 +23,7 @@ export default async function AdminMediaPage({
         <p className="eyebrow">图片与素材</p>
         <h1>媒体库</h1>
         <p>上传图片到 Vercel Blob，或登记已有图片 URL，并统一管理 ALT 文案和素材使用位置。</p>
+        <AdminTimeFilter action="/admin/media" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="媒体创建时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div>
