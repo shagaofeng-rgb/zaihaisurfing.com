@@ -18,12 +18,20 @@ type MaintenanceOptions = {
   submit?: boolean;
 };
 
-const GOOGLE_SUBMISSION_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000;
-
-function automaticGoogleSubmissionDue(lastSuccessfulGoogleSubmissionAt?: string) {
-  if (!lastSuccessfulGoogleSubmissionAt) return true;
-  const lastAttempt = new Date(lastSuccessfulGoogleSubmissionAt).getTime();
-  return !Number.isFinite(lastAttempt) || Date.now() - lastAttempt >= GOOGLE_SUBMISSION_INTERVAL_MS;
+/**
+ * A Sitemap PUT is idempotent, but it is still an external notification and
+ * should describe a real change. The earlier time-based throttle meant a
+ * newly published article could wait up to three days after its Sitemap had
+ * changed before Search Console was notified. Conversely, an unchanged
+ * Sitemap must not be submitted again on every daily health check.
+ */
+export function shouldAutomaticallySubmitSitemap(input: {
+  generated: boolean;
+  changed: boolean;
+  hasPreviousSnapshot: boolean;
+  submissionEnabled: boolean;
+}) {
+  return input.submissionEnabled && input.generated && (input.changed || !input.hasPreviousSnapshot);
 }
 
 function entryMap(entries: SitemapEntry[]) {
@@ -85,14 +93,17 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
     if (!robotsValid) errors.push('robots.txt does not declare the canonical sitemap index.');
 
     const googleConfig = googleSeoConfigStatus();
-    const shouldSubmit = Boolean(options.submit || (
-      generated &&
-      googleConfig.sitemapSubmissionEnabled &&
-      automaticGoogleSubmissionDue(state.lastSuccessfulGoogleSubmissionAt)
-    ));
-    const googleSubmission = shouldSubmit
-      ? await submitSitemapToGoogle(googleConfig.sitemapUrl)
-      : {attempted: false, success: false, status: 0, message: 'Submission was not requested.'};
+    const shouldSubmit = Boolean(options.submit || shouldAutomaticallySubmitSitemap({
+      generated,
+      changed,
+      hasPreviousSnapshot: state.snapshot.length > 0,
+      submissionEnabled: googleConfig.sitemapSubmissionEnabled
+    }));
+    const googleSubmission = !shouldSubmit
+      ? {attempted: false, success: false, status: 0, message: 'Submission was not requested.'}
+      : errors.length
+        ? {attempted: false, success: false, status: 0, message: 'Submission skipped because public sitemap validation failed.'}
+        : await submitSitemapToGoogle(googleConfig.sitemapUrl);
     const googleReadback = await readGoogleSitemapStatus(googleConfig.sitemapUrl);
 
     const finishedAt = new Date().toISOString();
