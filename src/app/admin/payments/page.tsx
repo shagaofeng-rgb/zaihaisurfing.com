@@ -14,7 +14,7 @@ export default async function AdminPaymentsPage({searchParams}: {searchParams: P
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
   const health = await getRetailAdminHealth();
-  const orders = orders.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to)).slice().reverse();
+  const orders = health.orders.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to)).slice().reverse();
   const refunds = health.refunds.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
   const notices = health.notices.filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(orders, page, perPage);
