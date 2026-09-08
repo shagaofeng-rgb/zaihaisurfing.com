@@ -1,7 +1,9 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate, money} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhDevice, zhEventType} from '@/lib/adminZh';
 import {readAnalyticsEvents, readStoreOrders} from '@/lib/commerceStore';
 
@@ -9,8 +11,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminCartsPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const [events, orders] = await Promise.all([readAnalyticsEvents(), readStoreOrders()]);
+  const [allEvents, allOrders] = await Promise.all([readAnalyticsEvents(), readStoreOrders()]);
+  const events = allEvents.filter((event) => isAdminTimestampInRange(event.timestamp, timeFilter.from, timeFilter.to));
+  const orders = allOrders.filter((order) => isAdminTimestampInRange(order.createdAt, timeFilter.from, timeFilter.to));
   const checkoutEvents = events
     .filter((event) => /cart|checkout|payment|order/i.test(event.type))
     .slice()
@@ -32,6 +37,7 @@ export default async function AdminCartsPage({searchParams}: {searchParams: Prom
         <article><span>疑似弃购</span><strong>{abandoned.length}</strong><small>未匹配到成交订单的结账行为</small></article>
         <article><span>成交订单</span><strong>{orders.length}</strong><small>真实订单数量</small></article>
         <article><span>已成交金额</span><strong>{money(orders.filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status)).reduce((sum, order) => sum + order.total, 0))}</strong><small>已付款订单合计</small></article>
+        <AdminTimeFilter action="/admin/carts" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="结账行为时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
