@@ -1,7 +1,9 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhEventType} from '@/lib/adminZh';
 import {listAuditLogs} from '@/lib/adminExtraStore';
 import {readAnalyticsEvents, readEmailLogs, readPaymentNotifications, readRefundRecords, readShipmentRecords} from '@/lib/commerceStore';
@@ -10,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminAuditPage({searchParams}: {searchParams: Promise<Record<string, string | string[] | undefined>>}) {
   const params = await searchParams;
+  const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
   const [audits, events, emails, notices, refunds, shipments] = await Promise.all([
     listAuditLogs(),
@@ -26,7 +29,7 @@ export default async function AdminAuditPage({searchParams}: {searchParams: Prom
     ...notices.map((notice) => ({id: notice.id, time: notice.createdAt, action: '支付网关通知', target: notice.orderId, actor: notice.provider, detail: `${notice.paymentStatus} / verified=${notice.verified}`})),
     ...refunds.map((refund) => ({id: refund.id, time: refund.createdAt, action: '退款记录', target: refund.orderId, actor: 'admin/payment', detail: `${refund.refundNo} / ${refund.status}`})),
     ...shipments.map((shipment) => ({id: shipment.id, time: shipment.createdAt, action: '物流记录', target: shipment.orderId, actor: shipment.logisticsProvider || 'admin', detail: `${shipment.trackingNumber || '-'} / ${shipment.shipmentStatus}`}))
-  ].sort((a, b) => b.time.localeCompare(a.time));
+  ].filter((item) => isAdminTimestampInRange(item.time, timeFilter.from, timeFilter.to)).sort((a, b) => b.time.localeCompare(a.time));
   const paged = paginate(derived, page, perPage);
 
   return (
@@ -35,6 +38,7 @@ export default async function AdminAuditPage({searchParams}: {searchParams: Prom
         <p className="eyebrow">操作日志</p>
         <h1>关键操作与系统事件</h1>
         <p>合并展示后台操作、支付通知、退款、物流、邮件和结账类事件，方便排查订单与数据同步问题。</p>
+        <AdminTimeFilter action="/admin/audit" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="日志记录时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div className="admin-table-wrap">
