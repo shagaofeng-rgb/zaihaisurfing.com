@@ -1,6 +1,8 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
+import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhPublishStatus} from '@/lib/adminZh';
 import {listAdminPosts} from '@/lib/backendStore';
 
@@ -13,7 +15,8 @@ export default async function AdminBlogPage({
 }) {
   const params = await searchParams;
   const {page, perPage} = parseAdminPagination(params);
-  const posts = await listAdminPosts('blog');
+  const timeFilter = parseAdminTimeFilter(params);
+  const posts = (await listAdminPosts('blog')).filter((post) => isAdminTimestampInRange(post.publishDate || post.createdAt, timeFilter.from, timeFilter.to));
   const paged = paginate(posts, page, perPage);
   return (
     <AdminShell active="blog">
@@ -21,6 +24,7 @@ export default async function AdminBlogPage({
         <p className="eyebrow">SEO / AIO Content</p>
         <h1>博客管理</h1>
         <p>发布产品知识、应用方案、对比分析和采购决策内容，用于 Google SEO / GEO / AIO 获客。</p>
+        <AdminTimeFilter action="/admin/blog" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="博客发布时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
         <div>
