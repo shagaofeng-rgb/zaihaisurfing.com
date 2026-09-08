@@ -2,6 +2,8 @@
 
 import {useRef, useState} from 'react';
 
+type QueryParams = Record<string, string | string[] | undefined>;
+
 type AdminTimeFilterProps = {
   action: string;
   range: string;
@@ -9,16 +11,27 @@ type AdminTimeFilterProps = {
   end: string;
   label: string;
   summary: string;
+  params?: QueryParams;
 };
 
 const quickRanges = [
   {value: 'day', label: '今天'},
   {value: 'week', label: '本周'},
   {value: 'month', label: '本月'},
-  {value: 'year', label: '今年'}
+  {value: 'custom', label: '自定义'}
 ];
 
-export default function AdminTimeFilter({action, range, start, end, label, summary}: AdminTimeFilterProps) {
+const reservedKeys = new Set(['range', 'start', 'end', 'page']);
+
+function appendPreserved(search: URLSearchParams, params: QueryParams) {
+  Object.entries(params).forEach(([key, value]) => {
+    if (reservedKeys.has(key)) return;
+    if (Array.isArray(value)) value.forEach((item) => item && search.append(key, item));
+    else if (value) search.set(key, value);
+  });
+}
+
+export default function AdminTimeFilter({action, range, start, end, label, summary, params = {}}: AdminTimeFilterProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedRange, setSelectedRange] = useState(range);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,12 +43,24 @@ export default function AdminTimeFilter({action, range, start, end, label, summa
 
   function applyQuickRange(value: string) {
     setSelectedRange(value);
+    if (value === 'custom') return;
     setIsSubmitting(true);
-    window.location.assign(`${action}?range=${encodeURIComponent(value)}`);
+    const search = new URLSearchParams();
+    appendPreserved(search, params);
+    search.set('range', value);
+    search.set('page', '1');
+    window.location.assign(`${action}?${search.toString()}`);
   }
 
   return (
     <form ref={formRef} className="admin-time-filter" action={action} method="get" aria-label={`${label}时间筛选`}>
+      {Object.entries(params).map(([key, value]) => {
+        if (reservedKeys.has(key) || key === 'perPage') return null;
+        if (Array.isArray(value)) return value.map((item) => item ? <input key={`${key}-${item}`} name={key} type="hidden" value={item} /> : null);
+        return value ? <input key={key} name={key} type="hidden" value={value} /> : null;
+      })}
+      {typeof params.perPage === 'string' ? <input name="perPage" type="hidden" value={params.perPage} /> : null}
+      <input name="page" type="hidden" value="1" />
       <div>
         <span>{label}</span>
         <small>{summary}</small>
@@ -65,7 +90,6 @@ export default function AdminTimeFilter({action, range, start, end, label, summa
           <option value="day">今天</option>
           <option value="week">本周</option>
           <option value="month">本月</option>
-          <option value="year">今年</option>
           <option value="custom">自定义</option>
         </select>
       </label>
