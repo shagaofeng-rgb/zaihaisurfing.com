@@ -1,5 +1,10 @@
 import {ADMIN_PAGE_SIZES, pageHref} from '@/lib/adminPagination';
 
+function visiblePages(page: number, totalPages: number) {
+  const pages = new Set([1, totalPages, page - 2, page - 1, page, page + 1, page + 2]);
+  return [...pages].filter((value) => value >= 1 && value <= totalPages).sort((a, b) => a - b);
+}
+
 export default function AdminPagination({
   basePath,
   params,
@@ -15,15 +20,38 @@ export default function AdminPagination({
   total: number;
   totalPages: number;
 }) {
+  const pages = visiblePages(page, totalPages);
+  const firstItem = total ? (page - 1) * perPage + 1 : 0;
+  const lastItem = Math.min(total, page * perPage);
+
   return (
     <div className="admin-pagination">
-      <div>
+      <div className="admin-pagination-summary">
         <strong>共 {total} 条</strong>
-        <span>第 {page} / {totalPages} 页</span>
+        <span>当前显示 {firstItem}-{lastItem}</span>
       </div>
       <nav aria-label="分页">
-        <a className={`button secondary small ${page <= 1 ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: Math.max(1, page - 1), perPage})}>上一页</a>
-        <a className={`button secondary small ${page >= totalPages ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: Math.min(totalPages, page + 1), perPage})}>下一页</a>
+        <a aria-disabled={page <= 1} className={`button secondary small ${page <= 1 ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: 1, perPage})}>首页</a>
+        <a aria-disabled={page <= 1} className={`button secondary small ${page <= 1 ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: Math.max(1, page - 1), perPage})}>上一页</a>
+        <div className="admin-page-numbers">
+          {pages.map((value, index) => {
+            const previous = pages[index - 1];
+            return (
+              <span key={value}>
+                {previous && value - previous > 1 ? <i aria-hidden="true">...</i> : null}
+                <a
+                  aria-current={value === page ? 'page' : undefined}
+                  className={value === page ? 'active' : ''}
+                  href={pageHref(basePath, params, {page: value, perPage})}
+                >
+                  {value}
+                </a>
+              </span>
+            );
+          })}
+        </div>
+        <a aria-disabled={page >= totalPages} className={`button secondary small ${page >= totalPages ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: Math.min(totalPages, page + 1), perPage})}>下一页</a>
+        <a aria-disabled={page >= totalPages} className={`button secondary small ${page >= totalPages ? 'is-disabled' : ''}`} href={pageHref(basePath, params, {page: totalPages, perPage})}>末页</a>
       </nav>
       <form action={basePath} method="get">
         {Object.entries(params).map(([key, value]) => {
