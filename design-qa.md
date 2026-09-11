@@ -13,9 +13,9 @@ Reference visual: Product Design option 1 (`exec-7219cea8-ca98-4c49-8974-7d4aa90
 | Area | Result | Notes |
 | --- | --- | --- |
 | Header | Pass | Thin white navigation, dark wordmark, lime quote CTA and compact mobile header retain the template's visual hierarchy. |
-| Hero | Pass | The desktop version uses the wide dark-ocean rider composition; mobile uses a dedicated 9:16 rider image so headline, rider and CTA all remain visible without destructive cropping. |
-| Product range | Pass | Navy three-column grid, dividers, category labels and large uppercase names match the source layout. The real product photos were converted to transparent display assets, removing their white canvas and the prior dark-blend visibility failure. |
-| Partnership | Pass | Pale editorial block with dark typography, factual support grid and export visual follows the template rhythm. |
+| Hero | Pass | The desktop version now uses the selected template-one rider composition, white nav hierarchy, right-side campaign note and three-item lower proof strip. Mobile uses a dedicated 9:16 rider image so headline, rider and CTA remain visible without destructive cropping. |
+| Product range | Pass | Navy three-column grid, upper-right product overview, dividers, product descriptions, three-value specification rows and category links match the source layout. The real product photos remain transparent display assets, removing their white canvas and the prior dark-blend visibility failure. |
+| Partnership | Pass | White editorial block now follows the selected source: a top horizontal statistics strip, title and program CTA to the left, and export image with caption to the right. |
 | Mobile stacking | Pass | Product cards stack with a visible, uncropped product per card; proof text and CTAs are no longer obscured by floating controls. |
 
 ## Functional and accessibility checks

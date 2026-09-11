@@ -9477,3 +9477,126 @@ h3 {
     gap: 2px;
   }
 }
+
+/* Homepage correction: selected template one (precise layout hierarchy) */
+body:has(.ocean-home) .site-header {
+  min-height: 56px;
+  padding: 7px clamp(24px, 4.7vw, 74px);
+  background: #fff;
+  border-bottom: 0;
+}
+body:has(.ocean-home) .site-header .brand { gap: 9px; font-size: 12px; font-weight: 850; letter-spacing: 0; }
+body:has(.ocean-home) .site-header .brand img { width: 43px; height: 28px; }
+body:has(.ocean-home) .site-header .nav-links { gap: clamp(10px, 1.2vw, 19px); font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+body:has(.ocean-home) .site-header .header-tools { gap: 7px; }
+body:has(.ocean-home) .site-header .header-account { min-height: 34px; display: inline-flex; align-items: center; padding: 0 9px; color: #102438; font-size: 11px; font-weight: 650; white-space: nowrap; }
+body:has(.ocean-home) .site-header .header-account + .header-account { border: 1px solid #c9d1d8; border-radius: 5px; }
+body:has(.ocean-home) .site-header .header-cta { min-height: 36px; padding: 0 15px; border-radius: 5px; font-size: 11px; font-weight: 850; letter-spacing: 0; text-transform: none; }
+
+.ocean-home { background: #061e32; }
+.ocean-shell { width: min(1360px, calc(100% - clamp(48px, 9.4vw, 152px))); }
+.ocean-kicker { color: #d4f249; font-size: 10px; letter-spacing: .17em; }
+.ocean-hero { min-height: min(626px, calc(100vh - 56px)); background: #103954; }
+.ocean-hero-scrim { background: linear-gradient(90deg, rgba(1, 20, 37, .46) 0%, rgba(1, 20, 37, .13) 59%, rgba(1, 20, 37, .04) 100%); }
+.ocean-hero-content { padding: 73px 0 137px; }
+.ocean-hero-content h1 { max-width: 550px; margin-top: 19px; font-size: clamp(49px, 5.2vw, 78px); line-height: .91; letter-spacing: -.07em; }
+.ocean-hero-intro { max-width: 462px; margin-top: 20px !important; font-size: 15px; line-height: 1.5; }
+.ocean-hero-actions { gap: 10px; margin-top: 22px; }
+.ocean-button { min-height: 45px; padding: 0 20px; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.ocean-button-ghost { background: rgba(4, 25, 42, .1); }
+.ocean-hero-note { position: absolute; right: clamp(33px, 7vw, 116px); top: 154px; color: #fff; font-family: var(--font-display); font-size: 9px; font-weight: 900; letter-spacing: .15em; line-height: 1.45; text-align: right; text-transform: uppercase; }
+.ocean-hero-note::after { content: ''; display: block; width: 36px; height: 2px; margin: 9px 0 0 auto; background: #d4f249; }
+.ocean-proof { min-height: 86px; border-top: 1px solid rgba(255,255,255,.55); }
+.ocean-proof article { min-height: 86px; padding: 21px clamp(16px, 2.3vw, 32px) 16px; }
+.ocean-proof article:first-child { padding-left: 35px; }
+.ocean-proof h2 { margin: 0; font-family: var(--font-display); font-size: 13px; font-weight: 900; letter-spacing: -.025em; }
+.ocean-proof p { margin-top: 4px; font-size: 11px; line-height: 1.2; }
+
+.ocean-products { padding: 43px 0 36px; background: #061e32; }
+.ocean-products-head { align-items: end; padding-bottom: 20px; border-bottom: 0; }
+.ocean-products-head h2, .ocean-partners h2, .ocean-closing h2 { margin-top: 11px; font-size: clamp(38px, 4.3vw, 64px); line-height: .91; }
+.ocean-products-aside { width: 180px; padding: 0 0 5px 19px; border-left: 1px solid rgba(255,255,255,.45); }
+.ocean-products-aside p { margin-bottom: 13px; color: rgba(255,255,255,.82); font-size: 12px; line-height: 1.35; }
+.ocean-text-link { color: #fff; border-bottom-color: #fff; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.ocean-text-link span { margin-left: 14px; }
+.ocean-product-grid { border-top: 1px solid rgba(255,255,255,.42); }
+.ocean-product-card { padding: 21px clamp(16px, 2vw, 30px) 26px; }
+.ocean-product-card:first-child { padding-left: 0; }
+.ocean-product-image-wrap { height: clamp(185px, 18vw, 276px); margin: 0; overflow: visible; }
+.ocean-product-image-wrap img { width: 118%; height: 118%; filter: drop-shadow(0 18px 17px rgba(0,0,0,.45)); }
+.ocean-product-card h3 { display: block; margin-top: 4px; font-size: clamp(15px, 1.45vw, 21px); line-height: 1.03; letter-spacing: .04em; }
+.ocean-product-description { margin-top: 8px !important; color: rgba(255,255,255,.88) !important; font-family: var(--font-body) !important; font-size: 12px !important; font-weight: 400 !important; letter-spacing: 0 !important; line-height: 1.3; text-transform: none !important; }
+.ocean-product-specs { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 0 0; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.45); border-bottom: 1px solid rgba(255,255,255,.45); }
+.ocean-product-specs div { min-height: 43px; padding: 0 9px; border-right: 1px solid rgba(255,255,255,.35); }
+.ocean-product-specs div:first-child { padding-left: 0; }
+.ocean-product-specs div:last-child { border-right: 0; }
+.ocean-product-specs dt { color: #fff; font-family: var(--font-display); font-size: 12px; font-weight: 900; line-height: 1.15; }
+.ocean-product-specs dd { margin: 4px 0 0; color: rgba(255,255,255,.72); font-size: 10px; line-height: 1.18; }
+.ocean-product-link { margin-top: 15px !important; color: #fff !important; font-family: var(--font-body) !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 0 !important; text-transform: none !important; }
+.ocean-product-link span { margin-left: 8px; font-size: 17px; }
+.ocean-product-meta { display: none; }
+
+.ocean-partners { background: #fff; }
+.ocean-partner-stats { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr; padding: 31px 0 25px; }
+.ocean-partner-stats div { min-height: 64px; display: flex; align-items: start; gap: 10px; padding: 0 clamp(13px, 2vw, 31px); border-right: 1px solid #c0c7cd; }
+.ocean-partner-stats div:first-child { padding-left: 0; }
+.ocean-partner-stats div:last-child { border-right: 0; }
+.ocean-partner-stats strong { color: #06101f; font-family: var(--font-display); font-size: clamp(26px, 2.9vw, 43px); font-weight: 950; letter-spacing: -.07em; line-height: .85; }
+.ocean-partner-stats span { color: #40505c; font-size: 13px; line-height: 1.23; }
+.ocean-partners-grid { min-height: 0; grid-template-columns: minmax(300px, .72fr) 1.28fr; gap: clamp(42px, 6.2vw, 98px); align-items: start; padding-bottom: 58px; }
+.ocean-partners-copy { padding: 42px 0 0; }
+.ocean-partners .ocean-kicker { color: #394958; }
+.ocean-partners h2 { color: #06101f; }
+.ocean-partners-copy > p:not(.ocean-kicker) { max-width: 345px; margin-top: 22px; color: #485662; font-size: 14px; line-height: 1.55; }
+.ocean-partners-copy .ocean-button { margin-top: 23px; border-radius: 4px; }
+.ocean-partners-copy .ocean-button span { margin-left: 16px; font-size: 17px; }
+.ocean-partners-image { position: relative; height: min(385px, 30vw); min-height: 270px; margin-top: 12px; }
+.ocean-partners-image img { object-position: 62% center; }
+.ocean-partners-image p { position: absolute; top: 29px; right: 27px; color: #e5edf3; font-family: var(--font-display); font-size: 9px; font-weight: 900; letter-spacing: .17em; line-height: 1.55; text-align: right; text-transform: uppercase; }
+.ocean-partner-facts { display: none; }
+.ocean-closing { padding: 88px 0; }
+
+@media (max-width: 1080px) {
+  body:has(.ocean-home) .site-header .nav-links { gap: 8px; font-size: 10px; }
+  .ocean-hero-content { padding-top: 66px; }
+  .ocean-hero-note { right: 36px; }
+  .ocean-product-image-wrap { height: 205px; }
+}
+
+@media (max-width: 920px) {
+  body:has(.ocean-home) .site-header .header-account { display: none; }
+}
+
+@media (max-width: 760px) {
+  body:has(.ocean-home) .site-header { min-height: 59px; padding-inline: 18px; }
+  body:has(.ocean-home) .site-header .brand img { width: 48px; height: 29px; }
+  .ocean-shell { width: min(100% - 40px, 570px); }
+  .ocean-hero { min-height: 790px; }
+  .ocean-hero-scrim { background: linear-gradient(180deg, rgba(1,20,37,.5), rgba(1,20,37,.15) 53%, rgba(1,20,37,.35)); }
+  .ocean-hero-content { padding: 64px 0 0; }
+  .ocean-hero-content h1 { max-width: 350px; font-size: clamp(43px, 12.7vw, 59px); }
+  .ocean-hero-intro { max-width: 315px; font-size: 13px; }
+  .ocean-hero-note { display: none; }
+  .ocean-proof { min-height: 0; }
+  .ocean-proof article { min-height: 0; display: block; padding: 11px 0; }
+  .ocean-proof article:first-child { padding-left: 0; }
+  .ocean-proof h2 { font-size: 13px; }
+  .ocean-proof p { font-size: 10px; }
+  .ocean-products { padding: 61px 0 55px; }
+  .ocean-products-head { display: block; }
+  .ocean-products-head h2 { font-size: clamp(38px, 11vw, 53px); }
+  .ocean-products-aside { width: auto; margin-top: 25px; }
+  .ocean-product-card, .ocean-product-card:first-child, .ocean-product-card:last-child { padding: 20px 0 30px; }
+  .ocean-product-image-wrap { height: 248px; }
+  .ocean-product-card h3 { font-size: 20px; }
+  .ocean-product-specs { max-width: 450px; }
+  .ocean-partner-stats { grid-template-columns: 1fr 1fr; gap: 18px 0; padding: 29px 0; }
+  .ocean-partner-stats div { min-height: 49px; padding: 0 15px; }
+  .ocean-partner-stats div:nth-child(odd) { padding-left: 0; }
+  .ocean-partner-stats div:nth-child(2) { border-right: 0; }
+  .ocean-partner-stats strong { font-size: 29px; }
+  .ocean-partner-stats span { font-size: 11px; }
+  .ocean-partners-grid { display: flex; flex-direction: column; gap: 31px; padding-bottom: 0; }
+  .ocean-partners-copy { width: min(100% - 40px, 570px); padding: 16px 0 0; }
+  .ocean-partners-image { width: 100%; height: 318px; margin: 0; }
+}
