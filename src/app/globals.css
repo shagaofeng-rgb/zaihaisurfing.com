@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 41825)
+Total output lines: 9064
+
 :root {
   --ink: #111318;
   --muted: #5e6470;
@@ -19,6 +22,573 @@
   --font-body: var(--font-manrope);
   --font-display: var(--font-sora);
   --font-tech: var(--font-oxanium);
+}
+
+/* Homepage: Resort Partnership editorial direction */
+body:has(.resort-home) {
+  background: #f7f3ec;
+}
+
+body:has(.resort-home) .site-header {
+  min-height: 62px;
+  padding-block: 8px;
+  background: rgba(255, 253, 248, 0.96);
+  border-bottom-color: #e6dfd3;
+}
+
+body:has(.resort-home) .site-header .brand img {
+  width: 54px;
+  height: 32px;
+}
+
+body:has(.resort-home) .site-header .brand {
+  gap: 8px;
+  font-size: 12px;
+}
+
+body:has(.resort-home) .site-header .nav-links,
+body:has(.resort-home) .site-header .header-tools {
+  font-size: 12px;
+}
+
+body:has(.resort-home) .site-header .header-cta {
+  min-height: 37px;
+  padding: 8px 16px;
+  color: #111827;
+  background: #c6f030;
+  border-radius: 4px;
+}
+
+.resort-home {
+  --resort-ink: #071025;
+  --resort-muted: #5d6470;
+  --resort-paper: #f7f3ec;
+  --resort-white: #fffdfa;
+  --resort-lime: #c6f030;
+  --resort-blue: #075d88;
+  --resort-line: #ddd8ce;
+  color: var(--resort-ink);
+  background: var(--resort-paper);
+}
+
+.resort-home h1,
+.resort-home h2,
+.resort-home h3,
+.resort-home .resort-button,
+.resort-home .resort-inline-link {
+  font-family: var(--font-display);
+}
+
+.resort-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  min-height: min(780px, calc(100svh - 62px));
+  background: var(--resort-white);
+}
+
+.resort-hero-copy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  max-width: 680px;
+  padding: clamp(48px, 7.5vw, 116px) clamp(28px, 6vw, 96px) clamp(42px, 7vw, 100px);
+}
+
+.resort-kicker {
+  margin: 0 0 15px;
+  color: #687080;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.resort-hero h1,
+.resort-section h2,
+.resort-project h2 {
+  margin: 0;
+  color: var(--resort-ink);
+  font-size: clamp(36px, 4.25vw, 69px);
+  font-weight: 900;
+  letter-spacing: -0.065em;
+  line-height: 0.93;
+  text-wrap: balance;
+}
+
+.resort-hero-intro {
+  max-width: 49ch;
+  margin: 21px 0 0;
+  color: #485160;
+  font-size: clamp(15px, 1.25vw, 18px);
+  line-height: 1.55;
+}
+
+.resort-hero-actions,
+.resort-project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.resort-button {
+  display: inline-flex;
+  min-height: 47px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 19px;
+  border: 1px solid var(--resort-ink);
+  border-radius: 5px;
+  color: var(--resort-ink);
+  font-size: 13px;
+  font-weight: 900;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.resort-button:hover,
+.resort-button:focus-visible {
+  transform: translateY(-2px);
+}
+
+.resort-button-primary {
+  background: var(--resort-lime);
+  border-color: var(--resort-lime);
+}
+
+.resort-button-secondary {
+  background: transparent;
+}
+
+.resort-proof-list,
+.resort-partnership-copy ul {
+  display: grid;
+  gap: 8px;
+  margin: 25px 0 0;
+  padding: 0;
+  color: #343d4c;
+  font-size: 13px;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
+.resort-script {
+  margin: clamp(46px, 6vw, 90px) 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(44px, 5vw, 76px);
+  font-style: italic;
+  letter-spacing: -0.08em;
+  line-height: 0.82;
+}
+
+.resort-script-caption {
+  margin: 16px 0 0 10px;
+  color: #687080;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.resort-hero-media,
+.resort-project-image,
+.resort-equipment-image {
+  position: relative;
+  overflow: hidden;
+  background: #c7e6f2;
+}
+
+.resort-hero-media img {
+  width: 100%;
+  height: 100%;
+  min-height: 630px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.resort-hero-label,
+.resort-hero-media::before {
+  position: absolute;
+  right: clamp(24px, 4vw, 64px);
+}
+
+.resort-hero-media::before {
+  top: 36px;
+  width: 66px;
+  height: 1px;
+  background: var(--resort-lime);
+  content: '';
+}
+
+.resort-hero-label {
+  top: 49px;
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  line-height: 1.55;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.resort-section {
+  width: min(1250px, calc(100% - 72px));
+  margin: 0 auto;
+  padding: clamp(75px, 9vw, 136px) 0;
+}
+
+.resort-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.55fr);
+  gap: 56px;
+  align-items: end;
+}
+
+.resort-section-head > p {
+  max-width: 39ch;
+  margin: 0 0 3px;
+  color: var(--resort-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.resort-business-grid,
+.resort-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.resort-business-card {
+  display: grid;
+  grid-template-rows: 172px auto;
+  min-width: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--resort-line);
+  background: var(--resort-white);
+}
+
+.resort-business-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resort-business-card > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  padding: 15px 4px 18px;
+}
+
+.resort-business-card h3,
+.resort-category-card h3 {
+  margin: 0;
+  color: var(--resort-ink);
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.resort-business-card p,
+.resort-category-card p {
+  grid-column: 1 / 2;
+  margin: 0;
+  color: var(--resort-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.resort-business-card span {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--resort-ink);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.resort-business-card:hover img,
+.resort-category-card:hover img {
+  transform: scale(1.035);
+}
+
+.resort-business-card img,
+.resort-category-card img {
+  transition: transform 220ms ease;
+}
+
+.resort-partnership {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.62fr) minmax(260px, 0.74fr);
+  gap: 24px;
+  align-items: stretch;
+  border-top: 1px solid var(--resort-line);
+}
+
+.resort-equipment-image {
+  min-height: 485px;
+}
+
+.resort-equipment-image img,
+.resort-project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resort-equipment-image p,
+.resort-project-image p {
+  position: absolute;
+  top: 22px;
+  left: 23px;
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.resort-partnership-copy {
+  padding: 10px 0;
+}
+
+.resort-partnership-copy h2 {
+  font-size: clamp(31px, 3vw, 47px);
+}
+
+.resort-partnership-copy > p {
+  margin: 16px 0 0;
+  color: var(--resort-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.resort-partnership-copy ul {
+  font-size: 12px;
+}
+
+.resort-inline-link {
+  display: inline-block;
+  margin-top: 25px;
+  padding-bottom: 5px;
+  color: var(--resort-ink);
+  border-bottom: 1px solid currentColor;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.resort-video-quote {
+  display: grid;
+  grid-template-rows: 0.92fr 0.63fr;
+  min-height: 485px;
+}
+
+.resort-video-card {
+  position: relative;
+  overflow: hidden;
+  background: #234b61;
+}
+
+.resort-video-card video {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  object-fit: cover;
+}
+
+.resort-video-card p {
+  position: absolute;
+  bottom: 12px;
+  left: 15px;
+  margin: 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.resort-video-quote blockquote {
+  display: grid;
+  align-content: center;
+  margin: 0;
+  padding: 25px;
+  color: #31435a;
+  background: #e2eef3;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(23px, 2.1vw, 34px);
+  font-style: italic;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  text-align: center;
+}
+
+.resort-video-quote cite {
+  display: block;
+  margin-top: 18px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+}
+
+.resort-products {
+  border-top: 1px solid var(--resort-line);
+}
+
+.resort-products-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.resort-products-head h2 {
+  font-size: clamp(32px, 3.6vw, 56px);
+}
+
+.resort-products-head .resort-inline-link {
+  flex: 0 0 auto;
+  margin-bottom: 4px;
+}
+
+.resort-category-grid {
+  margin-top: 35px;
+}
+
+.resort-category-card {
+  overflow: hidden;
+  background: #f1f0ec;
+  border: 1px solid #e7e3db;
+}
+
+.resort-category-card img {
+  width: 100%;
+  height: 235px;
+  object-fit: contain;
+  padding: 20px;
+}
+
+.resort-category-card > div {
+  padding: 4px 18px 20px;
+}
+
+.resort-category-card p {
+  margin-top: 7px;
+}
+
+.resort-project {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(350px, 0.92fr);
+  margin: 0;
+  background: var(--resort-white);
+  border-top: 1px solid var(--resort-line);
+}
+
+.resort-project-image {
+  min-height: 360px;
+}
+
+.resort-project-copy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding: clamp(48px, 7vw, 92px);
+}
+
+.resort-project-copy h2 {
+  font-size: clamp(34px, 3.3vw, 54px);
+}
+
+.resort-project-copy > p {
+  max-width: 42ch;
+  margin: 16px 0 0;
+  color: var(--resort-muted);
+  font-size: 15px;
+}
+
+body:has(.resort-home) .site-footer {
+  padding: 32px clamp(20px, 4vw, 56px) 26px;
+  color: var(--resort-ink);
+  background: var(--resort-white);
+  border-top: 1px solid var(--resort-line);
+}
+
+body:has(.resort-home) .site-footer .footer-brand > p,
+body:has(.resort-home) .site-footer .footer-column,
+body:has(.resort-home) .site-footer .footer-quote,
+body:has(.resort-home) .site-footer .payment-badges {
+  display: none;
+}
+
+body:has(.resort-home) .site-footer.footer-upgraded {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px 42px;
+}
+
+body:has(.resort-home) .site-footer .footer-brand {
+  display: block;
+}
+
+body:has(.resort-home) .site-footer .footer-bottom {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .resort-hero { grid-template-columns: 1fr; }
+  .resort-hero-copy { max-width: 720px; padding-bottom: 56px; }
+  .resort-hero-media { min-height: 570px; }
+  .resort-hero-media img { min-height: 570px; max-height: 680px; object-position: center 43%; }
+  .resort-section { width: min(100% - 40px, 760px); }
+  .resort-section-head, .resort-partnership, .resort-project { grid-template-columns: 1fr; }
+  .resort-section-head { gap: 20px; }
+  .resort-business-grid { grid-template-columns: 1fr; }
+  .resort-business-card { grid-template-rows: 215px auto; }
+  .resort-partnership { gap: 28px; }
+  .resort-equipment-image { min-height: 380px; }
+  .resort-video-quote { min-height: 0; grid-template-columns: 1.1fr 0.9fr; grid-template-rows: 1fr; }
+  .resort-video-card video { min-height: 260px; }
+  .resort-category-grid { grid-template-columns: 1fr; }
+  .resort-category-card { display: grid; grid-template-columns: 0.86fr 1fr; align-items: center; }
+  .resort-category-card img { height: 210px; }
+  .resort-project-image { min-height: 360px; }
+  .resort-project-copy { padding: 56px max(20px, calc((100vw - 680px) / 2)); }
+}
+
+@media (max-width: 620px) {
+  .resort-hero-copy { padding: 46px 20px 48px; }
+  .resort-hero h1 { font-size: clamp(39px, 11.2vw, 54px); }
+  .resort-hero-media, .resort-hero-media img { min-height: 440px; }
+  .resort-hero-media img { object-position: center; }
+  .resort-hero-label { top: 42px; right: 23px; font-size: 9px; }
+  .resort-hero-media::before { top: 30px; right: 23px; width: 54px; }
+  .resort-script { font-size: 57px; }
+  .resort-section { width: calc(100% - 36px); padding: 68px 0; }
+  .resort-section h2, .resort-project h2 { font-size: clamp(34px, 10.4vw, 49px); }
+  .resort-business-card { grid-template-rows: 180px auto; }
+  .resort-partnership { padding-top: 68px; }
+  .resort-equipment-image { min-height: 310px; }
+  .resort-video-quote { grid-template-columns: 1fr; }
+  .resort-video-card video { min-height: 220px; }
+  .resort-video-quote blockquote { min-height: 220px; }
+  .resort-products-head { display: block; }
+  .resort-products-head .resort-inline-link { margin-top: 20px; }
+  .resort-category-card { grid-template-columns: 1fr; }
+  .resort-category-card img { height: 220px; }
+  .resort-project-image { min-height: 285px; }
+  .resort-project-copy { padding: 52px 20px 58px; }
+  body:has(.resort-home) .site-footer.footer-upgraded { align-items: flex-start; }
+  body:has(.resort-home) .site-footer .footer-bottom { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
 }
 
 * {
@@ -3610,407 +4180,7 @@ a {
 }
 
 .admin-login-notice {
-  color: #187a3a;
-}
-
-.admin-dashboard {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  min-height: 100vh;
-  color: var(--ink);
-  background: #eef2ef;
-}
-
-.admin-sidebar {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 20px;
-  padding: 22px;
-  color: rgba(255, 255, 255, 0.78);
-  background:
-    radial-gradient(circle at 14% 0%, rgba(155, 220, 24, 0.16), transparent 28%),
-    #0d1014;
-}
-
-.admin-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--white);
-}
-
-.admin-logo span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  color: var(--ink);
-  background: var(--lime);
-  border-radius: 9px;
-  font-weight: 950;
-}
-
-.admin-logo img {
-  width: 58px;
-  height: 42px;
-  object-fit: contain;
-  border-radius: 5px;
-  background: #f6f7f7;
-}
-
-.admin-sidebar nav {
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.admin-nav-section {
-  display: grid;
-  gap: 6px;
-}
-
-.admin-nav-section small {
-  color: rgba(255, 255, 255, 0.42);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.admin-sidebar nav a {
-  padding: 9px 11px;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 14px;
-  font-weight: 850;
-}
-
-.admin-sidebar nav a:hover,
-.admin-sidebar nav a.is-active {
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.admin-sidebar-foot {
-  display: grid;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.admin-sidebar-foot button {
-  width: max-content;
-  padding: 8px 10px;
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 7px;
-}
-
-.admin-main {
-  display: grid;
-  gap: 20px;
-  padding: clamp(22px, 4vw, 42px);
-  min-width: 0;
-}
-
-.account-page {
-  min-height: 100vh;
-  padding: 120px 22px 80px;
-  background:
-    linear-gradient(135deg, rgba(247, 249, 247, 0.94), rgba(238, 246, 249, 0.86)),
-    url("/assets/banners/market-north-america-optimized.jpg") center / cover fixed;
-}
-
-.account-page::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.92)),
-    radial-gradient(circle at 18% 10%, rgba(0, 168, 216, 0.16), transparent 34%),
-    radial-gradient(circle at 84% 12%, rgba(238, 47, 47, 0.1), transparent 30%);
-}
-
-.account-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-.account-register-page {
-  display: grid;
-  align-items: center;
-  padding-block: clamp(92px, 10vw, 128px) clamp(44px, 7vw, 78px);
-}
-
-.account-page.wide {
-  padding-inline: clamp(18px, 6vw, 96px);
-}
-
-.account-card,
-.account-header,
-.account-order-card {
-  width: min(720px, 100%);
-  margin: 0 auto;
-  border: 1px solid rgba(17, 19, 24, 0.1);
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 28px 80px rgba(17, 19, 24, 0.08);
-}
-
-.account-card {
-  padding: clamp(24px, 5vw, 44px);
-}
-
-.account-register-card {
-  width: min(420px, 100%);
-  padding: clamp(28px, 6vw, 42px) clamp(24px, 6vw, 38px);
-  text-align: center;
-}
-
-.account-email-card {
-  border-color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 28px 82px rgba(17, 19, 24, 0.16);
-  backdrop-filter: blur(18px);
-}
-
-.account-card h1,
-.account-header h1 {
-  margin: 0 0 12px;
-  font-size: clamp(36px, 7vw, 60px);
-  line-height: 0.95;
-}
-
-.account-register-card h1 {
-  font-size: clamp(30px, 8vw, 36px);
-  line-height: 1;
-}
-
-.account-card-copy {
-  margin: 0;
-  color: #5e6470;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.account-form {
-  display: grid;
-  gap: 16px;
-  margin-top: 26px;
-}
-
-.account-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.account-form label {
-  display: grid;
-  gap: 8px;
-  color: #111318;
-  font-weight: 800;
-}
-
-.account-form input {
-  width: 100%;
-  border: 1px solid rgba(17, 19, 24, 0.18);
-  border-radius: 6px;
-  padding: 15px 16px;
-  font: inherit;
-  background: #fff;
-}
-
-.account-form input:focus {
-  border-color: #0077c8;
-  box-shadow: 0 0 0 3px rgba(0, 119, 200, 0.12);
-  outline: 0;
-}
-
-.account-checkbox {
-  display: flex !important;
-  grid-template-columns: auto 1fr;
-  align-items: flex-start;
-}
-
-.account-checkbox input {
-  width: auto;
-  margin-top: 3px;
-}
-
-.account-submit {
-  width: 100%;
-  justify-content: center;
-  min-height: 52px;
-}
-
-.account-email-form {
-  gap: 18px;
-  margin-top: 28px;
-}
-
-.account-email-field {
-  display: block !important;
-}
-
-.account-email-field input {
-  min-height: 54px;
-  border: 1.5px solid #111318;
-  border-radius: 999px;
-  padding: 0 20px;
-  color: #111318;
-  background: #f2f2f2;
-  font-size: 17px;
-}
-
-.account-email-submit {
-  min-height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  color: #fff;
-  background: #5c35f2;
-  border: 0;
-  border-radius: 999px;
-  box-shadow: 0 16px 38px rgba(92, 53, 242, 0.24);
-  font: inherit;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.account-email-submit:disabled {
-  cursor: wait;
-  opacity: 0.72;
-}
-
-.account-legal {
-  margin: 16px auto 0;
-  max-width: 320px;
-  color: #747474;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.account-status {
-  margin: 0;
-  color: #ee2f2f;
-  font-weight: 700;
-}
-
-.account-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.account-links a {
-  color: #0077c8;
-  font-weight: 800;
-}
-
-.account-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  width: min(1160px, 100%);
-  padding: clamp(22px, 4vw, 36px);
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(250, 253, 252, 0.88)),
-    rgba(255, 255, 255, 0.86);
-  border-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(18px);
-}
-
-.account-header p:not(.eyebrow) {
-  margin: 0;
-  color: #5e6470;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.account-order-list {
-  display: grid;
-  gap: 18px;
-  width: min(1160px, 100%);
-  margin: 24px auto 0;
-}
-
-.account-summary-grid,
-.account-actions,
-.account-detail-grid {
-  display: grid;
-  gap: 18px;
-  width: min(1160px, 100%);
-  margin: 24px auto 0;
-}
-
-.account-summary-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.account-actions {
-  grid-template-columns: repeat(2, max-content);
-}
-
-.account-section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.account-section-title h2 {
-  margin: 0;
-}
-
-.account-detail-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.account-order-card {
-  display: grid;
-  grid-template-columns: 96px minmax(220px, 1fr) 2fr auto;
-  gap: 20px;
-  align-items: center;
-  width: 100%;
-  padding: clamp(18px, 3vw, 28px);
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px);
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.account-order-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 30px 86px rgba(17, 19, 24, 0.12);
-}
-
-.account-detail-grid .account-order-card,
+  color: #187a3…1825 tokens truncated…,
 .account-summary-grid .account-order-card {
   grid-template-columns: 1fr;
   align-items: start;
