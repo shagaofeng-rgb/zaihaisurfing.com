@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {isLocale, type Locale} from '@/i18n/routing';
-import ResortPartnershipHome from '@/components/ResortPartnershipHome';
+import OceanPerformanceHome from '@/components/OceanPerformanceHome';
 import {localizedMetadata} from '@/lib/metadata';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
@@ -17,5 +17,5 @@ export default async function HomePage({params}: {params: Promise<{locale: Local
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
 
-  return <ResortPartnershipHome locale={locale} />;
+  return <OceanPerformanceHome locale={locale} />;
 }

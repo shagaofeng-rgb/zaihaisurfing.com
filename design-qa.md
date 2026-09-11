@@ -1,47 +1,34 @@
-**Comparison target**
+# Homepage visual QA — Ocean performance redesign
 
-- Source visual truth: `/Users/apple/.codex/generated_images/01a0527a-195e-7810-9f7c-f6a2c8a7a9bd/exec-524dba62-d2cf-4b2d-8d48-ed031877e97a.png` (selected option 3).
-- Implementation: `http://127.0.0.1:3188/en`, captured in the Codex In-app Browser (tab 3) on 2026-09-11.
-- State: default desktop home state, no menu expanded and no video playback.
-- Density normalization: source is 839 × 2048 px; browser capture was reviewed at the browser's CSS layout density. The implementation is a responsive production page rather than a fixed-height board, so section-level comparison was used rather than canvas padding.
+Reference visual: Product Design option 1 (`exec-7219cea8-ca98-4c49-8974-7d4aa90b8f54.png`).
 
-**Full-view comparison evidence**
+## Summary
 
-The rendered page follows the source's complete sequence: slim white header; warm-white split hero; three customer-model cards; equipment/service/video/quote collage; three-category product row; destination-image CTA; compact footer. The hero's generated rider image, customer imagery, real product photography, and existing riding footage were all visible in the in-app browser render. The browser accessibility tree also confirms each primary CTA has a live destination.
+- Overall status: **Passed**
+- Primary conversion path: headline → Build Your Fleet / Watch Riding Video → category or partnership detail.
+- Browser review: local `/en` at desktop and narrow mobile widths.
 
-Focused comparison was needed for the hero and the editorial collage. The source uses concept imagery; the implementation deliberately substitutes the supplied/generated rider scene and real ZAIHAI catalog media so no fictional product is represented as a real SKU.
+## Visual fidelity checks
 
-**Findings**
+| Area | Result | Notes |
+| --- | --- | --- |
+| Header | Pass | Slim white navigation, dark wordmark treatment and high-contrast lime quote CTA mirror the chosen direction. |
+| Hero | Pass | Dark ocean campaign image, left-aligned uppercase headline, lime kicker, dual CTAs and a three-part proof bar retain the source composition. |
+| Product range | Pass | Navy three-column product field, fine dividers, category labels, large names and real catalog product assets follow the source grid. |
+| Partnership | Pass | Pale editorial information block with dark typography, compact facts grid and logistics image matches the source rhythm without unsupported performance claims. |
+| Closing / footer | Pass | The dark final CTA and existing functional footer keep the campaign visual language continuous. |
 
-- No actionable P0, P1, or P2 mismatches remain.
-- [P3] The native video controls are retained for accessible playback, whereas the reference uses a minimal poster/play treatment. This is an intentional functional deviation.
-- [P3] The source's equipment photograph is a conceptual board render. The implementation uses the actual Rage Shark X catalog image to preserve product truth.
+## Functional and accessibility checks
 
-**Required fidelity surfaces**
+- The hero video control opens a labelled modal and successfully plays the browser-compatible H.264/AAC preview source; its measured ready state reached `4` with no media error.
+- The modal reports loading or playback errors using an `aria-live` status area and can be dismissed with a labelled Close control or by clicking the backdrop.
+- All product, fleet, partnership and quote CTAs lead to existing first-party routes. Product images include meaningful alt text; decorative visual treatment is not text embedded in an image.
+- Desktop hierarchy preserves the primary CTA; mobile uses stacked proof and product sections with readable type and controls.
 
-- Fonts and typography: dense bold sans hierarchy and restrained italic-serif accent are present; headings keep the source's compressed, high-contrast editorial hierarchy.
-- Spacing and layout rhythm: hero split, section gaps, three-card rows, collage proportions, and CTA split are implemented with responsive grid rules.
-- Colors and visual tokens: warm ivory background, ink text, ocean-blue media, white panels, and lime conversion accents map to local design tokens.
-- Image quality and asset fidelity: new high-resolution hero asset is served locally; all product media points to real catalog assets; no placeholder or code-drawn visual asset is used.
-- Copy and content: new solution-oriented content retains real product categories, existing product destinations, quotation flow, WhatsApp contact, video, language selector, and account paths.
+## Build checks
 
-**Primary interactions checked**
+- `pnpm run lint`: passed (`tsc --noEmit`).
+- `pnpm run build`: passed (Next.js production build).
+- `git diff --check`: passed.
 
-- Get Quote routes to `/contact`.
-- Explore Products and View all products route to `/products`.
-- All three customer cards route to their existing application or factory paths.
-- The core category cards route to their corresponding live product details.
-- The riding video retains native play controls and the WhatsApp CTA retains the production contact URL.
-
-**Implementation checklist**
-
-- [x] Replace homepage information architecture with selected option 3.
-- [x] Preserve live navigation, locale routing, product destinations, quote and WhatsApp paths.
-- [x] Add responsive desktop, tablet, and mobile layout rules.
-- [x] Run type checking and a production build.
-
-**Comparison history**
-
-1. Initial local browser render: checked the hero, business cards, service collage, category cards, CTA and footer against the selected visual. No P0/P1/P2 issues found; retained the two intentional P3 functional/content deviations above.
-
-final result: passed
+## Final result: passed
