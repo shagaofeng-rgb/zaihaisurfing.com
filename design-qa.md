@@ -1,4 +1,4 @@
-# Homepage visual QA — Ocean performance redesign
+# Homepage visual QA — template 1 correction
 
 Reference visual: Product Design option 1 (`exec-7219cea8-ca98-4c49-8974-7d4aa90b8f54.png`).
 
@@ -6,24 +6,24 @@ Reference visual: Product Design option 1 (`exec-7219cea8-ca98-4c49-8974-7d4aa90
 
 - Overall status: **Passed**
 - Primary conversion path: headline → Build Your Fleet / Watch Riding Video → category or partnership detail.
-- Browser review: local `/en` at desktop and narrow mobile widths.
+- Browser review: local `/en` in the Codex in-app browser at desktop and 390 × 844 mobile widths.
 
 ## Visual fidelity checks
 
 | Area | Result | Notes |
 | --- | --- | --- |
-| Header | Pass | Slim white navigation, dark wordmark treatment and high-contrast lime quote CTA mirror the chosen direction. |
-| Hero | Pass | Dark ocean campaign image, left-aligned uppercase headline, lime kicker, dual CTAs and a three-part proof bar retain the source composition. |
-| Product range | Pass | Navy three-column product field, fine dividers, category labels, large names and real catalog product assets follow the source grid. |
-| Partnership | Pass | Pale editorial information block with dark typography, compact facts grid and logistics image matches the source rhythm without unsupported performance claims. |
-| Closing / footer | Pass | The dark final CTA and existing functional footer keep the campaign visual language continuous. |
+| Header | Pass | Thin white navigation, dark wordmark, lime quote CTA and compact mobile header retain the template's visual hierarchy. |
+| Hero | Pass | The desktop version uses the wide dark-ocean rider composition; mobile uses a dedicated 9:16 rider image so headline, rider and CTA all remain visible without destructive cropping. |
+| Product range | Pass | Navy three-column grid, dividers, category labels and large uppercase names match the source layout. The real product photos were converted to transparent display assets, removing their white canvas and the prior dark-blend visibility failure. |
+| Partnership | Pass | Pale editorial block with dark typography, factual support grid and export visual follows the template rhythm. |
+| Mobile stacking | Pass | Product cards stack with a visible, uncropped product per card; proof text and CTAs are no longer obscured by floating controls. |
 
 ## Functional and accessibility checks
 
-- The hero video control opens a labelled modal and successfully plays the browser-compatible H.264/AAC preview source; its measured ready state reached `4` with no media error.
-- The modal reports loading or playback errors using an `aria-live` status area and can be dismissed with a labelled Close control or by clicking the backdrop.
-- All product, fleet, partnership and quote CTAs lead to existing first-party routes. Product images include meaningful alt text; decorative visual treatment is not text embedded in an image.
-- Desktop hierarchy preserves the primary CTA; mobile uses stacked proof and product sections with readable type and controls.
+- Header, hero, product and partnership links use existing routes; the mobile header retains both WhatsApp and quote actions.
+- Product photos have meaningful alt text and the transparent treatments use the actual catalog images, not invented products.
+- The previously verified H.264/AAC video modal remains unchanged and functional.
+- Homepage-only floating controls are hidden because their redundant actions were obscuring the source-matched mobile layout; equivalent header and hero actions remain available.
 
 ## Build checks
 

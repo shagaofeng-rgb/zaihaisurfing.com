@@ -8,9 +8,9 @@ type OceanPerformanceHomeProps = {
 };
 
 const productCategories = [
-  {eyebrow: '01 / ELECTRIC', title: 'Electric\nSurfboards', description: 'Quiet power for a fresh kind of ride.', href: '/products/x1-pro', image: '/assets/catalog/collection-electric-surfboard.png', alt: 'ZAIHAI electric surfboard'},
-  {eyebrow: '02 / ELECTRIC', title: 'Electric\nGo-Kart Boats', description: 'A compact water attraction built for sharing.', href: '/products/rage-shark-x', image: '/assets/catalog/collection-go-kart-boat.png', alt: 'ZAIHAI electric go-kart boat'},
-  {eyebrow: '03 / FUEL', title: 'Fuel-Powered\nSurfboards', description: 'Direct, high-energy performance on open water.', href: '/products/p1-pro', image: '/assets/catalog/collection-fuel-surfboard.png', alt: 'ZAIHAI fuel-powered surfboard'}
+  {eyebrow: '01 / ELECTRIC', title: 'Electric\nSurfboards', description: 'Quiet power for a fresh kind of ride.', href: '/products/x1-pro', image: '/assets/home-ocean/products/electric-surfboard.webp', alt: 'ZAIHAI electric surfboard'},
+  {eyebrow: '02 / ELECTRIC', title: 'Electric\nGo-Kart Boats', description: 'A compact water attraction built for sharing.', href: '/products/rage-shark-x', image: '/assets/home-ocean/products/go-kart-boat.webp', alt: 'ZAIHAI electric go-kart boat'},
+  {eyebrow: '03 / FUEL', title: 'Fuel-Powered\nSurfboards', description: 'Direct, high-energy performance on open water.', href: '/products/p1-pro', image: '/assets/home-ocean/products/fuel-surfboard.webp', alt: 'ZAIHAI fuel-powered surfboard'}
 ];
 
 export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps) {
@@ -19,7 +19,10 @@ export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps
   return (
     <main className="ocean-home">
       <section className="ocean-hero" id="top" aria-labelledby="ocean-hero-title">
-        <img className="ocean-hero-image" src="/assets/home-ocean/hero-rider.jpg" alt="Rider on a black electric surfboard crossing a dark blue ocean" width="2048" height="1152" fetchPriority="high" decoding="async" />
+        <picture className="ocean-hero-picture">
+          <source media="(max-width: 760px)" srcSet="/assets/home-ocean/hero-rider-mobile.jpg" />
+          <img className="ocean-hero-image" src="/assets/home-ocean/hero-rider.jpg" alt="Rider on a black electric surfboard crossing a dark blue ocean" width="2048" height="1152" fetchPriority="high" decoding="async" />
+        </picture>
         <div className="ocean-hero-scrim" aria-hidden="true" />
         <div className="ocean-shell ocean-hero-content">
           <p className="ocean-kicker">ZAIHAI SURFING / SINCE 2014</p>

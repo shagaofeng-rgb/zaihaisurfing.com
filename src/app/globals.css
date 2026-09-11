@@ -645,6 +645,13 @@ body:has(.ocean-home) .site-header .header-cta {
   text-transform: uppercase;
 }
 
+/* The campaign template keeps its conversion actions in the header and hero. */
+body:has(.ocean-home) .whatsapp-float,
+body:has(.ocean-home) .back-to-top,
+body:has(.ocean-home) .mobile-bottom-cta {
+  display: none;
+}
+
 .ocean-home {
   color: #f5f8f5;
   background: #082135;
@@ -683,7 +690,7 @@ body:has(.ocean-home) .site-header .header-cta {
   background: #0b3048;
 }
 
-.ocean-hero-image,
+.ocean-hero-picture,
 .ocean-hero-scrim {
   position: absolute;
   inset: 0;
@@ -691,8 +698,11 @@ body:has(.ocean-home) .site-header .header-cta {
   height: 100%;
 }
 
+.ocean-hero-picture { z-index: -2; }
+
 .ocean-hero-image {
-  z-index: -2;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center;
 }
@@ -860,11 +870,10 @@ body:has(.ocean-home) .site-header .header-cta {
 }
 
 .ocean-product-image-wrap img {
-  width: 118%;
+  width: 112%;
   max-width: none;
-  height: 118%;
-  filter: brightness(1.55) saturate(1.12);
-  mix-blend-mode: multiply;
+  height: 112%;
+  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, .35));
   object-fit: contain;
   transition: transform 300ms ease;
 }
@@ -967,8 +976,8 @@ body:has(.ocean-home) .site-header .header-cta {
   .ocean-shell { width: min(100% - 40px, 570px); }
   body:has(.ocean-home) .site-header { min-height: 61px; }
   body:has(.ocean-home) .site-header .brand img { width: 50px; height: 30px; }
-  .ocean-hero { min-height: 730px; align-items: start; }
-  .ocean-hero-image { object-position: 59% center; }
+  .ocean-hero { min-height: 790px; align-items: start; }
+  .ocean-hero-image { object-position: center; }
   .ocean-hero-scrim { background: rgba(0, 21, 39, .4); }
   .ocean-hero-content { padding: 72px 0 0; }
   .ocean-hero-content h1 { font-size: clamp(43px, 13vw, 62px); letter-spacing: -.075em; }
