@@ -1007,6 +1007,122 @@ body:has(.ocean-home) .mobile-bottom-cta {
   .ocean-video-frame { padding: 14px; }
 }
 
+/* Selected resort-business homepage template */
+body:has(.ocean-resort-home) { background: #f9faf9; }
+body:has(.ocean-resort-home) .site-header { min-height: 55px; padding: 7px clamp(24px,4.7vw,74px); background: #fff; border-bottom: 0; }
+body:has(.ocean-resort-home) .site-header .brand { gap: 9px; color: #081525; font-size: 12px; font-weight: 850; letter-spacing: 0; }
+body:has(.ocean-resort-home) .site-header .brand img { width: 43px; height: 28px; border-radius: 0; }
+body:has(.ocean-resort-home) .site-header .nav-links { gap: clamp(10px,1.2vw,19px); color: #071626; font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+body:has(.ocean-resort-home) .site-header .header-tools { gap: 7px; }
+body:has(.ocean-resort-home) .site-header .header-account { min-height: 34px; display: inline-flex; align-items: center; padding: 0 9px; color: #102438; font-size: 11px; font-weight: 650; white-space: nowrap; }
+body:has(.ocean-resort-home) .site-header .header-account + .header-account { border: 1px solid #c9d1d8; border-radius: 5px; }
+body:has(.ocean-resort-home) .site-header .header-cta { min-height: 36px; padding: 0 15px; border-radius: 5px; background: #d2f54b; color: #071525; font-size: 11px; font-weight: 850; letter-spacing: 0; text-transform: none; }
+body:has(.ocean-resort-home) .whatsapp-float, body:has(.ocean-resort-home) .back-to-top, body:has(.ocean-resort-home) .mobile-bottom-cta { display: none; }
+
+.ocean-resort-home { color: #071525; background: #fff; }
+.ocean-resort-home .ocean-shell { width: min(1360px,calc(100% - clamp(48px,9.4vw,152px))); }
+.ocean-resort-home .ocean-kicker { color: #d7f353; font-size: 10px; font-weight: 900; letter-spacing: .17em; }
+.ocean-resort-home .resort-hero { position: relative; min-height: min(663px,calc(100vh - 55px)); isolation: isolate; overflow: hidden; background: #082843; }
+.ocean-resort-home .resort-hero-picture, .ocean-resort-home .resort-hero-shade { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; }
+.ocean-resort-home .resort-hero-picture img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
+.ocean-resort-home .resort-hero-shade { z-index: -1; background: linear-gradient(90deg,rgba(0,20,37,.56) 0%,rgba(0,20,37,.18) 55%,rgba(0,20,37,.03) 100%); }
+.ocean-resort-home .resort-hero-copy { padding: 86px 0 184px; }
+.ocean-resort-home .resort-hero-copy h1 { max-width: 590px; margin: 18px 0 0; color: #fff; font-family: var(--font-display); font-size: clamp(46px,5.35vw,80px); font-style: normal; font-weight: 950; letter-spacing: -.068em; line-height: .91; text-transform: none; }
+.ocean-resort-home .resort-hero-copy h1 em { color: #d7f353; font-style: normal; }
+.ocean-resort-home .resort-hero-intro { max-width: 475px; margin: 20px 0 0; color: rgba(255,255,255,.94); font-size: 16px; line-height: 1.45; }
+.ocean-resort-home .resort-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 21px; }
+.ocean-resort-home .ocean-button { min-height: 48px; padding: 0 22px; border-radius: 4px; font-size: 12px; font-weight: 850; letter-spacing: 0; text-transform: none; }
+.ocean-resort-home .ocean-button span { margin-left: 14px; font-size: 20px; line-height: 0; }
+.ocean-resort-home .ocean-button-lime { background: #d7f353; color: #081526; }
+.ocean-resort-home .ocean-button-ghost { background: rgba(2,23,42,.16); border-color: rgba(255,255,255,.72); color: #fff; }
+.ocean-resort-home .resort-business-fit { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); }
+.ocean-resort-home .resort-business-fit > p { margin: 0 0 9px; color: #fff; font-family: var(--font-display); font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.ocean-resort-home .resort-business-fit > div { width: min(633px,75%); display: grid; grid-template-columns: repeat(3,1fr); border: 1px solid rgba(255,255,255,.72); border-radius: 5px; overflow: hidden; }
+.ocean-resort-home .resort-business-fit article { min-height: 59px; padding: 10px 17px; border-right: 1px solid rgba(255,255,255,.65); }
+.ocean-resort-home .resort-business-fit article:first-child { border: 1px solid #d7f353; margin: -1px; border-radius: 5px; }
+.ocean-resort-home .resort-business-fit article:last-child { border-right: 0; }
+.ocean-resort-home .resort-business-fit h2 { margin: 0; color: #fff; font-size: 14px; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+.ocean-resort-home .resort-business-fit span { display: block; margin-top: 4px; color: rgba(255,255,255,.86); font-size: 11px; line-height: 1.15; }
+.ocean-resort-home .resort-hero-script { position: absolute; right: clamp(30px,6.3vw,100px); bottom: 26px; margin: 0; color: #fff; font-family: cursive; font-size: clamp(16px,1.75vw,27px); font-style: italic; font-weight: 600; line-height: .8; text-align: right; transform: rotate(-8deg); }
+
+.ocean-resort-home .resort-products { padding: 31px 0 38px; background: #fff; }
+.ocean-resort-home .resort-product-grid { display: grid; grid-template-columns: repeat(3,1fr); }
+.ocean-resort-home .resort-product-card { min-width: 0; padding: 0 clamp(16px,2vw,31px) 0; border-right: 1px solid #c7cdd2; color: #071525; text-decoration: none; }
+.ocean-resort-home .resort-product-card:first-child { padding-left: 0; }
+.ocean-resort-home .resort-product-card:last-child { padding-right: 0; border-right: 0; }
+.ocean-resort-home .resort-product-image { height: clamp(162px,16vw,238px); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ocean-resort-home .resort-product-image img { width: 116%; height: 116%; object-fit: contain; transition: transform 240ms ease; }
+.ocean-resort-home .resort-product-card:hover .resort-product-image img { transform: scale(1.04); }
+.ocean-resort-home .resort-product-card h2 { margin: 11px 0 0; font-family: var(--font-display); font-size: clamp(13px,1.25vw,18px); font-weight: 900; letter-spacing: .11em; line-height: 1.05; text-transform: uppercase; }
+.ocean-resort-home .resort-product-card p { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 9px 0 0; font-size: 12px; font-weight: 500; line-height: 1.25; }
+.ocean-resort-home .resort-product-card p span { flex: none; font-size: 20px; }
+
+.ocean-resort-home .resort-results { padding: 56px 0 47px; background: #f8f9f8; }
+.ocean-resort-home .resort-results-grid { display: grid; grid-template-columns: .88fr 1.12fr; gap: clamp(42px,7.2vw,110px); align-items: center; }
+.ocean-resort-home .resort-overline { margin: 0; color: #314152; font-family: var(--font-display); font-size: 10px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+.ocean-resort-home .resort-results-copy h2 { margin: 18px 0 0; color: #071525; font-family: var(--font-display); font-size: clamp(35px,4.1vw,59px); font-weight: 950; letter-spacing: -.067em; line-height: .92; }
+.ocean-resort-home .resort-results-copy > p:not(.resort-overline) { max-width: 421px; margin: 24px 0 0; color: #4e5c68; font-size: 16px; line-height: 1.45; }
+.ocean-resort-home .resort-results-copy dl { display: grid; grid-template-columns: repeat(3,1fr); max-width: 470px; margin: 31px 0 0; }
+.ocean-resort-home .resort-results-copy dl div { min-height: 57px; padding: 0 16px; border-right: 1px solid #c8ced3; }
+.ocean-resort-home .resort-results-copy dl div:first-child { padding-left: 0; }
+.ocean-resort-home .resort-results-copy dl div:last-child { border-right: 0; }
+.ocean-resort-home .resort-results-copy dt { color: #071525; font-family: var(--font-display); font-size: clamp(24px,2.35vw,35px); font-weight: 950; letter-spacing: -.06em; line-height: .9; }
+.ocean-resort-home .resort-results-copy dd { margin: 6px 0 0; color: #4e5c68; font-size: 11px; line-height: 1.2; }
+.ocean-resort-home .resort-outline-link { min-height: 36px; display: inline-flex; align-items: center; margin-top: 29px; padding: 0 14px; border: 1px solid #506070; border-radius: 4px; color: #071525; font-size: 11px; font-weight: 650; }
+.ocean-resort-home .resort-outline-link span { margin-left: 14px; font-size: 16px; }
+.ocean-resort-home .resort-feature-card { position: relative; min-height: min(385px,31vw); display: block; overflow: hidden; color: #fff; text-decoration: none; }
+.ocean-resort-home .resort-feature-card > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.ocean-resort-home .resort-feature-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,rgba(1,29,50,.75),rgba(1,29,50,.08)); }
+.ocean-resort-home .resort-feature-card > div { position: relative; z-index: 1; padding: 78px 38px 34px; }
+.ocean-resort-home .resort-feature-card div p { margin: 0; color: #d8f44d; font-family: var(--font-display); font-size: 10px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.ocean-resort-home .resort-feature-card h2 { margin: 14px 0 0; font-family: var(--font-display); font-size: clamp(31px,3.5vw,50px); font-weight: 950; letter-spacing: -.07em; line-height: .86; }
+.ocean-resort-home .resort-feature-card div > span { display: block; margin-top: 22px; color: rgba(255,255,255,.96); font-size: 13px; line-height: 1.35; }
+.ocean-resort-home .resort-feature-card b { min-height: 35px; display: inline-flex; align-items: center; margin-top: 20px; padding: 0 12px; border: 1px solid rgba(255,255,255,.75); border-radius: 4px; color: #fff; font-size: 11px; font-weight: 650; }
+.ocean-resort-home .resort-feature-card b i { margin-left: 10px; font-size: 16px; font-style: normal; }
+.ocean-resort-home .resort-feature-card small { position: absolute; z-index: 1; right: 22px; bottom: 18px; font-family: var(--font-display); font-size: 10px; font-weight: 900; letter-spacing: .12em; }
+.ocean-resort-home .resort-closing { padding: 35px 0; background: #062139; }
+.ocean-resort-home .resort-closing p { margin: 0; color: #fff; font-family: var(--font-display); font-size: 9px; font-weight: 900; letter-spacing: .23em; text-transform: uppercase; }
+.ocean-resort-home .resort-closing span { margin: 0 22px; color: #d7f353; }
+.ocean-resort-home .ocean-closing { display: none; }
+
+@media (max-width: 1080px) {
+  body:has(.ocean-resort-home) .site-header .nav-links { gap: 8px; font-size: 10px; }
+  .ocean-resort-home .resort-hero-copy { padding-top: 67px; }
+}
+@media (max-width: 920px) {
+  body:has(.ocean-resort-home) .site-header .header-account { display: none; }
+}
+@media (max-width: 760px) {
+  body:has(.ocean-resort-home) .site-header { min-height: 59px; padding-inline: 18px; }
+  body:has(.ocean-resort-home) .site-header .brand img { width: 48px; height: 29px; }
+  .ocean-resort-home .ocean-shell { width: min(100% - 40px,570px); }
+  .ocean-resort-home .resort-hero { min-height: 805px; }
+  .ocean-resort-home .resort-hero-shade { background: linear-gradient(180deg,rgba(0,20,37,.47),rgba(0,20,37,.13) 53%,rgba(0,20,37,.45)); }
+  .ocean-resort-home .resort-hero-copy { padding: 65px 0 0; }
+  .ocean-resort-home .resort-hero-copy h1 { max-width: 330px; font-size: clamp(42px,12vw,58px); }
+  .ocean-resort-home .resort-hero-intro { max-width: 305px; font-size: 13px; }
+  .ocean-resort-home .resort-business-fit { bottom: 16px; }
+  .ocean-resort-home .resort-business-fit > div { width: 100%; grid-template-columns: 1fr; }
+  .ocean-resort-home .resort-business-fit article { min-height: 47px; padding: 8px 10px; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.55); }
+  .ocean-resort-home .resort-business-fit article:last-child { border-bottom: 0; }
+  .ocean-resort-home .resort-business-fit h2 { font-size: 13px; }
+  .ocean-resort-home .resort-hero-script { display: none; }
+  .ocean-resort-home .resort-products { padding: 21px 0; }
+  .ocean-resort-home .resort-product-grid { display: block; }
+  .ocean-resort-home .resort-product-card, .ocean-resort-home .resort-product-card:first-child, .ocean-resort-home .resort-product-card:last-child { display: block; padding: 22px 0; border-right: 0; border-bottom: 1px solid #c7cdd2; }
+  .ocean-resort-home .resort-product-card:last-child { border-bottom: 0; }
+  .ocean-resort-home .resort-product-image { height: 235px; }
+  .ocean-resort-home .resort-product-card h2 { font-size: 16px; }
+  .ocean-resort-home .resort-results { padding: 59px 0; }
+  .ocean-resort-home .resort-results-grid { display: flex; flex-direction: column; gap: 37px; }
+  .ocean-resort-home .resort-results-copy h2 { font-size: clamp(37px,10.5vw,54px); }
+  .ocean-resort-home .resort-results-copy > p:not(.resort-overline) { font-size: 14px; }
+  .ocean-resort-home .resort-results-copy dl { max-width: 100%; }
+  .ocean-resort-home .resort-feature-card { width: 100%; min-height: 365px; }
+  .ocean-resort-home .resort-feature-card > div { padding: 65px 25px 30px; }
+  .ocean-resort-home .resort-closing p { font-size: 8px; line-height: 1.6; }
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
