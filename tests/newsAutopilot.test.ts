@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, newsModelRuntimeConfig, newsWordCount, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, completeNewsDraftLength, lexicalSimilarity, newsModelRuntimeConfig, newsWordCount, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
 import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
 const site = defaultNewsSite();
@@ -99,4 +99,15 @@ test('quality gate rejects promotional and under-length News copy', () => {
 
 test('word counting uses the same rule as the publication quality gate', () => {
   assert.equal(newsWordCount("One well-formed editor's note."), 4);
+});
+
+test('an otherwise-valid short News draft receives only source-bounded editorial context', () => {
+  assert.ok(site);
+  const completed = completeNewsDraftLength({content: '## News facts\nA verified update was published.\n\n## Why this matters\nThe update may be relevant to marine operators.\n\n## Editorial analysis\nThe supplied information needs local review.\n\n## Source context\nReaders should consult the original report.'}, {
+    sourceName: 'Example marine authority', sourcePublishedAt: '2026-09-12T00:00:00.000Z', title: 'Marine operating update', summary: 'The source published a dated update for operators.'
+  }, site);
+  assert.ok(newsWordCount(completed.content) >= site!.news.desired_word_count.min);
+  assert.ok(newsWordCount(completed.content) <= site!.news.desired_word_count.max);
+  assert.match(completed.content, /Example marine authority/);
+  assert.match(completed.content, /## Questions for operators/);
 });
