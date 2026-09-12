@@ -110,4 +110,8 @@ test('an otherwise-valid short News draft receives only source-bounded editorial
   assert.ok(newsWordCount(completed.content) <= site!.news.desired_word_count.max);
   assert.match(completed.content, /Example marine authority/);
   assert.match(completed.content, /## Questions for operators/);
+  const completedEmptyDraft = completeNewsDraftLength({content: ''}, {
+    sourceName: 'Example marine authority', sourcePublishedAt: '2026-09-12T00:00:00.000Z', title: 'Marine operating update', summary: 'The source published a dated update for operators.'
+  }, site);
+  assert.ok(newsWordCount(completedEmptyDraft.content) >= site!.news.desired_word_count.min);
 });
