@@ -156,6 +156,29 @@ export function completeNewsDraftLength<T extends Pick<ComposedNews, 'content'>>
   }
   return {...draft, content};
 }
+
+function trimMarkdownToWordCount(content: string, maximum: number) {
+  const words = [...content.matchAll(/\b[\w'-]+\b/g)];
+  if (words.length <= maximum) return content.trim();
+  const last = words[maximum - 1];
+  return content.slice(0, (last.index || 0) + last[0].length).trim();
+}
+
+/** Keep an over-long model response within the same 700–1,000 word contract. */
+export function normalizeNewsDraftLength<T extends Pick<ComposedNews, 'content'>>(draft: T, candidate: Pick<NewsCandidate, 'sourceName' | 'sourcePublishedAt' | 'title' | 'summary'>, site = defaultNewsSite()): T {
+  if (!site) return draft;
+  if (newsWordCount(draft.content) < site.news.desired_word_count.min) return completeNewsDraftLength(draft, candidate, site);
+  if (newsWordCount(draft.content) <= site.news.desired_word_count.max) return draft;
+  const sections = draft.content.split(/(?=^##\s+)/m);
+  const sourceSectionIndex = sections.findIndex((section) => /^##\s+Source context\b/i.test(section.trim()));
+  if (sourceSectionIndex < 0) return {...draft, content: trimMarkdownToWordCount(draft.content, site.news.desired_word_count.max)};
+  const sourceSection = sections[sourceSectionIndex];
+  const sourceWords = newsWordCount(sourceSection);
+  const sourceBudget = Math.min(sourceWords, Math.max(120, Math.floor(site.news.desired_word_count.max * 0.2)));
+  const remainingSections = sections.filter((_, index) => index !== sourceSectionIndex).join('').trim();
+  const remainingBudget = Math.max(1, site.news.desired_word_count.max - sourceBudget);
+  return {...draft, content: `${trimMarkdownToWordCount(remainingSections, remainingBudget)}\n\n${trimMarkdownToWordCount(sourceSection, sourceBudget)}`.trim()};
+}
 function siteState(state: NewsAutomationState, siteId: string): SiteNewsState {
   return state.sites[siteId] || {enabled: true, candidates: [], runs: [], deliveryChecks: [], audit: []};
 }
@@ -504,7 +527,7 @@ export function validateDraft(draft: Pick<ComposedNews, 'title' | 'excerpt' | 'c
   const words = newsWordCount(draft.content);
   if (!draft.title || draft.title.length > 110) issues.push('Title is missing or too long.');
   if (!draft.excerpt || draft.excerpt.length < 40 || draft.excerpt.length > 420) issues.push('Deck is missing or outside the permitted length.');
-  if (words < site.news.desired_word_count.min || words > site.news.desired_word_count.max) issues.push(`Content must contain ${site.news.desired_word_count.min}-${site.news.desired_word_count.max} words.`);
+  if (words < site.news.desired_word_count.min || words > site.news.desired_word_count.max) issues.push(`Content must contain ${site.news.desired_word_count.min}-${site.news.desired_word_count.max} words (found ${words}).`);
   if (!/##\s+News facts/i.test(draft.content) || !/##\s+Source context/i.test(draft.content)) issues.push('Missing required fact or source sections.');
   if (!draft.seoTitle || !draft.seoDescription) issues.push('SEO title or description is missing.');
   if (draft.tags.length < 3 || draft.tags.length > 8) issues.push('Tags must contain 3-8 items.');
@@ -610,7 +633,7 @@ export async function runNewsPublish(siteId = defaultNewsSite()?.site_id || '', 
           let draft = await composeCandidate(site, reserved, theme, compositionFailure, previousDraft);
           let qualityIssues = validateDraft(draft, site);
           if (qualityIssues.length === 1 && qualityIssues[0].startsWith('Content must contain')) {
-            draft = completeNewsDraftLength(draft, reserved, site);
+            draft = normalizeNewsDraftLength(draft, reserved, site);
             qualityIssues = validateDraft(draft, site);
           }
           if (!qualityIssues.length) { composed = draft; break; }
