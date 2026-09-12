@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, completeNewsDraftLength, lexicalSimilarity, newsModelRuntimeConfig, newsWordCount, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, completeNewsDraftLength, lexicalSimilarity, newsModelRuntimeConfig, newsWordCount, normalizeNewsDraftLength, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
 import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
 const site = defaultNewsSite();
@@ -114,4 +114,13 @@ test('an otherwise-valid short News draft receives only source-bounded editorial
     sourceName: 'Example marine authority', sourcePublishedAt: '2026-09-12T00:00:00.000Z', title: 'Marine operating update', summary: 'The source published a dated update for operators.'
   }, site);
   assert.ok(newsWordCount(completedEmptyDraft.content) >= site!.news.desired_word_count.min);
+});
+
+test('an over-length News draft is shortened without removing source context', () => {
+  assert.ok(site);
+  const normalized = normalizeNewsDraftLength({content: `## News facts\n${'Verified source context '.repeat(510)}\n\n## Source context\n${'Readers should review the original source. '.repeat(80)}`}, {
+    sourceName: 'Example marine authority', sourcePublishedAt: '2026-09-12T00:00:00.000Z', title: 'Marine operating update', summary: 'The source published a dated update for operators.'
+  }, site);
+  assert.ok(newsWordCount(normalized.content) <= site!.news.desired_word_count.max);
+  assert.match(normalized.content, /## Source context/);
 });
