@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, newsModelRuntimeConfig, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
+import {candidateInIndustryScope, candidateStatusBlocksReevaluation, canPublishAt, lexicalSimilarity, newsModelRuntimeConfig, newsWordCount, parseNewsFeed, scoreNewsCandidate, validateDraft} from '../src/lib/newsAutopilot';
 import {defaultNewsSite} from '../src/lib/newsSiteConfig';
 
 const site = defaultNewsSite();
@@ -95,4 +95,8 @@ test('quality gate rejects promotional and under-length News copy', () => {
   }, site);
   assert.ok(issues.some((item) => item.includes('Content must contain')));
   assert.ok(issues.some((item) => item.includes('prohibited sales CTA')));
+});
+
+test('word counting uses the same rule as the publication quality gate', () => {
+  assert.equal(newsWordCount("One well-formed editor's note."), 4);
 });
