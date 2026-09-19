@@ -65,7 +65,7 @@ export default async function AdminVisitorsPage({
           <div>
             <p className="eyebrow">客户档案</p>
             <h2>按客户归属显示</h2>
-            <p>数据源：{report.store.provider}；{report.store.configured ? '稳定存储已连接' : '当前存储未配置为持久模式'}；更新时间：{formatAdminDate(report.generatedAt)}</p>
+            <p>更新时间：{formatAdminDate(report.generatedAt)}</p>
           </div>
           <a className="button secondary small" href={exportHref(params)}>导出当前筛选 CSV</a>
         </div>

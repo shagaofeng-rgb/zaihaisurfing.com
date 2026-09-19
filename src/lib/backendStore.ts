@@ -6,6 +6,7 @@ import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrd
 import {mutateStoreObject, readStoreObject, writeStoreObject} from '@/lib/durableStore';
 import {markSitemapDirty} from '@/lib/sitemapState';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
+import {readAdminBusinessData} from '@/lib/adminBusinessData';
 
 const STORE_FILE = 'admin-store.json';
 
@@ -277,7 +278,8 @@ function isInsideRange(timestamp: string, filter?: AdminDashboardFilter) {
 }
 
 export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
-  const [store, orders, events] = await Promise.all([readAdminStore(), readStoreOrders(), readAnalyticsEvents()]);
+  const [store, businessData] = await Promise.all([readAdminStore(), readAdminBusinessData()]);
+  const {orders, events} = businessData;
   const filteredOrders = orders.filter((order) => isInsideRange(order.createdAt, filter));
   const filteredEvents = events.filter((event) => isInsideRange(event.timestamp, filter));
   const leads = buildCustomerLeads(filteredOrders, filteredEvents);
@@ -303,6 +305,8 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
     },
     orders: filteredOrders.slice(-12).reverse(),
     events: filteredEvents.slice(-24).reverse(),
+    filteredOrders,
+    filteredEvents,
     leads,
     funnel: buildFunnel(filteredEvents, filteredOrders),
     popularProducts: countBy([...filteredOrders.map((order) => order.productName), ...filteredEvents.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),

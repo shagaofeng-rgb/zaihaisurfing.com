@@ -29,7 +29,7 @@ const navSections = [
       {key: 'leads', label: '客户表单', href: '/admin/leads'},
       {key: 'carts', label: '购物车与弃购', href: '/admin/carts'},
       {key: 'news', label: '新闻管理', href: '/admin/news'},
-      {key: 'news-autopilot', label: '新闻自主运营', href: '/admin/news-autopilot'},
+      {key: 'news-autopilot', label: '新闻发布管理', href: '/admin/news-autopilot'},
       {key: 'blog', label: '博客管理', href: '/admin/blog'},
       {key: 'media', label: '媒体库', href: '/admin/media'}
     ]
@@ -42,7 +42,7 @@ const navSections = [
       {key: 'whatsapp', label: 'WhatsApp 点击', href: '/admin/analytics/whatsapp'},
       {key: 'funnel', label: '转化漏斗', href: '/admin/funnel'},
       {key: 'seo', label: 'SEO 数据', href: '/admin/seo'},
-      {key: 'sync', label: '数据同步', href: '/admin/sync'},
+      {key: 'sync', label: '运营状态', href: '/admin/sync'},
       {key: 'users', label: '用户与权限', href: '/admin/users'},
       {key: 'audit', label: '操作日志', href: '/admin/audit'},
       {key: 'settings', label: '系统设置', href: '/admin/settings'}
@@ -55,7 +55,6 @@ export default async function AdminShell({active, children}: {active: string; ch
   return (
     <main className="admin-dashboard">
       <aside className="admin-sidebar">
-        <a className={active === 'facebook' ? 'is-active' : ''} href="/admin/facebook">Facebook Page</a>
         <a className="admin-logo" href="/admin">
           <img src="/assets/brand-logo.png" alt="ZAIHAI" width="960" height="450" />
           <strong>在海零售后台</strong>

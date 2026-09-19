@@ -1,4 +1,5 @@
-import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent} from '@/lib/commerceStore';
+import {type AnalyticsEvent} from '@/lib/commerceStore';
+import {readAdminBusinessData} from '@/lib/adminBusinessData';
 import {durableStoreStatus} from '@/lib/durableStore';
 import {paginate} from '@/lib/adminPagination';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
@@ -86,7 +87,7 @@ function topBy(records: WhatsAppClickRecord[], value: (record: WhatsAppClickReco
 }
 
 export async function getWhatsAppAnalytics(options: TimeRange & {page: number; perPage: number}) {
-  const [events, orders] = await Promise.all([readAnalyticsEvents(), readStoreOrders()]);
+  const {events, orders} = await readAdminBusinessData();
   const scopedEvents = events.filter((event) => inRange(event.timestamp, options));
   const records = scopedEvents.filter(isWhatsAppClick).map(toRecord).sort((a, b) => b.time.localeCompare(a.time));
   const paged = paginate(records, options.page, options.perPage);

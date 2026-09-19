@@ -1,4 +1,5 @@
-import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent} from '@/lib/commerceStore';
+import {type AnalyticsEvent} from '@/lib/commerceStore';
+import {readAdminBusinessData} from '@/lib/adminBusinessData';
 import {durableStoreStatus} from '@/lib/durableStore';
 import {classifyTraffic, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
 
@@ -90,7 +91,7 @@ function group(events: AnalyticsEvent[], filter: Filter, keyOf: (touch: TrafficT
 }
 
 export async function getAcquisitionReport(filter: Filter = {}) {
-  const [events, orders] = await Promise.all([readAnalyticsEvents(), readStoreOrders()]);
+  const {events, orders} = await readAdminBusinessData();
   const filteredOrders = orders.filter((order) => inRange(order.createdAt, filter));
   const purchaseEvents: AnalyticsEvent[] = filteredOrders
     .filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status))

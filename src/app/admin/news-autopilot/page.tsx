@@ -3,7 +3,7 @@ import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
-import {formatNewsTime, newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
+import {formatNewsTime, readNewsAutopilotState} from '@/lib/newsAutopilot';
 import {defaultNewsSite} from '@/lib/newsSiteConfig';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,6 @@ export default async function NewsAutopilotPage({
   const site = defaultNewsSite();
   const state = await readNewsAutopilotState();
   const siteState = site ? state.sites[site.site_id] : undefined;
-  const runtime = newsAutopilotRuntimeStatus();
   const sources = site ? [...site.sources.primary_whitelist, ...site.sources.fallback_whitelist] : [];
   const candidates = (siteState?.candidates || []).filter((item) => isAdminTimestampInRange(item.createdAt, timeFilter.from, timeFilter.to)).slice().reverse();
   const runs = (siteState?.runs || []).filter((item) => isAdminTimestampInRange(item.finishedAt, timeFilter.from, timeFilter.to)).slice().reverse();
@@ -34,18 +33,17 @@ export default async function NewsAutopilotPage({
 
   return <AdminShell active="news-autopilot">
     <div className="admin-title">
-      <p className="eyebrow">News 自动化 V3</p>
+      <p className="eyebrow">新闻内容</p>
       <h1>新闻采集与发布</h1>
-      <p>每 12 小时只采集、验证、评分和保存候选；每 48 小时发布一篇，并完成 News 列表、详情、Sitemap 和 RSS 前台验收。Blog 不参与该流程。</p>
+      <p>查看新闻内容的采集、审核、发布和前台展示结果。</p>
       <AdminTimeFilter action="/admin/news-autopilot" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="自动任务记录时间" summary={timeFilter.summary} params={params} />
     </div>
 
     <section className="admin-panel">
-      <h2>站点配置</h2>
+      <h2>内容发布概况</h2>
       {site ? <div className="admin-config-list">
-        <div><dt>站点 ID</dt><dd>{site.site_id}</dd></div>
-        <div><dt>News 路由</dt><dd>{site.news.list_route} / {site.news.detail_route_pattern}</dd></div>
-        <div><dt>时区</dt><dd>{site.timezone}</dd></div>
+        <div><dt>内容站点</dt><dd>在海冲浪官方网站</dd></div>
+        <div><dt>发布时间</dt><dd>{site.timezone}</dd></div>
         <div><dt>最近采集</dt><dd>{siteState?.lastIngestAt ? formatNewsTime(new Date(siteState.lastIngestAt), site.timezone) : '暂无成功记录'}</dd></div>
         <div><dt>最近前台发布</dt><dd>{siteState?.lastPublishedAt ? formatNewsTime(new Date(siteState.lastPublishedAt), site.timezone) : '暂无前台验收记录'}</dd></div>
       </div> : <p>当前没有有效的 News 站点配置。</p>}
@@ -58,11 +56,11 @@ export default async function NewsAutopilotPage({
     </section>
 
     <section className="admin-panel">
-      <h2>运行保护状态</h2>
+      <h2>发布状态</h2>
       <div className="admin-metrics">
-        <article><span>自动任务</span><strong>{runtime.schedulingEnabled && siteState?.enabled !== false ? '已启用' : '已暂停'}</strong><small>生产环境开关与站点开关</small></article>
-        <article><span>发布能力</span><strong>{runtime.publishingEnabled ? '已启用' : '已暂停'}</strong><small>关闭时只允许采集</small></article>
-        <article><span>持久化存储</span><strong>{runtime.durableStore}</strong><small>{runtime.hasDistributedLock ? '分布式锁可用' : '需要分布式锁'}</small></article>
+        <article><span>新闻发布</span><strong>{siteState?.enabled === false ? '已暂停' : '已启用'}</strong><small>可由运营人员管理</small></article>
+        <article><span>最近采集</span><strong>{siteState?.lastIngestAt ? '已完成' : '待更新'}</strong><small>{siteState?.lastIngestAt ? formatNewsTime(new Date(siteState.lastIngestAt), site?.timezone) : '暂无记录'}</small></article>
+        <article><span>最近发布</span><strong>{siteState?.lastPublishedAt ? '已完成' : '待更新'}</strong><small>{siteState?.lastPublishedAt ? formatNewsTime(new Date(siteState.lastPublishedAt), site?.timezone) : '暂无记录'}</small></article>
         <article><span>本期合格候选</span><strong>{candidates.filter((candidate) => candidate.status === 'candidate').length}</strong><small>仅含可归因候选</small></article>
       </div>
     </section>

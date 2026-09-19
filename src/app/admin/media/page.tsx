@@ -22,7 +22,7 @@ export default async function AdminMediaPage({
       <div className="admin-title">
         <p className="eyebrow">图片与素材</p>
         <h1>媒体库</h1>
-        <p>上传图片到 Vercel Blob，或登记已有图片 URL，并统一管理 ALT 文案和素材使用位置。</p>
+        <p>上传图片或登记已有图片链接，统一管理素材说明和使用位置。</p>
         <AdminTimeFilter action="/admin/media" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="媒体创建时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">

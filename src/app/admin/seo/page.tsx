@@ -118,7 +118,7 @@ export default async function AdminSeoPage({
           <p>最近检查：{sitemap.lastRun?.finishedAt ? sitemap.lastRun.finishedAt.slice(0, 19).replace('T', ' ') : '-'}</p>
           <p>URL 数量：{sitemap.lastRun?.processedUrls || sitemap.snapshot.length}</p>
           <p>文件数量：{sitemap.lastRun?.files.length || 0}</p>
-          <p>Google 提交：{sitemap.lastRun?.googleSubmission.success ? '已由 API 接受' : sitemap.lastRun?.googleSubmission.message || '尚未提交'}</p>
+          <p>Google 提交：{sitemap.lastRun?.googleSubmission.success ? '已提交' : sitemap.lastRun?.googleSubmission.message || '尚未提交'}</p>
           <p>Google 回读：{googleReadback?.success
             ? `正常（最后读取：${googleReadback.lastDownloadedAt?.slice(0, 19).replace('T', ' ') || '等待 Google 读取'}；发现页面：${googleReadback.discoveredPages ?? 0}）`
             : googleReadback?.message || '尚未读取'}</p>
@@ -144,7 +144,7 @@ export default async function AdminSeoPage({
           <div>
             <p className="eyebrow">需要配置</p>
             <h2>连接真实 Google SEO 数据需要服务账号</h2>
-            <p>请在 Vercel 环境变量中配置 GOOGLE_SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON，或分别配置 GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL 与 GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY，并把该服务账号邮箱加入 Google Search Console 对应资源的用户权限。</p>
+            <p>请联系网站管理员完成 Google Search Console 授权后，再返回此页同步数据。</p>
           </div>
         </section>
       ) : null}

@@ -57,7 +57,7 @@ export default async function AdminWhatsAppAnalyticsPage({
       </div>
 
       <section className="admin-panel">
-        <div><p className="eyebrow">Click Log</p><h2>点击明细</h2><p>当前数据源：{report.store.provider}；生成时间：{report.generatedAt.slice(0, 19).replace('T', ' ')}</p></div>
+        <div><p className="eyebrow">点击记录</p><h2>点击明细</h2><p>更新时间：{report.generatedAt.slice(0, 19).replace('T', ' ')}</p></div>
         <div className="admin-table-wrap">
           <table>
             <thead><tr><th>时间</th><th>访客编号</th><th>入口</th><th>按钮</th><th>页面</th><th>产品</th><th>国家/地区</th><th>设备</th><th>来源</th><th>活动</th></tr></thead>

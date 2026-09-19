@@ -1,7 +1,7 @@
 import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, getRetailAdminHealth} from '@/lib/adminDataViews';
-import {googleSeoConfigStatus, readGoogleSeoSnapshot} from '@/lib/googleSeo';
-import {newsAutopilotRuntimeStatus, readNewsAutopilotState} from '@/lib/newsAutopilot';
+import {readGoogleSeoSnapshot} from '@/lib/googleSeo';
+import {readNewsAutopilotState} from '@/lib/newsAutopilot';
 import {defaultNewsSite} from '@/lib/newsSiteConfig';
 import {readSitemapState} from '@/lib/sitemapState';
 
@@ -14,87 +14,38 @@ export default async function AdminSyncPage() {
     readSitemapState(),
     readNewsAutopilotState()
   ]);
-  const googleSeo = googleSeoConfigStatus();
-  const newsRuntime = newsAutopilotRuntimeStatus();
   const newsSite = defaultNewsSite();
   const newsState = newsSite ? newsAutopilot.sites[newsSite.site_id] : undefined;
-  const googleSeoStatus = seo.status === 'ok'
-    ? `Healthy. Last verified sync: ${formatAdminDate(seo.syncedAt)}.`
-    : googleSeo.configured
-      ? `Needs attention. Last sync status: ${seo.status}. ${seo.error || 'No successful snapshot exists yet.'}`
-      : 'Waiting for Google Search Console service-account environment variables.';
-  const newsAutopilotStatus = !newsRuntime.schedulingEnabled
-    ? 'Scheduling switch is off in production. No automatic News run can publish.'
-    : newsState?.enabled === false
-      ? 'Planning is disabled by the administrator. No automatic News run can publish.'
-      : !newsRuntime.hasDistributedLock
-        ? `Blocked safely: a KV/Redis distributed lock is required (current store: ${newsRuntime.durableStore}).`
-        : !newsRuntime.publishingEnabled
-          ? 'Ingest remains available, but the public publishing switch remains off.'
-          : '12-hour ingest and 48-hour public News verification are enabled.';
-  const cronJobs = [
-    {
-      name: 'Sitemap health check',
-      path: '/api/cron/sitemap-health',
-      status: sitemap.lastRun?.success
-        ? `Healthy. Last processed ${sitemap.lastRun.processedUrls} URLs.`
-        : 'Waiting for the first run or needs attention.'
-    },
-    {
-      name: 'Google SEO sync',
-      path: '/api/cron/sync-google-seo',
-      status: `${googleSeoStatus} Scheduled every 3 days.`
-    },
-    {
-      name: 'Monthly form email test',
-      path: '/api/cron/test-contact-form',
-      status: 'Runs on the first day of every month to verify form-email delivery.'
-    },
-    {
-      name: 'News candidate ingest',
-      path: '/api/cron/news-ingest',
-      status: `${newsAutopilotStatus} Collects, verifies, deduplicates and scores only; no writing or publishing.`
-    },
-    {
-      name: 'News publication verification',
-      path: '/api/cron/news-publish',
-      status: 'Checks every 12 hours and publishes only after the 48-hour interval and public list/detail/sitemap/RSS verification pass.'
-    }
-  ];
 
   return (
     <AdminShell active="sync">
       <div className="admin-title">
-        <p className="eyebrow">DATA SYNC</p>
-        <h1>Persistent storage and scheduled service health</h1>
-        <p>Verify real order, visitor, content, email, Google SEO and form-test data flows.</p>
+        <p className="eyebrow">运营状态</p>
+        <h1>业务服务状态</h1>
+        <p>集中查看订单、客户咨询、内容发布和搜索表现的最近更新时间。</p>
       </div>
       <div className="admin-metrics">
-        <article><span>Persistent storage</span><strong>{health.persistentStore ? 'Healthy' : 'Needs configuration'}</strong><small>Production uses Vercel Blob, KV, or Redis.</small></article>
-        <article><span>Orders</span><strong>{health.metrics.orders}</strong><small>orders.jsonl</small></article>
-        <article><span>Visitor events</span><strong>{health.events.length}</strong><small>analytics-events.jsonl</small></article>
-        <article><span>SEO pages</span><strong>{seo.pages.length}</strong><small>Search Console page data</small></article>
+        <article><span>订单</span><strong>{health.metrics.orders}</strong><small>当前业务订单</small></article>
+        <article><span>客户访问</span><strong>{health.events.length}</strong><small>已记录的访问行为</small></article>
+        <article><span>搜索页面</span><strong>{seo.pages.length}</strong><small>已同步的搜索表现页面</small></article>
+        <article><span>新闻发布</span><strong>{newsState?.lastPublishedAt ? '正常' : '待更新'}</strong><small>最近一次前台发布状态</small></article>
       </div>
       <section className="admin-panel">
-        <h2>Scheduled tasks and data sync</h2>
-        <div className="admin-table-wrap">
-          <table>
-            <thead><tr><th>Task</th><th>Endpoint</th><th>Status</th></tr></thead>
-            <tbody>{cronJobs.map((job) => <tr key={job.path}><td>{job.name}</td><td>{job.path}</td><td>{job.status}</td></tr>)}</tbody>
-          </table>
-        </div>
-      </section>
-      <section className="admin-panel">
-        <h2>Editorial publishing</h2>
-        <p>Blog is isolated from News automation. News candidates, articles, routes, sitemap entries, RSS, audit logs and scheduled endpoints are separate from Blog data and publishing.</p>
-      </section>
-      <section className="admin-panel">
-        <h2>Recent data timestamps</h2>
+        <h2>业务更新情况</h2>
         <dl className="admin-config-list">
-          <div><dt>Latest order</dt><dd>{formatAdminDate(health.orders[health.orders.length - 1]?.createdAt || '')}</dd></div>
-          <div><dt>Latest visitor event</dt><dd>{formatAdminDate(health.events[health.events.length - 1]?.timestamp || '')}</dd></div>
-          <div><dt>Latest email log</dt><dd>{formatAdminDate(health.emails[health.emails.length - 1]?.createdAt || '')}</dd></div>
-          <div><dt>Google SEO sync</dt><dd>{formatAdminDate(seo.syncedAt || '')}</dd></div>
+          <div><dt>站点地图</dt><dd>{sitemap.lastRun?.success ? `最近检查已完成，包含 ${sitemap.lastRun.processedUrls} 个页面。` : '等待最近一次检查结果。'}</dd></div>
+          <div><dt>搜索表现</dt><dd>{seo.status === 'ok' ? `最近更新：${formatAdminDate(seo.syncedAt)}` : '等待新的搜索表现数据。'}</dd></div>
+          <div><dt>新闻内容</dt><dd>{newsState?.lastPublishedAt ? `最近发布：${formatAdminDate(newsState.lastPublishedAt)}` : '暂无最近发布记录。'}</dd></div>
+          <div><dt>客户咨询</dt><dd>{health.emails.length ? `最近通知：${formatAdminDate(health.emails[health.emails.length - 1]?.createdAt || '')}` : '暂无客户咨询通知记录。'}</dd></div>
+        </dl>
+      </section>
+      <section className="admin-panel">
+        <h2>最近业务记录</h2>
+        <dl className="admin-config-list">
+          <div><dt>最新订单</dt><dd>{formatAdminDate(health.orders[health.orders.length - 1]?.createdAt || '')}</dd></div>
+          <div><dt>最近访问</dt><dd>{formatAdminDate(health.events[health.events.length - 1]?.timestamp || '')}</dd></div>
+          <div><dt>最近客户通知</dt><dd>{formatAdminDate(health.emails[health.emails.length - 1]?.createdAt || '')}</dd></div>
+          <div><dt>搜索表现更新</dt><dd>{formatAdminDate(seo.syncedAt || '')}</dd></div>
         </dl>
       </section>
     </AdminShell>

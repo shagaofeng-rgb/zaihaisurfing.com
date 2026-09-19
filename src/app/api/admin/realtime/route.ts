@@ -1,8 +1,7 @@
 import crypto from 'node:crypto';
 import {requireAdminApiSession} from '@/lib/adminAuth';
-import {buildCustomerLeads, getAdminDashboardData} from '@/lib/backendStore';
-import {getCommerceSnapshot, readAnalyticsEvents, readStoreOrders} from '@/lib/commerceStore';
-import {durableStoreStatus} from '@/lib/durableStore';
+import {buildCustomerLeads} from '@/lib/backendStore';
+import {readAdminBusinessData} from '@/lib/adminBusinessData';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,19 +18,12 @@ export async function GET() {
   const {response} = await requireAdminApiSession();
   if (response) return response;
 
-  const [orders, events, snapshot, backend] = await Promise.all([
-    readStoreOrders(),
-    readAnalyticsEvents(),
-    getCommerceSnapshot(),
-    getAdminDashboardData()
-  ]);
+  const {orders, events} = await readAdminBusinessData();
   const leads = buildCustomerLeads(orders, events);
   const state = {
     orders: orders.length,
     events: events.length,
     leads: leads.length,
-    products: backend.metrics.products,
-    posts: backend.metrics.posts,
     latestOrder: latest(orders.map((order) => order.updatedAt || order.createdAt)),
     latestEvent: latest(events.map((event) => event.timestamp)),
     latestLead: latest(leads.map((lead) => lead.lastActiveTime))
@@ -42,16 +34,7 @@ export async function GET() {
       ok: true,
       generatedAt: new Date().toISOString(),
       version: hash(state),
-      store: durableStoreStatus(),
       state,
-      metrics: {
-        ...snapshot.metrics,
-        leads: leads.length,
-        products: backend.metrics.products,
-        publishedProducts: backend.metrics.publishedProducts,
-        posts: backend.metrics.posts,
-        conversionRate: backend.metrics.conversionRate
-      },
       recent: {
         orders: orders.slice(-5).reverse(),
         events: events.slice(-5).reverse(),

@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 
 type RealtimePayload = {
@@ -27,63 +27,32 @@ function timeLabel(value: string) {
 
 export default function AdminRealtimeSync() {
   const router = useRouter();
-  const firstVersion = useRef('');
   const [payload, setPayload] = useState<RealtimePayload | null>(null);
-  const [status, setStatus] = useState<'syncing' | 'online' | 'updated' | 'offline'>('syncing');
+  const [status, setStatus] = useState<'ready' | 'syncing' | 'online' | 'offline'>('ready');
 
-  useEffect(() => {
-    let cancelled = false;
-    let timer: number | null = null;
-
-    async function sync() {
-      try {
-        const response = await fetch('/api/admin/realtime', {
-          cache: 'no-store',
-          credentials: 'include'
-        });
-        if (!response.ok) throw new Error(`Sync failed: ${response.status}`);
-        const next = (await response.json()) as RealtimePayload;
-        if (cancelled) return;
-
-        setPayload(next);
-        if (!firstVersion.current) {
-          firstVersion.current = next.version;
-          setStatus('online');
-        } else if (firstVersion.current !== next.version) {
-          firstVersion.current = next.version;
-          setStatus('updated');
-          router.refresh();
-          window.setTimeout(() => {
-            if (!cancelled) setStatus('online');
-          }, 1600);
-        } else {
-          setStatus('online');
-        }
-      } catch {
-        if (!cancelled) setStatus('offline');
-      } finally {
-        if (!cancelled) timer = window.setTimeout(sync, 8000);
-      }
+  async function sync() {
+    setStatus('syncing');
+    try {
+      const response = await fetch('/api/admin/realtime', {cache: 'no-store', credentials: 'include'});
+      if (!response.ok) throw new Error(`Sync failed: ${response.status}`);
+      setPayload(await response.json() as RealtimePayload);
+      setStatus('online');
+      router.refresh();
+    } catch {
+      setStatus('offline');
     }
-
-    sync();
-    return () => {
-      cancelled = true;
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [router]);
+  }
 
   return (
     <div className={`admin-realtime-sync ${status}`} aria-live="polite">
       <span className="admin-sync-dot" />
       <div>
-        <strong>{status === 'updated' ? '数据已同步' : status === 'offline' ? '同步中断' : status === 'syncing' ? '正在同步' : '实时同步中'}</strong>
+        <strong>{status === 'offline' ? '暂时无法更新' : status === 'syncing' ? '正在更新' : status === 'online' ? '数据已更新' : '数据概览'}</strong>
         <small>
-          订单 {payload?.state.orders ?? 0} / 线索 {payload?.state.leads ?? 0} / 事件 {payload?.state.events ?? 0}
-          {' '} / {payload?.store?.configured ? '稳定存储' : '临时存储'}
-          {' '} / 最近 {timeLabel(payload?.state.latestOrder || payload?.state.latestEvent || payload?.generatedAt || '')}
+          {payload ? `订单 ${payload.state.orders} / 客户咨询 ${payload.state.leads} / 最近更新 ${timeLabel(payload.state.latestOrder || payload.state.latestEvent || payload.generatedAt)}` : '按需更新，避免影响后台操作速度'}
         </small>
       </div>
+      <button type="button" onClick={sync} disabled={status === 'syncing'}>{status === 'syncing' ? '更新中' : '刷新数据'}</button>
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
 import AdminPagination from '@/components/AdminPagination';
+import AdminBarChart from '@/components/AdminBarChart';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhOrderStatus, zhPaymentStatus} from '@/lib/adminZh';
 import {getAdminDashboardData} from '@/lib/backendStore';
-import {getCommerceSnapshot, readStoreOrders} from '@/lib/commerceStore';
 import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
-import {formatAdminDate, getRetailAdminHealth, money} from '@/lib/adminDataViews';
+import {formatAdminDate, money} from '@/lib/adminDataViews';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,55 +18,41 @@ export default async function AdminDashboardPage({
   const params = await searchParams;
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const [snapshot, backend, allOrders, health] = await Promise.all([
-    getCommerceSnapshot({from: timeFilter.from, to: timeFilter.to}),
-    getAdminDashboardData({from: timeFilter.from, to: timeFilter.to}),
-    readStoreOrders(),
-    getRetailAdminHealth()
-  ]);
-  const filteredOrders = allOrders
-    .filter((order) => {
-      const time = new Date(order.createdAt).getTime();
-      if (Number.isNaN(time)) return false;
-      if (timeFilter.from && time < timeFilter.from.getTime()) return false;
-      if (timeFilter.to && time > timeFilter.to.getTime()) return false;
-      return true;
-    })
-    .slice()
-    .reverse();
+  const backend = await getAdminDashboardData({from: timeFilter.from, to: timeFilter.to});
+  const filteredOrders = backend.filteredOrders.slice().reverse();
   const pagedOrders = paginate(filteredOrders, page, perPage);
 
   return (
     <AdminShell active="dashboard">
       <div className="admin-title" id="overview">
-        <p className="eyebrow">B2C 零售后台</p>
-        <h1>订单、支付、库存、客户与内容数据总览</h1>
-        <p>本页只读取真实持久化数据：订单来自结账流程，访客来自埋点事件，商品与内容来自后台 CMS，旧数据不会被迁移或覆盖。</p>
+        <p className="eyebrow">经营概览</p>
+        <h1>企业运营数据总览</h1>
+        <p>查看当前周期的订单、客户咨询、访问表现与内容运营情况。</p>
         <AdminTimeFilter action="/admin" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="数据统计" summary={timeFilter.summary} />
       </div>
 
       <div className="admin-metrics">
-        <article><span>销售额</span><strong>{money(snapshot.metrics.revenue)}</strong><small>已付款/处理中/已发货/已完成订单</small></article>
-        <article><span>订单数</span><strong>{snapshot.metrics.orders}</strong><small>当前筛选范围内订单</small></article>
-        <article><span>待付款</span><strong>{snapshot.metrics.pendingPayment}</strong><small>需要客服或网关继续跟进</small></article>
-        <article><span>真实访客</span><strong>{snapshot.metrics.visitors}</strong><small>按访客 ID 去重</small></article>
+        <article><span>销售额</span><strong>{money(backend.metrics.revenue)}</strong><small>已付款及履约中订单</small></article>
+        <article><span>订单数</span><strong>{backend.metrics.orders}</strong><small>当前筛选范围内订单</small></article>
+        <article><span>客户咨询</span><strong>{backend.metrics.leads}</strong><small>已提交表单或结账意向</small></article>
+        <article><span>访问客户</span><strong>{backend.metrics.visitors}</strong><small>按匿名访客编号去重</small></article>
         <article><span>商品</span><strong>{backend.metrics.publishedProducts}/{backend.metrics.products}</strong><small>已发布 / 总商品数</small></article>
-        <article><span>低库存</span><strong>{health.metrics.lowStock}</strong><small>库存小于等于 5 的商品</small></article>
+        <article><span>产品浏览</span><strong>{backend.metrics.productViews}</strong><small>产品详情页访问</small></article>
         <article><span>内容</span><strong>{backend.metrics.posts}</strong><small>新闻与博客</small></article>
         <article><span>转化率</span><strong>{backend.metrics.conversionRate}%</strong><small>订单 / 独立访客</small></article>
       </div>
 
       <section className="admin-panel admin-health-panel">
         <div>
-          <p className="eyebrow">数据保护</p>
-          <h2>后台真实数据源状态</h2>
-          <p>优化仅修改代码与后台页面，不清空订单、访客、客户、支付、物流、邮件日志和 CMS 数据。</p>
+          <p className="eyebrow">经营提示</p>
+          <h2>当前周期重点</h2>
+          <p>全部指标以客户访问、表单提交、订单和已发布内容为准。</p>
         </div>
         <dl className="admin-config-list">
-          <div><dt>持久化存储</dt><dd>{health.persistentStore ? '已配置 Vercel Blob / KV / Redis 持久化数据源' : '当前环境未检测到生产持久化凭证，请确认 Vercel 环境变量已配置'}</dd></div>
-          <div><dt>订单数据</dt><dd>{health.metrics.orders} 条订单，{health.metrics.paymentNotices} 条支付通知，{health.metrics.refunds} 条退款记录</dd></div>
-          <div><dt>物流与邮件</dt><dd>{health.metrics.shipments} 条物流记录，{health.metrics.emails} 条邮件日志</dd></div>
-          <div><dt>支付接口</dt><dd>{snapshot.paymentGateway.provider}，状态：{snapshot.paymentGateway.status}</dd></div>
+          <div><dt>待跟进咨询</dt><dd>{backend.metrics.leads} 条客户需求信号，可在“客户表单”中查看详情。</dd></div>
+          <div><dt>已发布商品</dt><dd>{backend.metrics.publishedProducts} 个商品正在前台展示。</dd></div>
+          <div><dt>内容运营</dt><dd>{backend.metrics.posts} 篇新闻与博客内容正在管理中。</dd></div>
+          <div><dt>访问转化</dt><dd>当前访问转化率为 {backend.metrics.conversionRate}% 。</dd></div>
         </dl>
       </section>
 
@@ -85,6 +71,11 @@ export default async function AdminDashboardPage({
           ))}
         </div>
       </section>
+
+      <div className="admin-two-col">
+        <AdminBarChart title="客户访问来源" rows={backend.trafficSources} />
+        <AdminBarChart title="访问国家与地区" rows={backend.countries} />
+      </div>
 
       <section className="admin-panel">
         <div>
@@ -114,16 +105,7 @@ export default async function AdminDashboardPage({
         <AdminPagination basePath="/admin" params={params} page={pagedOrders.page} perPage={pagedOrders.perPage} total={pagedOrders.total} totalPages={pagedOrders.totalPages} />
       </section>
 
-      <section className="admin-panel">
-        <div>
-          <p className="eyebrow">需求信号</p>
-          <h2>访问国家与产品需求</h2>
-        </div>
-        <div className="admin-two-col">
-          <div className="admin-bar-list">{backend.countries.length ? backend.countries.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实国家/地区数据</span><strong>0</strong></p>}</div>
-          <div className="admin-bar-list">{backend.popularProducts.length ? backend.popularProducts.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实产品需求数据</span><strong>0</strong></p>}</div>
-        </div>
-      </section>
+      <AdminBarChart title="产品需求信号" rows={backend.popularProducts} />
     </AdminShell>
   );
 }

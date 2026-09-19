@@ -6,19 +6,10 @@ import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhEventType} from '@/lib/adminZh';
 import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {getAdminDashboardData} from '@/lib/backendStore';
-import {readAnalyticsEvents, type AnalyticsEvent} from '@/lib/commerceStore';
-import {durableStoreStatus} from '@/lib/durableStore';
+import {type AnalyticsEvent} from '@/lib/commerceStore';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
 
 export const dynamic = 'force-dynamic';
-
-function inRange(timestamp: string, from?: Date, to?: Date) {
-  const time = new Date(timestamp).getTime();
-  if (Number.isNaN(time)) return false;
-  if (from && time < from.getTime()) return false;
-  if (to && time > to.getTime()) return false;
-  return true;
-}
 
 function eventTouch(event: AnalyticsEvent) {
   const attribution = event.attribution as AttributionSnapshot | null | undefined;
@@ -33,16 +24,11 @@ export default async function AdminAnalyticsPage({
   const params = await searchParams;
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const [data, allEvents] = await Promise.all([
-    getAdminDashboardData({from: timeFilter.from, to: timeFilter.to}),
-    readAnalyticsEvents()
-  ]);
-  const events = allEvents
-    .filter((event) => inRange(event.timestamp, timeFilter.from, timeFilter.to))
+  const data = await getAdminDashboardData({from: timeFilter.from, to: timeFilter.to});
+  const events = data.filteredEvents
     .slice()
     .reverse();
   const pagedEvents = paginate(events, page, perPage);
-  const store = durableStoreStatus();
 
   return (
     <AdminShell active="analytics">
@@ -58,15 +44,6 @@ export default async function AdminAnalyticsPage({
         <article><span>产品浏览</span><strong>{data.metrics.productViews}</strong><small>产品详情页访问</small></article>
         <article><span>结账事件</span><strong>{data.metrics.checkoutEvents}</strong><small>结账或订单相关信号</small></article>
       </div>
-      {!store.configured ? (
-        <section className="admin-panel">
-          <div>
-            <p className="eyebrow">数据源状态</p>
-            <h2>当前为临时存储</h2>
-            <p>生产环境需要配置 Vercel Blob、KV 或 Upstash Redis REST 凭据，否则多实例或重启后实时统计不稳定。</p>
-          </div>
-        </section>
-      ) : null}
       <section className="admin-panel">
         <div>
           <p className="eyebrow">来源与国家</p>

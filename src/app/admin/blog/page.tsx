@@ -21,9 +21,9 @@ export default async function AdminBlogPage({
   return (
     <AdminShell active="blog">
       <div className="admin-title">
-        <p className="eyebrow">SEO / AIO Content</p>
+        <p className="eyebrow">内容运营</p>
         <h1>博客管理</h1>
-        <p>发布产品知识、应用方案、对比分析和采购决策内容，用于 Google SEO / GEO / AIO 获客。</p>
+        <p>发布产品知识、应用方案、对比分析和采购决策内容，持续提升搜索与客户触达表现。</p>
         <AdminTimeFilter action="/admin/blog" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="博客发布时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">

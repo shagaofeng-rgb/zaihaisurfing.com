@@ -21,7 +21,7 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
           登录后台
         </button>
         <small><a href="/admin/forgot-password">忘记密码？</a></small>
-        <small>生产环境密码存放在 Vercel 环境变量中，不会写入前端代码。</small>
+        <small>请使用企业分配的后台账号登录。</small>
       </form>
     </main>
   );

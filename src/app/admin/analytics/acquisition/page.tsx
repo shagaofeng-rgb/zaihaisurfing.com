@@ -10,10 +10,10 @@ type Rows = Awaited<ReturnType<typeof getAcquisitionReport>>['channels'];
 function ReportTable({title, rows}: {title: string; rows: Rows}) {
   return (
     <section className="admin-panel">
-      <div><p className="eyebrow">Attribution</p><h2>{title}</h2></div>
+      <div><p className="eyebrow">来源分析</p><h2>{title}</h2></div>
       <div className="admin-table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Visitors</th><th>Sessions</th><th>PV</th><th>Leads</th><th>Purchases</th><th>CVR</th><th>Top Campaign</th><th>Top Landing</th></tr></thead>
+          <thead><tr><th>来源</th><th>访客</th><th>会话</th><th>浏览量</th><th>咨询</th><th>订单</th><th>转化率</th><th>主要活动</th><th>主要落地页</th></tr></thead>
           <tbody>
             {rows.length ? rows.map((row) => (
               <tr key={row.label}>
@@ -27,7 +27,7 @@ function ReportTable({title, rows}: {title: string; rows: Rows}) {
                 <td>{row.topCampaign}</td>
                 <td>{row.topLandingPage}</td>
               </tr>
-            )) : <tr><td colSpan={9}>No acquisition data yet.</td></tr>}
+            )) : <tr><td colSpan={9}>暂无业务数据。</td></tr>}
           </tbody>
         </table>
       </div>
@@ -47,37 +47,32 @@ export default async function AcquisitionPage({
   return (
     <AdminShell active="acquisition">
       <div className="admin-title">
-        <p className="eyebrow">Traffic Acquisition</p>
-        <h1>流量来源识别与营销归因</h1>
-        <p>按 First Touch、Last Touch 或 Session Source 查看访客、会话、线索、订单和 Campaign 表现。后台实时读取事件存储，不使用演示数据。</p>
+        <p className="eyebrow">流量分析</p>
+        <h1>流量来源与转化表现</h1>
+        <p>按首次接触、最近接触或本次访问，查看不同来源带来的访客、咨询和订单。</p>
         <AdminTimeFilter action="/admin/analytics/acquisition" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="归因统计时间" summary={timeFilter.summary} />
       </div>
       <div className="admin-metrics">
-        <article><span>Visitors</span><strong>{report.metrics.visitors}</strong><small>anonymous visitor ids</small></article>
-        <article><span>Sessions</span><strong>{report.metrics.sessions}</strong><small>session ids</small></article>
-        <article><span>Page Views</span><strong>{report.metrics.pageViews}</strong><small>tracked page views</small></article>
-        <article><span>Leads</span><strong>{report.metrics.leads}</strong><small>contact inquiries</small></article>
-        <article><span>Purchases</span><strong>{report.metrics.purchases}</strong><small>paid orders</small></article>
-        <article><span>CVR</span><strong>{report.metrics.conversionRate}%</strong><small>lead + purchase / visitors</small></article>
-        <article><span>Top Source</span><strong>{report.metrics.topSource}</strong><small>{report.model} touch</small></article>
-        <article><span>Last Sync</span><strong>{report.lastSyncedAt ? report.lastSyncedAt.slice(0, 16).replace('T', ' ') : '-'}</strong><small>{report.store.provider}</small></article>
+        <article><span>访客</span><strong>{report.metrics.visitors}</strong><small>独立访客</small></article>
+        <article><span>会话</span><strong>{report.metrics.sessions}</strong><small>有效访问会话</small></article>
+        <article><span>浏览量</span><strong>{report.metrics.pageViews}</strong><small>页面浏览次数</small></article>
+        <article><span>客户咨询</span><strong>{report.metrics.leads}</strong><small>表单提交</small></article>
+        <article><span>订单</span><strong>{report.metrics.purchases}</strong><small>已完成订单</small></article>
+        <article><span>转化率</span><strong>{report.metrics.conversionRate}%</strong><small>咨询和订单 / 访客</small></article>
+        <article><span>主要来源</span><strong>{report.metrics.topSource}</strong><small>当前筛选周期</small></article>
+        <article><span>最近更新</span><strong>{report.lastSyncedAt ? report.lastSyncedAt.slice(0, 16).replace('T', ' ') : '-'}</strong><small>业务数据记录时间</small></article>
       </div>
-      {!report.store.configured ? (
-        <section className="admin-panel">
-          <div><p className="eyebrow">Sync Status</p><h2>当前后台数据同步不稳定</h2><p>当前 provider 是 {report.store.provider}。生产环境建议配置 Vercel Blob 或 Upstash/KV REST，否则 serverless 实例重启后事件数据可能只保存在临时目录，后台统计会丢失或不同步。</p></div>
-        </section>
-      ) : null}
       <section className="admin-panel">
-        <div><p className="eyebrow">Attribution Model</p><h2>归因口径</h2></div>
+        <div><p className="eyebrow">统计口径</p><h2>选择来源计算方式</h2></div>
         <div className="admin-actions">
-          <a className="button secondary small" href="/admin/analytics/acquisition?model=first">First Touch</a>
-          <a className="button secondary small" href="/admin/analytics/acquisition?model=last">Last Touch</a>
-          <a className="button secondary small" href="/admin/analytics/acquisition?model=session">Session Source</a>
+          <a className="button secondary small" href="/admin/analytics/acquisition?model=first">首次来源</a>
+          <a className="button secondary small" href="/admin/analytics/acquisition?model=last">最近来源</a>
+          <a className="button secondary small" href="/admin/analytics/acquisition?model=session">本次访问来源</a>
         </div>
       </section>
-      <ReportTable title="Channel Report" rows={report.channels} />
-      <ReportTable title="Platform / Source Report" rows={report.platforms} />
-      <ReportTable title="Campaign Report" rows={report.campaigns} />
+      <ReportTable title="渠道表现" rows={report.channels} />
+      <ReportTable title="平台与来源表现" rows={report.platforms} />
+      <ReportTable title="推广活动表现" rows={report.campaigns} />
     </AdminShell>
   );
 }

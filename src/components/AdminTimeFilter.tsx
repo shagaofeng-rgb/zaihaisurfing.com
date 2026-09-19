@@ -1,6 +1,6 @@
 'use client';
 
-import {useRef, useState} from 'react';
+import {useState} from 'react';
 
 type QueryParams = Record<string, string | string[] | undefined>;
 
@@ -27,37 +27,16 @@ function isPageKey(key: string) {
   return key === 'page' || key.endsWith('Page');
 }
 
-function appendPreserved(search: URLSearchParams, params: QueryParams) {
-  Object.entries(params).forEach(([key, value]) => {
-    if (reservedKeys.has(key) || isPageKey(key)) return;
-    if (Array.isArray(value)) value.forEach((item) => item && search.append(key, item));
-    else if (value) search.set(key, value);
-  });
-}
-
 export default function AdminTimeFilter({action, range, start, end, label, summary, params = {}}: AdminTimeFilterProps) {
-  const formRef = useRef<HTMLFormElement>(null);
   const [selectedRange, setSelectedRange] = useState(range);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function submitSoon() {
-    setIsSubmitting(true);
-    window.setTimeout(() => formRef.current?.requestSubmit(), 0);
-  }
-
   function applyQuickRange(value: string) {
     setSelectedRange(value);
-    if (value === 'custom') return;
-    setIsSubmitting(true);
-    const search = new URLSearchParams();
-    appendPreserved(search, params);
-    search.set('range', value);
-    search.set('page', '1');
-    window.location.assign(`${action}?${search.toString()}`);
   }
 
   return (
-    <form ref={formRef} className="admin-time-filter" action={action} method="get" aria-label={`${label}时间筛选`}>
+    <form className="admin-time-filter" action={action} method="get" aria-label={`${label}时间筛选`}>
       {Object.entries(params).map(([key, value]) => {
         if (reservedKeys.has(key) || isPageKey(key) || key === 'perPage') return null;
         if (Array.isArray(value)) return value.map((item) => item ? <input key={`${key}-${item}`} name={key} type="hidden" value={item} /> : null);
@@ -88,7 +67,6 @@ export default function AdminTimeFilter({action, range, start, end, label, summa
           value={selectedRange}
           onChange={(event) => {
             setSelectedRange(event.target.value);
-            if (event.target.value !== 'custom') submitSoon();
           }}
         >
           <option value="day">今天</option>

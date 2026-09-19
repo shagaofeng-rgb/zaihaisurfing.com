@@ -5281,6 +5281,25 @@ a {
   line-height: 1.35;
 }
 
+.admin-realtime-sync button {
+  min-height: 34px;
+  margin-left: 4px;
+  padding: 0 11px;
+  color: var(--ink);
+  background: var(--lime);
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-realtime-sync button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .admin-sync-dot {
   width: 10px;
   height: 10px;
@@ -5481,6 +5500,52 @@ a {
   background: #f8faf7;
   border: 1px solid var(--line);
   border-radius: 8px;
+}
+
+.admin-chart-panel {
+  min-width: 0;
+}
+
+.admin-bar-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-bar-chart-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.8fr) minmax(120px, 2fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-bar-chart-row > span {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-bar-chart-row > div {
+  height: 10px;
+  overflow: hidden;
+  background: #e7ece8;
+  border-radius: 999px;
+}
+
+.admin-bar-chart-row i {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  background: linear-gradient(90deg, #00a8b8, var(--lime));
+  border-radius: inherit;
+}
+
+.admin-bar-chart-row strong {
+  min-width: 34px;
+  font-size: 13px;
+  text-align: right;
 }
 
 .admin-config-list dd {

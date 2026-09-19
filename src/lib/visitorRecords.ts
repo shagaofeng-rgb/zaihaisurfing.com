@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
-import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
+import {type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
+import {isBusinessAnalyticsEvent, readAdminBusinessData} from '@/lib/adminBusinessData';
 import {durableStoreStatus} from '@/lib/durableStore';
 import {zhCountry, zhTrafficPlatform, zhTrafficSource} from '@/lib/adminLabels';
 import {classifyTraffic, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
@@ -61,7 +62,6 @@ type ProfileGroup = {
 };
 
 const GATEWAY_EVENTS = new Set(['payment_notice', 'payment_return']);
-const INTERNAL_VISITORS = new Set(['payment-gateway', 'admin', 'local-test', 'checkout']);
 const FORM_EVENT_PATTERN = /contact_inquiry|form_submit|submit/i;
 const CHECKOUT_EVENT_PATTERN = /checkout/i;
 const WHATSAPP_EVENT_PATTERN = /whatsapp/i;
@@ -149,10 +149,11 @@ function touchFor(event: AnalyticsEvent): TrafficTouch {
 }
 
 function isRealVisitorEvent(event: AnalyticsEvent) {
+  if (!isBusinessAnalyticsEvent(event)) return false;
   if (GATEWAY_EVENTS.has(event.type)) return false;
   if (event.type.startsWith('admin_')) return false;
   const visitorId = stableVisitorId(event);
-  if (INTERNAL_VISITORS.has(visitorId) || INTERNAL_VISITORS.has(event.visitorId)) return false;
+  if (['payment-gateway', 'admin', 'local-test', 'checkout'].includes(visitorId) || ['payment-gateway', 'admin', 'local-test', 'checkout'].includes(event.visitorId)) return false;
   if (event.device === 'Gateway' || event.browser === 'Gateway') return false;
   return true;
 }
@@ -305,7 +306,7 @@ function profileSummary(group: ProfileGroup, periodEvents: AnalyticsEvent[]): Vi
 }
 
 async function loadVisitorProfiles(filter: Filter = {}) {
-  const [rawEvents, orders] = await Promise.all([readAnalyticsEvents(), readStoreOrders()]);
+  const {events: rawEvents, orders} = await readAdminBusinessData();
   const events = rawEvents.filter(isRealVisitorEvent);
   const groups = buildProfileGroups(events, orders);
   return groups.map((group) => {
