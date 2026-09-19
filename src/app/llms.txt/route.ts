@@ -26,7 +26,7 @@ ${productLines}
 ## Commercial Buyer Context
 - Target buyers: resorts, rental fleets, water parks, yacht clubs, distributors and commercial water entertainment projects.
 - Support topics: model selection, OEM/ODM, export packing, shipping quotation, spare parts, after-sales planning and distributor support.
-- Contact: davidsha@zaihaisurfing.com, WhatsApp +86 17621485205.
+- Contact: info@zaihaisurfing.com, WhatsApp +86 17621485205.
 
 ## Fresh Content
 - News sitemap: ${siteUrl}/news-sitemap.xml

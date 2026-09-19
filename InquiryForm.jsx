@@ -64,7 +64,7 @@ export default function InquiryForm({ endpoint = "/api/inquiry" }) {
     } catch {
       setStatus({
         type: "error",
-        message: "Submission failed. Please email davidsha@zaihaisurfing.com or contact us on WhatsApp.",
+        message: "Submission failed. Please email info@zaihaisurfing.com or contact us on WhatsApp.",
       });
     } finally {
       setIsSubmitting(false);

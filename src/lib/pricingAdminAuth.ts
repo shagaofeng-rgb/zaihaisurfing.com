@@ -41,7 +41,7 @@ export function pricingAccountLabel(account: string) {
 }
 
 export function verifyPricingAdminCredentials(email: string, password: string) {
-  const adminEmail = (process.env.PRICING_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'davidsha@zaihaisurfing.com').trim().toLowerCase();
+  const adminEmail = (process.env.PRICING_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'info@zaihaisurfing.com').trim().toLowerCase();
   const normalizedEmail = String(email || '').trim().toLowerCase();
   if (!normalizedEmail || !password) return false;
   const salesUser = pricingSalesUsers.find((user) => user.account === normalizedEmail);

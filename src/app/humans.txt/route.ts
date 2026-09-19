@@ -8,7 +8,7 @@ export function GET() {
 
 Site: ${siteUrl}
 Business: B2B water sports equipment supplier
-Contact: davidsha@zaihaisurfing.com
+Contact: info@zaihaisurfing.com
 AI reference: ${siteUrl}/llms.txt
 Full AI reference: ${siteUrl}/llms-full.txt
 News sitemap: ${siteUrl}/news-sitemap.xml

@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     waterArea: 'N/A',
     oem: 'No',
     destinationPort: 'N/A',
-    message: `Automated monthly contact form test. If this email arrives at davidsha@zaihaisurfing.com, the website form email delivery path is working. Checked at ${checkedAt}.`,
+    message: `Automated monthly contact form test. If this email arrives at info@zaihaisurfing.com, the website form email delivery path is working. Checked at ${checkedAt}.`,
     page: '/en/contact?form_health_check=1',
     referrer: 'vercel-cron',
     visitorId: 'monthly-contact-form-health-check',

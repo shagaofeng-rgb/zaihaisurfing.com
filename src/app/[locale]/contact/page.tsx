@@ -45,7 +45,7 @@ export default async function ContactPage({params}: {params: Promise<{locale: Lo
           <div className="contact-info-card">
             <p><strong>Operated by</strong><span>{company}</span></p>
             <p><strong>{copy.addressLabel}</strong><a href={mapUrl} target="_blank" rel="noopener noreferrer">{address}</a></p>
-            <p><strong>{copy.emailLabel}</strong><a href="mailto:davidsha@zaihaisurfing.com">davidsha@zaihaisurfing.com</a></p>
+            <p><strong>{copy.emailLabel}</strong><a href="mailto:info@zaihaisurfing.com">info@zaihaisurfing.com</a></p>
             <p><strong>{copy.whatsappLabel}</strong><a className="contact-whatsapp-link" data-whatsapp-placement="contact_page" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">+86 17621485205</a></p>
           </div>
           <div className="contact-trust-grid">

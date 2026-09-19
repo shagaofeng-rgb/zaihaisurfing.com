@@ -542,8 +542,8 @@ function createSeedStore(): AdminStore {
     posts,
     settings: {
       companyName: 'ZAIHAI SURFING',
-      adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL || 'davidsha@zaihaisurfing.com',
-      contactEmail: 'davidsha@zaihaisurfing.com',
+      adminNotificationEmail: 'info@zaihaisurfing.com',
+      contactEmail: 'info@zaihaisurfing.com',
       whatsapp: '+86 17621485205',
       address: 'Room 110, 1st Floor, Building 1, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China',
       paymentCurrency: 'USD',

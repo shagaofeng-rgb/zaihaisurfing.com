@@ -32,7 +32,7 @@ ${productSections}
 - Contact: ${siteUrl}/en/contact
 
 ## Contact
-- Email: davidsha@zaihaisurfing.com
+- Email: info@zaihaisurfing.com
 - WhatsApp: +86 17621485205
 - Address: Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang, China
 `;

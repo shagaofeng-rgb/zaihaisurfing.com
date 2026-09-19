@@ -7,7 +7,7 @@
   - SMTP_PORT
   - SMTP_USER
   - SMTP_PASS
-  - INQUIRY_TO_EMAIL=davidsha@zaihaisurfing.com
+  - INQUIRY_TO_EMAIL=info@zaihaisurfing.com
 
   Optional database storage:
   - Replace the saveInquiryToDatabase function with Prisma, Supabase, MySQL, PostgreSQL, etc.
@@ -62,7 +62,7 @@ async function sendInquiryEmail(inquiry) {
 
   await transporter.sendMail({
     from: process.env.SMTP_USER,
-    to: process.env.INQUIRY_TO_EMAIL || "davidsha@zaihaisurfing.com",
+    to: "info@zaihaisurfing.com",
     replyTo: inquiry.email,
     subject: `New ZAIHAI Inquiry - ${inquiry.product || "General"}`,
     text: [

@@ -11,7 +11,7 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
         {query.reset ? <strong className="admin-login-notice">已收到重置请求。需要配置 SMTP 后才能发送安全重置邮件。</strong> : null}
         <label>
           邮箱
-          <input name="email" type="email" defaultValue="davidsha@zaihaisurfing.com" required />
+          <input name="email" type="email" defaultValue="info@zaihaisurfing.com" required />
         </label>
         <label>
           密码

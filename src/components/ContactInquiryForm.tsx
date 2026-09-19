@@ -98,7 +98,7 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
       form.reset();
       setStatus(result.message || 'Thank you. We received your request.');
     } catch {
-      setStatus('Network error. Please try again or email davidsha@zaihaisurfing.com.');
+      setStatus('Network error. Please try again or email info@zaihaisurfing.com.');
     } finally {
       setBusy(false);
     }

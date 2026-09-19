@@ -14,7 +14,7 @@ LLM reference: ${siteUrl}/llms.txt
 Full product reference: ${siteUrl}/llms-full.txt
 Sitemap: ${siteUrl}/sitemap.xml
 News sitemap: ${siteUrl}/news-sitemap.xml
-Contact: davidsha@zaihaisurfing.com
+Contact: info@zaihaisurfing.com
 `;
 
   return new Response(body, {

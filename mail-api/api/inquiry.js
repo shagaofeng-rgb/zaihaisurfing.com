@@ -102,7 +102,7 @@ async function sendInquiryEmail(inquiry, req) {
 
   await transporter.sendMail({
     from: `"ZAIHAI Website Inquiry" <${process.env.INQUIRY_FROM || process.env.SMTP_USER}>`,
-    to: process.env.INQUIRY_TO || "davidsha@zaihaisurfing.com",
+    to: "info@zaihaisurfing.com",
     replyTo: inquiry.email,
     subject,
     text: buildTextEmail(inquiry, ip),

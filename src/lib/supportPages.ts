@@ -38,7 +38,7 @@ export const supportPages: Record<SupportPageSlug, {
       {title: 'Standard coverage', text: 'Main product warranty terms are confirmed in the final quotation or invoice. Wear parts, misuse, impact damage and unauthorized modification are not normally covered.'},
       {title: 'Diagnosis process', text: 'Customers should provide order number, product model, photos, video and a clear issue description so the team can identify the cause.'},
       {title: 'Commercial fleets', text: 'Rental fleets and distributors should keep operating records and maintenance notes to support faster after-sales handling.'},
-      {title: 'Support channel', text: 'Contact davidsha@zaihaisurfing.com or WhatsApp +86 17621485205 for warranty and technical support.'}
+      {title: 'Support channel', text: 'Contact info@zaihaisurfing.com or WhatsApp +86 17621485205 for warranty and technical support.'}
     ]
   },
   returns: {
@@ -60,7 +60,7 @@ export const supportPages: Record<SupportPageSlug, {
       {title: 'Information collected', text: 'We may collect name, email, phone, company, country, shipping details, order details, inquiry content and website interaction data.'},
       {title: 'How information is used', text: 'Information is used for quotations, order service, payment and shipping coordination, account support and customer communication.'},
       {title: 'Data sharing', text: 'Relevant order or shipping information may be shared with payment, logistics, email or technical service providers only when needed for service delivery.'},
-      {title: 'Contact', text: 'For privacy questions, contact davidsha@zaihaisurfing.com.'}
+      {title: 'Contact', text: 'For privacy questions, contact info@zaihaisurfing.com.'}
     ]
   },
   terms: {
@@ -71,7 +71,7 @@ export const supportPages: Record<SupportPageSlug, {
       {title: 'Product information', text: 'Product images, specifications and prices are provided for buyer evaluation. Final confirmed details are subject to quotation, invoice and order confirmation.'},
       {title: 'Orders and payment', text: 'Orders may require payment gateway confirmation, risk review, destination verification and shipping confirmation before dispatch.'},
       {title: 'Use and safety', text: 'Water sports products should be used with suitable safety equipment, trained supervision and compliance with local rules.'},
-      {title: 'Contact', text: 'For service questions, contact davidsha@zaihaisurfing.com.'}
+      {title: 'Contact', text: 'For service questions, contact info@zaihaisurfing.com.'}
     ]
   }
 };

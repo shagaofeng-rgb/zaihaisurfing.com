@@ -47,7 +47,7 @@ export default async function LocaleLayout({
     name: 'ZAIHAI SURFING',
     url: siteUrl,
     logo: `${siteUrl}/assets/brand-logo.png`,
-    email: 'davidsha@zaihaisurfing.com',
+    email: 'info@zaihaisurfing.com',
     telephone: '+86 17621485205',
     address: {
       '@type': 'PostalAddress',

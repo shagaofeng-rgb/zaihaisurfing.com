@@ -16,7 +16,7 @@ const roles = [
 ];
 
 export default async function AdminUsersPage() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'davidsha@zaihaisurfing.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'info@zaihaisurfing.com';
   const hasHash = Boolean(process.env.ADMIN_PASSWORD_HASH);
   const hasSecret = Boolean(process.env.ADMIN_JWT_SECRET || process.env.SESSION_SECRET);
 

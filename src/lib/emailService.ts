@@ -9,7 +9,7 @@ type MailPayload = {
 };
 
 const DEFAULT_SMTP_HOST = 'smtp.exmail.qq.com';
-const DEFAULT_SENDER_EMAIL = 'davidsha@zaihaisurfing.com';
+const DEFAULT_SENDER_EMAIL = 'info@zaihaisurfing.com';
 
 function smtpConfig() {
   return {
@@ -36,7 +36,8 @@ function escapeHtml(value: unknown) {
 }
 
 function adminNotificationEmail() {
-  return process.env.ADMIN_NOTIFICATION_EMAIL || DEFAULT_SENDER_EMAIL;
+  const recipient = process.env.INQUIRY_NOTIFICATION_EMAIL?.trim();
+  return recipient && validMailbox(recipient) ? recipient : DEFAULT_SENDER_EMAIL;
 }
 
 function validMailbox(value: string) {
@@ -363,14 +364,14 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
     `Use this link within 60 minutes: ${resetUrl}`,
     '',
     'If you did not request this, you can ignore this email.',
-    'Support: davidsha@zaihaisurfing.com'
+    'Support: info@zaihaisurfing.com'
   ].join('\n');
   const html = `
     <p>Hello,</p>
     <p>We received a request to reset your ZAIHAI SURFING customer account password.</p>
     <p><a href="${escapeHtml(resetUrl)}">Set a new password</a></p>
     <p>This link is valid for 60 minutes. If you did not request this, you can ignore this email.</p>
-    <p>Support: davidsha@zaihaisurfing.com</p>
+    <p>Support: info@zaihaisurfing.com</p>
   `;
   try {
     const result = await sendSmtpMail({to: email, subject, text, html});
@@ -407,7 +408,7 @@ export async function sendRegistrationWelcomeEmail(email: string, name: string) 
     'You can now view your orders, payment status and shipment updates from the account center.',
     '',
     `Account center: ${siteUrl}/account/orders`,
-    'Support: davidsha@zaihaisurfing.com'
+    'Support: info@zaihaisurfing.com'
   ].join('\n');
   const html = `
     <div style="font-family:Arial,sans-serif;color:#111318;line-height:1.6;background:#f6f8f5;padding:24px">
@@ -416,7 +417,7 @@ export async function sendRegistrationWelcomeEmail(email: string, name: string) 
         <h2 style="margin:0 0 14px;color:#111318">Welcome, ${escapeHtml(customerName)}</h2>
         <p>Your customer account has been created. You can now view order history, payment status and shipment updates in one place.</p>
         <p><a href="${siteUrl}/account/orders" style="display:inline-block;background:#ee2f2f;color:#ffffff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:700">Open account center</a></p>
-        <p style="margin-top:24px;color:#5e6470;font-size:14px">If this was not you, please contact davidsha@zaihaisurfing.com.</p>
+        <p style="margin-top:24px;color:#5e6470;font-size:14px">If this was not you, please contact info@zaihaisurfing.com.</p>
       </div>
     </div>
   `;

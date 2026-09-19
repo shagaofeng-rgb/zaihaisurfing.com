@@ -41,7 +41,7 @@ export default async function Footer({locale}: {locale: Locale}) {
       </div>
       <div className="footer-column footer-contact">
         <h3>{copy.footer.contact}</h3>
-        <a href="mailto:davidsha@zaihaisurfing.com">davidsha@zaihaisurfing.com</a>
+        <a href="mailto:info@zaihaisurfing.com">info@zaihaisurfing.com</a>
         <a data-whatsapp-placement="footer_contact" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
           +86 17621485205
         </a>

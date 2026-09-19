@@ -1,6 +1,6 @@
 # ZAIHAI Inquiry Mail API
 
-This small API receives Shopline or static website inquiry form submissions and sends them to `davidsha@zaihaisurfing.com` through Tencent Exmail SMTP.
+This small API receives Shopline or static website inquiry form submissions and sends them to `info@zaihaisurfing.com` through Tencent Exmail SMTP.
 
 ## 1. Environment Variables
 
@@ -10,10 +10,10 @@ Create these variables in Vercel Project Settings, or copy `.env.example` to `.e
 SMTP_HOST=smtp.exmail.qq.com
 SMTP_PORT=465
 SMTP_SECURE=true
-SMTP_USER=davidsha@zaihaisurfing.com
+SMTP_USER=info@zaihaisurfing.com
 SMTP_PASS=your-tencent-client-password
-INQUIRY_FROM=davidsha@zaihaisurfing.com
-INQUIRY_TO=davidsha@zaihaisurfing.com
+INQUIRY_FROM=info@zaihaisurfing.com
+INQUIRY_TO=info@zaihaisurfing.com
 ALLOWED_ORIGINS=https://www.zaihaisurfing.com,https://zaihaisurfing.com
 ```
 
