@@ -1098,9 +1098,10 @@ body:has(.ocean-resort-home) .whatsapp-float, body:has(.ocean-resort-home) .back
   .ocean-resort-home .ocean-shell { width: min(100% - 40px,570px); }
   .ocean-resort-home .resort-hero { min-height: 805px; }
   .ocean-resort-home .resort-hero-shade { background: linear-gradient(180deg,rgba(0,20,37,.47),rgba(0,20,37,.13) 53%,rgba(0,20,37,.45)); }
-  .ocean-resort-home .resort-hero-copy { padding: 65px 0 0; }
-  .ocean-resort-home .resort-hero-copy h1 { max-width: 330px; font-size: clamp(42px,12vw,58px); }
-  .ocean-resort-home .resort-hero-intro { max-width: 305px; font-size: 13px; }
+  .ocean-resort-home .resort-hero-copy { padding: 52px 0 0; }
+  .ocean-resort-home .resort-hero-copy h1 { max-width: 350px; margin-top: 14px; font-size: clamp(40px,11vw,50px); }
+  .ocean-resort-home .resort-hero-intro { max-width: 310px; margin-top: 15px; font-size: 13px; }
+  .ocean-resort-home .resort-hero-actions { margin-top: 15px; }
   .ocean-resort-home .resort-business-fit { bottom: 16px; }
   .ocean-resort-home .resort-business-fit > div { width: 100%; grid-template-columns: 1fr; }
   .ocean-resort-home .resort-business-fit article { min-height: 47px; padding: 8px 10px; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.55); }
@@ -1269,22 +1270,6 @@ a {
   transform: translateY(-2px) rotate(45deg);
 }
 
-.has-mega::after {
-  content: "";
-  position: fixed;
-  top: 42px;
-  left: 50%;
-  width: min(1080px, calc(100vw - 42px));
-  height: 48px;
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-
-.has-mega:hover::after,
-.has-mega:focus-within::after {
-  pointer-events: auto;
-}
-
 .mega-panel {
   position: fixed;
   top: 74px;
@@ -1327,8 +1312,7 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.13), transparent 42%);
 }
 
-.has-mega:hover .mega-panel,
-.has-mega:focus-within .mega-panel {
+.has-mega.is-open .mega-panel {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0) scale(1);
@@ -6179,8 +6163,7 @@ html[dir="rtl"] .catalog-product-card dd {
     transform: none;
   }
 
-  .has-mega:hover .mega-panel,
-  .has-mega:focus-within .mega-panel {
+  .has-mega.is-open .mega-panel {
     display: grid;
     transform: none;
   }

@@ -119,6 +119,15 @@ export async function POST(request: Request) {
       emailStatus = 'failed';
     }
 
+    if (emailStatus !== 'sent') {
+      return Response.json({
+        ok: true,
+        id: eventId,
+        emailStatus,
+        message: 'Your inquiry was saved successfully. Our email alert is temporarily unavailable, but the sales team can view your request in the dashboard.'
+      }, {status: 202});
+    }
+
     return Response.json({
       ok: true,
       id: eventId,

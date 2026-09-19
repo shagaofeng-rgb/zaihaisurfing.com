@@ -16,7 +16,7 @@ type ScenarioCopy = {
   cta: string;
 };
 
-type UiCopy = {
+export type UiCopy = {
   nav: {
     home: string;
     products: string;

@@ -45,8 +45,8 @@ export default async function Footer({locale}: {locale: Locale}) {
         <a data-whatsapp-placement="footer_contact" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
           +86 17621485205
         </a>
-        <span>Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang, China</span>
-        <Link href="/contact">{copy.footer.maps}</Link>
+        <a className="footer-address" href="https://maps.app.goo.gl/P1YyVHoCdGBd9ef37" target="_blank" rel="noopener noreferrer">Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang, China</a>
+        <a href="https://maps.app.goo.gl/P1YyVHoCdGBd9ef37" target="_blank" rel="noopener noreferrer">{copy.footer.maps}</a>
         <PaymentBadges />
         <SocialLinks />
       </div>
