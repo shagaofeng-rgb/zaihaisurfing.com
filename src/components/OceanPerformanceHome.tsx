@@ -2,6 +2,7 @@ import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
 import {uiCopy} from '@/lib/uiCopy';
 import HomeRidingVideo from './HomeRidingVideo';
+import HomeResponsiveImage from './HomeResponsiveImage';
 
 type OceanPerformanceHomeProps = {
   locale: Locale;
@@ -18,10 +19,14 @@ export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps
 
   return (
     <main className="ocean-home ocean-resort-home">
+      <link rel="preload" as="image" type="image/avif" media="(max-width: 760px)" imageSrcSet="/assets/home-fast-v1/hero-mobile-480.avif 480w, /assets/home-fast-v1/hero-mobile-720.avif 720w, /assets/home-fast-v1/hero-mobile-941.avif 941w" imageSizes="100vw" fetchPriority="high" />
+      <link rel="preload" as="image" type="image/avif" media="(min-width: 761px)" imageSrcSet="/assets/home-fast-v1/hero-desktop-1280.avif 1280w, /assets/home-fast-v1/hero-desktop-1920.avif 1920w" imageSizes="100vw" fetchPriority="high" />
       <section className="resort-hero" id="top" aria-labelledby="resort-hero-title">
         <picture className="resort-hero-picture">
-          <source media="(max-width: 760px)" srcSet="/assets/home-ocean/resort-hero-mobile.webp" />
-          <img src="/assets/home-ocean/resort-hero.webp" alt="Rider on a black electric surfboard against a tropical mountain coast" width="2048" height="1152" fetchPriority="high" decoding="async" />
+          <source media="(max-width: 760px)" type="image/avif" srcSet="/assets/home-fast-v1/hero-mobile-480.avif 480w, /assets/home-fast-v1/hero-mobile-720.avif 720w, /assets/home-fast-v1/hero-mobile-941.avif 941w" sizes="100vw" />
+          <source media="(max-width: 760px)" srcSet="/assets/home-fast-v1/hero-mobile-480.webp 480w, /assets/home-fast-v1/hero-mobile-720.webp 720w, /assets/home-fast-v1/hero-mobile-941.webp 941w" sizes="100vw" />
+          <source type="image/avif" srcSet="/assets/home-fast-v1/hero-desktop-1280.avif 1280w, /assets/home-fast-v1/hero-desktop-1920.avif 1920w" sizes="100vw" />
+          <img src="/assets/home-fast-v1/hero-desktop-1920.webp" srcSet="/assets/home-fast-v1/hero-desktop-1280.webp 1280w, /assets/home-fast-v1/hero-desktop-1920.webp 1920w" sizes="100vw" alt="Rider on a black electric surfboard against a tropical mountain coast" width="2048" height="1152" fetchPriority="high" decoding="async" />
         </picture>
         <div className="resort-hero-shade" aria-hidden="true" />
         <div className="ocean-shell resort-hero-copy">
@@ -46,9 +51,9 @@ export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps
 
       <section className="resort-products" aria-label="ZAIHAI product categories">
         <div className="ocean-shell resort-product-grid">
-          {productCategories.map((product) => (
+          {productCategories.map((product, index) => (
             <Link className="resort-product-card" href={product.href} key={product.title} prefetch={false}>
-              <div className="resort-product-image"><img src={product.image} alt={product.alt} width="1456" height="1088" loading="eager" decoding="async" /></div>
+              <div className="resort-product-image"><HomeResponsiveImage name={['electric', 'kart', 'fuel'][index]} alt={product.alt} sizes="(max-width: 760px) 90vw, 33vw" /></div>
               <h2>{product.title}</h2>
               <p>{product.description}<span aria-hidden="true">→</span></p>
             </Link>
@@ -70,7 +75,7 @@ export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps
             <Link href="/factory#oem-distributor" className="resort-outline-link">OEM &amp; Distributor Programs <span aria-hidden="true">→</span></Link>
           </div>
           <Link className="resort-feature-card" href="/products/x1-pro" prefetch={false}>
-            <img src="/assets/home-ocean/hero-template-one-desktop.webp" alt="Electric surfboard rider on a mountain lake" width="2048" height="1152" loading="lazy" decoding="async" />
+            <HomeResponsiveImage name="featured" widths={[640, 1024]} sizes="(max-width: 760px) 100vw, 50vw" alt="Electric surfboard rider on a mountain lake" width={2048} height={1152} />
             <div><p>Featured product</p><h2>Electric<br />Surfboards</h2><span>Reliable. Easy to operate.<br />Built for high-traffic rentals.</span><b>Explore Electric Surfboards <i aria-hidden="true">→</i></b></div>
             <small>01 / 03</small>
           </Link>
