@@ -3,7 +3,7 @@ import {NextResponse, type NextRequest} from 'next/server';
 import {routing} from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
-const blockedCountries = new Set(['CN', 'IN']);
+const blockedCountries = new Set(['IN']);
 const englishEditorialLocales = new Set(['es', 'fr', 'de', 'ar', 'pt', 'ru']);
 const crawlerUserAgentPattern = /\b(Googlebot(?:-Image|-News|-Video)?|GoogleOther(?:-Image|-Video)?|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
 
