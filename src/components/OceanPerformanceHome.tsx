@@ -26,7 +26,7 @@ export default function OceanPerformanceHome({locale}: OceanPerformanceHomeProps
           <source media="(max-width: 760px)" type="image/avif" srcSet="/assets/home-fast-v1/hero-mobile-480.avif 480w, /assets/home-fast-v1/hero-mobile-720.avif 720w, /assets/home-fast-v1/hero-mobile-941.avif 941w" sizes="100vw" />
           <source media="(max-width: 760px)" srcSet="/assets/home-fast-v1/hero-mobile-480.webp 480w, /assets/home-fast-v1/hero-mobile-720.webp 720w, /assets/home-fast-v1/hero-mobile-941.webp 941w" sizes="100vw" />
           <source type="image/avif" srcSet="/assets/home-fast-v1/hero-desktop-1280.avif 1280w, /assets/home-fast-v1/hero-desktop-1920.avif 1920w" sizes="100vw" />
-          <img src="/assets/home-fast-v1/hero-desktop-1920.webp" srcSet="/assets/home-fast-v1/hero-desktop-1280.webp 1280w, /assets/home-fast-v1/hero-desktop-1920.webp 1920w" sizes="100vw" alt="Rider on a black electric surfboard against a tropical mountain coast" width="2048" height="1152" fetchPriority="high" decoding="async" />
+          <img src="/assets/home-fast-v1/hero-desktop-1920.webp" srcSet="/assets/home-fast-v1/hero-desktop-1280.webp 1280w, /assets/home-fast-v1/hero-desktop-1920.webp 1920w" sizes="100vw" alt="Rider on a black electric surfboard against a tropical mountain coast" width="2048" height="1152" fetchPriority="high" decoding="sync" />
         </picture>
         <div className="resort-hero-shade" aria-hidden="true" />
         <div className="ocean-shell resort-hero-copy">
