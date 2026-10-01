@@ -16,6 +16,7 @@ export default async function NewsAutopilotPage({
   const params = await searchParams;
   const timeFilter = parseAdminTimeFilter(params);
   const site = defaultNewsSite();
+  const automationStopped = !site?.news.enabled || !site.publishing.production_enabled;
   const state = await readNewsAutopilotState();
   const siteState = site ? state.sites[site.site_id] : undefined;
   const sources = site ? [...site.sources.primary_whitelist, ...site.sources.fallback_whitelist] : [];
@@ -47,18 +48,18 @@ export default async function NewsAutopilotPage({
         <div><dt>最近采集</dt><dd>{siteState?.lastIngestAt ? formatNewsTime(new Date(siteState.lastIngestAt), site.timezone) : '暂无成功记录'}</dd></div>
         <div><dt>最近前台发布</dt><dd>{siteState?.lastPublishedAt ? formatNewsTime(new Date(siteState.lastPublishedAt), site.timezone) : '暂无前台验收记录'}</dd></div>
       </div> : <p>当前没有有效的 News 站点配置。</p>}
-      <div className="admin-action-row">
+      {site && !automationStopped ? <div className="admin-action-row">
         <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="ingest" /><button type="submit">仅执行采集</button></form>
         <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="dry-run" /><button type="submit">预览下次发布</button></form>
         <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="publish" /><button type="submit">执行发布检查</button></form>
         <form action="/api/admin/news-autopilot" method="post"><input type="hidden" name="action" value="toggle" /><input type="hidden" name="enabled" value={siteState?.enabled === false ? 'true' : 'false'} /><button type="submit">{siteState?.enabled === false ? '恢复 News 自动化' : '暂停 News 自动化'}</button></form>
-      </div>
+      </div> : <p>新闻自动采集与发布已停止，历史记录继续保留。</p>}
     </section>
 
     <section className="admin-panel">
       <h2>发布状态</h2>
       <div className="admin-metrics">
-        <article><span>新闻发布</span><strong>{siteState?.enabled === false ? '已暂停' : '已启用'}</strong><small>可由运营人员管理</small></article>
+        <article><span>新闻发布</span><strong>{automationStopped ? '已停止' : siteState?.enabled === false ? '已暂停' : '已启用'}</strong><small>{automationStopped ? '自动任务不再执行' : '可由运营人员管理'}</small></article>
         <article><span>最近采集</span><strong>{siteState?.lastIngestAt ? '已完成' : '待更新'}</strong><small>{siteState?.lastIngestAt ? formatNewsTime(new Date(siteState.lastIngestAt), site?.timezone) : '暂无记录'}</small></article>
         <article><span>最近发布</span><strong>{siteState?.lastPublishedAt ? '已完成' : '待更新'}</strong><small>{siteState?.lastPublishedAt ? formatNewsTime(new Date(siteState.lastPublishedAt), site?.timezone) : '暂无记录'}</small></article>
         <article><span>本期合格候选</span><strong>{candidates.filter((candidate) => candidate.status === 'candidate').length}</strong><small>仅含可归因候选</small></article>

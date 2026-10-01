@@ -10,8 +10,12 @@ export async function POST(request: Request) {
   if (response) return response;
   const form = await request.formData(); const action = String(form.get('action') || '');
   try {
-    const siteId = defaultNewsSite()?.site_id;
+    const site = defaultNewsSite();
+    const siteId = site?.site_id;
     if (!siteId) throw new Error('No News site configuration is available.');
+    if (!site || !site.news.enabled || !site.publishing.production_enabled) {
+      return Response.json({success: false, error: 'News automation is disabled.'}, {status: 410});
+    }
     if (action === 'ingest') await runNewsIngest(siteId, 'manual');
     else if (action === 'publish') await runNewsPublish(siteId, 'manual');
     else if (action === 'dry-run') await runNewsPublish(siteId, 'manual', true);

@@ -16,7 +16,7 @@
     "locale": "en-US",
     "timezone": "Asia/Manila",
     "news": {
-      "enabled": true,
+      "enabled": false,
       "list_route": "/en/news",
       "detail_route_pattern": "/en/news/[slug]",
       "rss_route": "/news/rss.xml",
@@ -309,7 +309,7 @@
       "content_status_after_publish": "published",
       "require_frontend_verification": true,
       "alert_channel": "NEWS_ALERT_WEBHOOK_URL",
-      "production_enabled": true
+      "production_enabled": false
     }
   }
 ]

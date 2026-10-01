@@ -93,7 +93,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
     if (!robotsValid) errors.push('robots.txt does not declare the canonical sitemap index.');
 
     const googleConfig = googleSeoConfigStatus();
-    const shouldSubmit = Boolean(options.submit || shouldAutomaticallySubmitSitemap({
+    const shouldSubmit = !options.dryRun && Boolean(options.submit || shouldAutomaticallySubmitSitemap({
       generated,
       changed,
       hasPreviousSnapshot: state.snapshot.length > 0,

@@ -2,27 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/sync-google-seo",
-      "schedule": "30 2 */3 * *"
+      "schedule": "30 1 * * 1"
     },
     {
       "path": "/api/cron/sitemap-health",
-      "schedule": "10 3 * * *"
+      "schedule": "0 1 * * 1"
     },
     {
       "path": "/api/cron/test-contact-form",
       "schedule": "0 2 1 * *"
-    },
-    {
-      "path": "/api/cron/news-source-health",
-      "schedule": "15 1 * * *"
-    },
-    {
-      "path": "/api/cron/news-ingest",
-      "schedule": "0 */12 * * *"
-    },
-    {
-      "path": "/api/cron/news-publish",
-      "schedule": "30 */12 * * *"
     },
     {
       "path": "/api/cron/facebook-page-post",
