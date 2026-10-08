@@ -1,5 +1,6 @@
 import tls from 'node:tls';
 import {appendEmailLog, hasSentEmail, type StoreOrder} from '@/lib/commerceStore';
+import {readAdminStore} from '@/lib/backendStore';
 
 type MailPayload = {
   to: string;
@@ -35,9 +36,13 @@ function escapeHtml(value: unknown) {
   })[char] || char);
 }
 
-function adminNotificationEmail() {
-  const recipient = process.env.INQUIRY_NOTIFICATION_EMAIL?.trim();
-  return recipient && validMailbox(recipient) ? recipient : DEFAULT_SENDER_EMAIL;
+async function adminNotificationEmail() {
+  try {
+    const recipient = (await readAdminStore()).settings.adminNotificationEmail.trim();
+    return validMailbox(recipient) ? recipient : DEFAULT_SENDER_EMAIL;
+  } catch {
+    return DEFAULT_SENDER_EMAIL;
+  }
 }
 
 function validMailbox(value: string) {
@@ -235,7 +240,7 @@ export async function sendOrderSuccessEmailOnce(order: StoreOrder) {
 }
 
 export async function sendAdminOrderNotice(order: StoreOrder, reason = 'order_submitted') {
-  const adminEmail = adminNotificationEmail();
+  const adminEmail = await adminNotificationEmail();
   const subject = `[ZAIHAI Order] ${reason}: ${order.id} - ${order.currency} ${order.total.toLocaleString()}`;
   const rows = [['Notice type', reason], ...orderRows(order)];
   const text = rowsText(rows);
@@ -280,7 +285,7 @@ export async function sendAdminPaymentNotice(order: StoreOrder, input: {
   paymentId?: string;
   detail?: string;
 }) {
-  const adminEmail = adminNotificationEmail();
+  const adminEmail = await adminNotificationEmail();
   const statusLabel = input.paymentStatus || order.status || order.gatewayStatus || 'unknown';
   const subject = `[ZAIHAI Payment] ${statusLabel}: ${order.id}`;
   const rows = [
@@ -460,7 +465,7 @@ export async function sendContactInquiryEmail(input: {
   destinationPort: string;
   message: string;
 }) {
-  const adminEmail = adminNotificationEmail();
+  const adminEmail = await adminNotificationEmail();
   const subject = `New ZAIHAI inquiry from ${input.email}`;
   const rows = [
     ['Name', input.name],
@@ -516,7 +521,7 @@ export async function sendContactInquiryEmail(input: {
 export async function sendSystemAlertEmail(subject: string, text: string) {
   try {
     return await sendSmtpMail({
-      to: adminNotificationEmail(),
+      to: await adminNotificationEmail(),
       subject,
       text,
       html: `<div style="font-family:Arial,sans-serif;line-height:1.6"><h2>${escapeHtml(subject)}</h2><p>${escapeHtml(text).replace(/\n/g, '<br/>')}</p></div>`

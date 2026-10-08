@@ -21,16 +21,13 @@ export default async function AdminNewsPage({
   return (
     <AdminShell active="news">
       <div className="admin-title">
-        <p className="eyebrow">Industry News CMS</p>
+        <p className="eyebrow">内容</p>
         <h1>新闻管理</h1>
         <p>发布公司新闻、行业事实、海外市场动态和带来源说明的内容。建议只发布原创整理内容，并标明主要参考来源。</p>
         <AdminTimeFilter action="/admin/news" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="新闻发布时间" summary={timeFilter.summary} params={params} />
       </div>
-      <section className="admin-panel">
-        <div>
-          <p className="eyebrow">新增内容</p>
-          <h2>新增新闻</h2>
-        </div>
+      <details className="admin-panel admin-create-panel">
+        <summary>新增新闻</summary>
         <form className="admin-form-grid admin-form-wide" action="/api/admin/posts" method="post">
           <input type="hidden" name="type" value="news" />
           <input name="title" placeholder="新闻标题" required />
@@ -54,7 +51,7 @@ export default async function AdminNewsPage({
           <textarea name="seoDescription" placeholder="Meta Description" />
           <button type="submit">保存新闻</button>
         </form>
-      </section>
+      </details>
       <section className="admin-panel">
         <div className="admin-table-wrap">
           <table>

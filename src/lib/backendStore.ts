@@ -2,7 +2,7 @@ import path from 'node:path';
 import {revalidatePath} from 'next/cache';
 import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
-import {readAnalyticsEvents, readStoreOrders, type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
+import {type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
 import {mutateStoreObject, readStoreObject, writeStoreObject} from '@/lib/durableStore';
 import {markSitemapDirty} from '@/lib/sitemapState';
 import {classifyTraffic, type AttributionSnapshot} from '@/lib/trafficAttribution';
@@ -286,6 +286,7 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
   const paidOrders = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered'].includes(order.status));
   const revenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
   const productViews = filteredEvents.filter((event) => event.type === 'product_view').length;
+  const inquiryEvents = filteredEvents.filter((event) => event.type === 'contact_inquiry');
   const checkoutEvents = filteredEvents.filter((event) => /checkout|order|payment/i.test(event.type)).length;
   return {
     store,
@@ -296,6 +297,7 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
       orders: filteredOrders.length,
       paidOrders: paidOrders.length,
       leads: leads.length,
+      inquiries: inquiryEvents.length,
       revenue,
       visitors: new Set(filteredEvents.map((event) => event.visitorId)).size,
       pageViews: filteredEvents.filter((event) => event.type === 'page_view').length,
@@ -308,6 +310,7 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
     filteredOrders,
     filteredEvents,
     leads,
+    inquiryEvents: inquiryEvents.slice().reverse(),
     funnel: buildFunnel(filteredEvents, filteredOrders),
     popularProducts: countBy([...filteredOrders.map((order) => order.productName), ...filteredEvents.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
     trafficSources: countBy(filteredEvents.map((event) => trafficSourceLabel(event))),
@@ -339,7 +342,7 @@ export function buildCustomerLeads(orders: StoreOrder[], events: AnalyticsEvent[
   }));
   const visitorIdsWithOrder = new Set(orders.map((order) => order.id));
   const checkoutEvents = events.filter((event) => /checkout|commerce_click|contact/i.test(event.type) && !visitorIdsWithOrder.has(event.sessionId));
-  const eventLeads = checkoutEvents.slice(-30).reverse().map((event) => {
+  const eventLeads = checkoutEvents.slice().reverse().map((event) => {
     const payload = event.payload || {};
     const isInquiry = event.type === 'contact_inquiry';
     const product = String(payload.product || payload.productSlug || event.page || '').trim();
@@ -375,13 +378,13 @@ function orderVisitorIds(order: StoreOrder) {
 
 function readableFieldLabel(key: string) {
   const labels: Record<string, string> = {
-    name: 'Name', email: 'Email', phone: 'Phone', country: 'Country / region', company: 'Company',
-    product: 'Interested product', productSlug: 'Interested product', quantity: 'Quantity', message: 'Message',
-    buyerType: 'Buyer type', waterArea: 'Water area', destinationPort: 'Preferred port', targetMarket: 'Target market',
-    oem: 'OEM / private label request', port: 'Preferred port', language: 'Language',
-    page: 'Submitted from page', source: 'Source', medium: 'Medium', campaign: 'Campaign'
+    name: '姓名', email: '邮箱', phone: '电话', country: '国家/地区', company: '公司',
+    product: '关注产品', productSlug: '关注产品', quantity: '数量', message: '留言',
+    buyerType: '客户类型', waterArea: '使用水域', destinationPort: '目的港', targetMarket: '目标市场',
+    oem: 'OEM / 自有品牌需求', port: '目的港', language: '语言',
+    page: '提交页面', source: '来源', medium: '媒介', campaign: '推广活动'
   };
-  return labels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (value) => value.toUpperCase());
+  return labels[key] || key;
 }
 
 function displayFieldValue(value: unknown): string {
@@ -392,7 +395,7 @@ function displayFieldValue(value: unknown): string {
 }
 
 export async function getCustomerLeadDetail(leadId: string): Promise<CustomerLeadDetail | null> {
-  const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
+  const {orders, events} = await readAdminBusinessData();
   const lead = buildCustomerLeads(orders, events).find((item) => item.id === leadId);
   if (!lead) return null;
 

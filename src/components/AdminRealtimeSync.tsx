@@ -49,7 +49,7 @@ export default function AdminRealtimeSync() {
       <div>
         <strong>{status === 'offline' ? '暂时无法更新' : status === 'syncing' ? '正在更新' : status === 'online' ? '数据已更新' : '数据概览'}</strong>
         <small>
-          {payload ? `订单 ${payload.state.orders} / 客户咨询 ${payload.state.leads} / 最近更新 ${timeLabel(payload.state.latestOrder || payload.state.latestEvent || payload.generatedAt)}` : '按需更新，避免影响后台操作速度'}
+          {payload ? `订单 ${payload.state.orders} / 意向信号 ${payload.state.leads} / 更新 ${timeLabel(payload.state.latestOrder || payload.state.latestEvent || payload.generatedAt)}` : '点击刷新最新业务数据'}
         </small>
       </div>
       <button type="button" onClick={sync} disabled={status === 'syncing'}>{status === 'syncing' ? '更新中' : '刷新数据'}</button>

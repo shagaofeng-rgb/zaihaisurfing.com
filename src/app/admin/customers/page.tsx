@@ -6,7 +6,7 @@ import {parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {zhLeadStatus} from '@/lib/adminZh';
 import {buildCustomerLeads, type CustomerLead} from '@/lib/backendStore';
-import {readAnalyticsEvents, readStoreOrders} from '@/lib/commerceStore';
+import {readAdminBusinessData} from '@/lib/adminBusinessData';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,11 +49,13 @@ export default async function AdminCustomersPage({
   const params = await searchParams;
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
-  const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
+  const {orders, events} = await readAdminBusinessData();
   const customers = mergeCustomers(
-    buildCustomerLeads(orders, events)
+    buildCustomerLeads(
+      orders.filter((order) => inRange(order.updatedAt || order.createdAt, timeFilter.from, timeFilter.to)),
+      events.filter((event) => inRange(event.timestamp, timeFilter.from, timeFilter.to))
+    )
       .filter((lead) => lead.email || lead.phone)
-      .filter((lead) => inRange(lead.lastActiveTime, timeFilter.from, timeFilter.to))
   );
   const pagedCustomers = paginate(customers, page, perPage);
 

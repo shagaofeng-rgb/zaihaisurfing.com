@@ -24,15 +24,18 @@ export default async function AdminLeadsPage({
   const timeFilter = parseAdminTimeFilter(params);
   const {page, perPage} = parseAdminPagination(params);
   const {orders, events} = await readAdminBusinessData();
-  const leads = buildCustomerLeads(orders, events).filter((lead) => inRange(lead.lastActiveTime, timeFilter.from, timeFilter.to));
+  const leads = buildCustomerLeads(
+    orders.filter((order) => inRange(order.updatedAt || order.createdAt, timeFilter.from, timeFilter.to)),
+    events.filter((event) => inRange(event.timestamp, timeFilter.from, timeFilter.to))
+  );
   const pagedLeads = paginate(leads, page, perPage);
 
   return (
     <AdminShell active="leads">
       <div className="admin-title">
-        <p className="eyebrow">线索与弃单</p>
-        <h1>线索/弃单</h1>
-        <p>跟踪真实结账开始、按钮点击、订单创建和待付款客户信号。</p>
+        <p className="eyebrow">客户</p>
+        <h1>表单与意向信号</h1>
+        <p>区分已提交表单与结账、联系点击、待付款等行为信号。</p>
         <AdminTimeFilter action="/admin/leads" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="线索活跃时间" summary={timeFilter.summary} params={params} />
       </div>
       <section className="admin-panel">
@@ -51,7 +54,7 @@ export default async function AdminLeadsPage({
                   <td>{formatAdminDate(lead.lastActiveTime)}</td>
                   <td><a className="admin-detail-link" href={`/admin/leads/${encodeURIComponent(lead.id)}`}>查看详情</a></td>
                 </tr>
-              )) : <tr><td colSpan={8}>当前时间范围内暂无真实线索/弃单数据。</td></tr>}
+              )) : <tr><td colSpan={8}>当前时间范围内暂无表单或意向信号。</td></tr>}
             </tbody>
           </table>
         </div>

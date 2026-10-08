@@ -1,5 +1,6 @@
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
+import Image from 'next/image';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {zhPublishStatus} from '@/lib/adminZh';
 import {listAdminCategories, listAdminProducts} from '@/lib/backendStore';
@@ -29,34 +30,13 @@ export default async function AdminProductsPage({
   return (
     <AdminShell active="products">
       <div className="admin-title">
-        <p className="eyebrow">Product CMS</p>
+        <p className="eyebrow">商品</p>
         <h1>产品管理</h1>
         <p>按商城站逻辑管理产品草稿、发布状态、SKU、库存、价格、媒体图和 SEO 字段。只有已发布产品才建议同步到前台展示。</p>
       </div>
 
-      <section className="admin-panel admin-guidance-panel">
-        <article>
-          <span>1</span>
-          <strong>保存草稿</strong>
-          <p>先录入产品资料、图片、价格、库存和 SEO。</p>
-        </article>
-        <article>
-          <span>2</span>
-          <strong>发布产品</strong>
-          <p>状态改为已发布后，作为前台展示和商城下单数据。</p>
-        </article>
-        <article>
-          <span>3</span>
-          <strong>下架/归档</strong>
-          <p>旧产品保留后台数据，但不建议继续展示给客户。</p>
-        </article>
-      </section>
-
-      <section className="admin-panel">
-        <div>
-          <p className="eyebrow">快速新增</p>
-          <h2>新增产品</h2>
-        </div>
+      <details className="admin-panel admin-create-panel">
+        <summary>新增产品</summary>
         <form className="admin-form-grid admin-form-wide" action="/api/admin/products" method="post">
           <input name="name" placeholder="产品名称，例如 ZAIHAI X1 Pro Electric Surfboard" required />
           <input name="slug" placeholder="产品链接 slug，例如 x1-pro" required />
@@ -89,15 +69,16 @@ export default async function AdminProductsPage({
           <label className="admin-check"><input type="checkbox" name="allowDirectOrder" defaultChecked /> 允许 Buy Now 下单</label>
           <button type="submit">保存产品</button>
         </form>
-      </section>
+      </details>
 
       <section className="admin-panel">
         <div>
           <p className="eyebrow">产品数据库</p>
           <h2>{products.length} 条产品记录</h2>
         </div>
+        <p className="admin-product-swipe-hint">左右滑动表格，查看价格、库存、状态与 SEO。</p>
         <div className="admin-table-wrap">
-          <table>
+          <table className="admin-products-table">
             <thead>
               <tr><th>产品</th><th>分类</th><th>价格</th><th>库存</th><th>媒体</th><th>状态</th><th>SEO</th></tr>
             </thead>
@@ -107,8 +88,10 @@ export default async function AdminProductsPage({
                 return (
                   <tr key={product.id}>
                     <td>
-                      <strong>{product.name}</strong><br />
-                      <small>{product.slug} | {product.sku}</small>
+                      <div className="admin-product-identity">
+                        {product.coverImage ? <Image className="admin-product-thumb" src={product.coverImage} alt={`${product.name} 主图`} width={58} height={58} unoptimized /> : <span className="admin-product-thumb admin-product-thumb-empty">无图</span>}
+                        <div><strong>{product.name}</strong><small>{product.slug} | {product.sku || '未设置 SKU'}</small></div>
+                      </div>
                     </td>
                     <td>{product.categoryName}</td>
                     <td>
@@ -116,9 +99,9 @@ export default async function AdminProductsPage({
                       <small>原价 {usd(product.priceCents)} / 折扣 {discount(product.priceCents, sale)}</small>
                     </td>
                     <td>{product.stock}<br /><small>MOQ {product.moq}</small></td>
-                    <td>{product.galleryImages.length + (product.coverImage ? 1 : 0)} 张<br /><small>{product.coverImage}</small></td>
+                    <td>{product.galleryImages.length + (product.coverImage ? 1 : 0)} 张</td>
                     <td><span className={`admin-status ${product.status}`}>{zhPublishStatus(product.status)}</span></td>
-                    <td>{product.seoTitle || '-'}<br /><small>{product.seoDescription || '未填写 Meta Description'}</small></td>
+                    <td className="admin-product-seo"><strong>{product.seoTitle || '未填写 SEO 标题'}</strong><small>{product.seoDescription || '未填写 Meta Description'}</small></td>
                   </tr>
                 );
               }) : <tr><td colSpan={7}>暂无产品数据。</td></tr>}

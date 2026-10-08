@@ -26,11 +26,8 @@ export default async function AdminBlogPage({
         <p>发布产品知识、应用方案、对比分析和采购决策内容，持续提升搜索与客户触达表现。</p>
         <AdminTimeFilter action="/admin/blog" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="博客发布时间" summary={timeFilter.summary} params={params} />
       </div>
-      <section className="admin-panel">
-        <div>
-          <p className="eyebrow">新增内容</p>
-          <h2>新增博客</h2>
-        </div>
+      <details className="admin-panel admin-create-panel">
+        <summary>新增博客</summary>
         <form className="admin-form-grid admin-form-wide" action="/api/admin/posts" method="post">
           <input type="hidden" name="type" value="blog" />
           <input name="title" placeholder="博客标题" required />
@@ -54,7 +51,7 @@ export default async function AdminBlogPage({
           <textarea name="seoDescription" placeholder="Meta Description" />
           <button type="submit">保存博客</button>
         </form>
-      </section>
+      </details>
       <section className="admin-panel">
         <div className="admin-table-wrap">
           <table>

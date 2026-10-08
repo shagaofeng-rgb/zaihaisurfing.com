@@ -94,6 +94,7 @@ export function zhEventType(type: string) {
     refund_created: '退款记录',
     authorization_action: '预授权操作',
     form_submit: '表单提交',
+    contact_inquiry: '客户咨询表单',
     contact_click: '联系按钮点击'
   };
   return map[type] || type || '未知事件';
