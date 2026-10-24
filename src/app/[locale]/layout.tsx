@@ -69,11 +69,6 @@ export default async function LocaleLayout({
     name: 'ZAIHAI SURFING',
     url: siteUrl,
     inLanguage: locale,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${siteUrl}/${locale}/products?query={search_term_string}`,
-      'query-input': 'required name=search_term_string'
-    },
     hasPart: [
       {
         '@type': 'WebPage',

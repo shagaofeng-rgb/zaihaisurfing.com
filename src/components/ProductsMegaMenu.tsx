@@ -52,7 +52,9 @@ export default function ProductsMegaMenu({copy}: ProductsMegaMenuProps) {
         aria-controls="products-mega-menu"
         onClick={() => {
           clearCloseTimer();
-          setOpen((current) => !current);
+          // Pointer enter and focus can open this menu before click fires.
+          // Toggling here immediately hid the panel on a normal mouse click.
+          setOpen(true);
         }}
         onFocus={() => setOpen(true)}
       >

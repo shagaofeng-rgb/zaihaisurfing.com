@@ -41,6 +41,7 @@ function row(label: string) {
     pageViews: 0,
     leads: 0,
     purchases: 0,
+    convertedVisitors: new Set<string>(),
     value: 0,
     campaigns: new Map<string, number>(),
     landings: new Map<string, number>()
@@ -64,7 +65,7 @@ function serialize(item: ReturnType<typeof row>) {
     leads: item.leads,
     purchases: item.purchases,
     value: item.value,
-    conversionRate: item.visitors.size ? Math.round(((item.leads + item.purchases) / item.visitors.size) * 1000) / 10 : 0,
+    conversionRate: item.visitors.size ? Math.round((item.convertedVisitors.size / item.visitors.size) * 1000) / 10 : 0,
     topCampaign: top(item.campaigns),
     topLandingPage: top(item.landings)
   };
@@ -79,8 +80,14 @@ function group(events: AnalyticsEvent[], filter: Filter, keyOf: (touch: TrafficT
     item.visitors.add(event.visitorId);
     item.sessions.add(event.sessionId);
     if (event.type === 'page_view') item.pageViews += 1;
-    if (/contact_inquiry|submit_inquiry|form_success/i.test(event.type)) item.leads += 1;
-    if (/purchase|payment_notice/i.test(event.type)) item.purchases += 1;
+    if (/contact_inquiry|submit_inquiry|form_success/i.test(event.type)) {
+      item.leads += 1;
+      item.convertedVisitors.add(event.visitorId);
+    }
+    if (event.type === 'purchase') {
+      item.purchases += 1;
+      item.convertedVisitors.add(event.visitorId);
+    }
     const value = Number(event.payload?.total || event.payload?.value || 0);
     if (Number.isFinite(value)) item.value += value;
     inc(item.campaigns, touch.campaign);
@@ -118,6 +125,7 @@ export async function getAcquisitionReport(filter: Filter = {}) {
   const pageViews = filteredEvents.filter((event) => event.type === 'page_view').length;
   const leads = filteredEvents.filter((event) => /contact_inquiry|submit_inquiry|form_success/i.test(event.type)).length;
   const purchases = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status)).length;
+  const convertedVisitors = new Set(filteredEvents.filter((event) => /contact_inquiry|submit_inquiry|form_success/i.test(event.type) || event.type === 'purchase').map((event) => event.visitorId));
   const bySource = group(filteredEvents, filter, (touch) => touch.source);
   const byCampaign = group(filteredEvents, filter, (touch) => touch.campaign || '(none)');
   const latestEvent = filteredEvents.map((event) => event.timestamp).sort().at(-1) || '';
@@ -132,7 +140,7 @@ export async function getAcquisitionReport(filter: Filter = {}) {
       pageViews,
       leads,
       purchases,
-      conversionRate: visitors.size ? Math.round(((leads + purchases) / visitors.size) * 1000) / 10 : 0,
+      conversionRate: visitors.size ? Math.round((convertedVisitors.size / visitors.size) * 1000) / 10 : 0,
       topSource: bySource[0]?.label || '-',
       topCampaign: byCampaign[0]?.label || '-',
       topLandingPage: group(filteredEvents, filter, (touch) => touch.landingPage)[0]?.label || '-'

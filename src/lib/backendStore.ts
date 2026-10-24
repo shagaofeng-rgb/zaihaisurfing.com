@@ -283,11 +283,20 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
   const filteredOrders = orders.filter((order) => isInsideRange(order.createdAt, filter));
   const filteredEvents = events.filter((event) => isInsideRange(event.timestamp, filter));
   const leads = buildCustomerLeads(filteredOrders, filteredEvents);
-  const paidOrders = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered'].includes(order.status));
+  const paidOrders = filteredOrders.filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status));
   const revenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
   const productViews = filteredEvents.filter((event) => event.type === 'product_view').length;
   const inquiryEvents = filteredEvents.filter((event) => event.type === 'contact_inquiry');
   const checkoutEvents = filteredEvents.filter((event) => /checkout|order|payment/i.test(event.type)).length;
+  const visitSessions = new Map<string, AnalyticsEvent>();
+  for (const event of filteredEvents) {
+    if (event.type === 'page_view' && event.sessionId && !visitSessions.has(event.sessionId)) {
+      visitSessions.set(event.sessionId, event);
+    }
+  }
+  const visits = [...visitSessions.values()];
+  const visitVisitorIds = new Set(visits.map((event) => event.visitorId));
+  const purchasingVisitorIds = new Set(paidOrders.map((order) => order.attribution?.visitorId).filter((id): id is string => typeof id === 'string' && visitVisitorIds.has(id)));
   return {
     store,
     metrics: {
@@ -303,7 +312,7 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
       pageViews: filteredEvents.filter((event) => event.type === 'page_view').length,
       productViews,
       checkoutEvents,
-      conversionRate: filteredEvents.length ? Math.round((filteredOrders.length / Math.max(1, new Set(filteredEvents.map((event) => event.visitorId)).size)) * 1000) / 10 : 0
+      conversionRate: visitVisitorIds.size ? Math.round((purchasingVisitorIds.size / visitVisitorIds.size) * 1000) / 10 : 0
     },
     orders: filteredOrders.slice(-12).reverse(),
     events: filteredEvents.slice(-24).reverse(),
@@ -313,8 +322,8 @@ export async function getAdminDashboardData(filter?: AdminDashboardFilter) {
     inquiryEvents: inquiryEvents.slice().reverse(),
     funnel: buildFunnel(filteredEvents, filteredOrders),
     popularProducts: countBy([...filteredOrders.map((order) => order.productName), ...filteredEvents.map((event) => String(event.payload?.productSlug || '')).filter(Boolean)]),
-    trafficSources: countBy(filteredEvents.map((event) => trafficSourceLabel(event))),
-    countries: countBy([...filteredOrders.map((order) => order.customer.country), ...filteredEvents.map((event) => event.country)])
+    trafficSources: countBy(visits.map((event) => trafficSourceLabel(event))),
+    countries: countBy(visits.map((event) => event.country).filter((country) => country && country !== 'Unknown'))
   };
 }
 
@@ -552,7 +561,7 @@ function createSeedStore(): AdminStore {
       adminNotificationEmail: 'info@zaihaisurfing.com',
       contactEmail: 'info@zaihaisurfing.com',
       whatsapp: '+86 17621485205',
-      address: 'Room 110, 1st Floor, Building 1, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China',
+      address: 'Room 110, 1st Floor, Building 2, Qushidai Future Building, Kecheng District, Quzhou, Zhejiang Province, China',
       paymentCurrency: 'USD',
       qianhaiStatus: process.env.QIANHAI_MERCHANT_ID ? '已配置' : '等待前海通道参数',
       cookieConsentReady: false,

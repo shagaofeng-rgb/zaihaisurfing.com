@@ -95,8 +95,8 @@ export default async function AdminDashboardPage({
       </section>
 
       <div className="admin-two-col admin-dashboard-secondary">
-        <AdminBarChart title="客户访问来源" rows={backend.trafficSources} />
-        <AdminBarChart title="访问国家与地区" rows={backend.countries} />
+        <AdminBarChart title="访问会话来源" rows={backend.trafficSources} />
+        <AdminBarChart title="访问会话国家与地区" rows={backend.countries} />
       </div>
 
       <section className="admin-panel admin-dashboard-secondary">
