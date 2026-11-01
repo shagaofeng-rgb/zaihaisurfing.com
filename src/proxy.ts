@@ -1,10 +1,12 @@
 import createMiddleware from 'next-intl/middleware';
 import {NextResponse, type NextRequest} from 'next/server';
-import {routing} from './i18n/routing';
+import {locales, pathnames, routing} from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 const blockedCountries = new Set(['IN']);
 const englishEditorialLocales = new Set(['es', 'fr', 'de', 'ar', 'pt', 'ru']);
+const publicPathnames = new Set<string>(pathnames);
+const englishOnlySupportPaths = new Set(['faq', 'shipping', 'warranty', 'returns', 'privacy', 'terms']);
 const crawlerUserAgentPattern = /\b(Googlebot(?:-Image|-News|-Video)?|GoogleOther(?:-Image|-Video)?|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
 
 export default function proxy(request: NextRequest) {
@@ -26,9 +28,42 @@ export default function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // Old editorial URLs without a locale are stable aliases of the English
+  // content. Redirect before next-intl's temporary locale redirect so Google
+  // receives a permanent canonical signal.
+  const pathname = request.nextUrl.pathname;
+  const pathParts = pathname.split('/');
+  if ((request.method === 'GET' || request.method === 'HEAD') && pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/en';
+    return NextResponse.redirect(url, 308);
+  }
+  if ((request.method === 'GET' || request.method === 'HEAD') && publicPathnames.has(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/en${pathname}`;
+    return NextResponse.redirect(url, 308);
+  }
+  if (
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    pathParts.length === 3 &&
+    locales.some((locale) => locale !== 'en' && locale === pathParts[1]) &&
+    englishOnlySupportPaths.has(pathParts[2])
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/en/${pathParts[2]}`;
+    return NextResponse.redirect(url, 308);
+  }
+  if (
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    (pathname === '/news' || pathname.startsWith('/news/') || pathname === '/blog' || pathname.startsWith('/blog/'))
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/en${pathname}`;
+    return NextResponse.redirect(url, 308);
+  }
+
   // News and Blog are currently authored in English only. Redirecting non-English
   // route variants avoids exposing duplicate, noindex pages through language links.
-  const pathParts = request.nextUrl.pathname.split('/');
   const isNonEnglishEditorialRoute =
     (request.method === 'GET' || request.method === 'HEAD') &&
     englishEditorialLocales.has(pathParts[1]) &&

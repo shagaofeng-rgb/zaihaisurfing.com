@@ -1,6 +1,6 @@
-import {redirect} from 'next/navigation';
+import {permanentRedirect} from 'next/navigation';
 
 export default async function NewsTagRedirect({params}: {params: Promise<{tag: string}>}) {
   const {tag} = await params;
-  redirect(`/en/news/tag/${tag}`);
+  permanentRedirect(`/en/news/tag/${tag}`);
 }

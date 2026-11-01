@@ -24,7 +24,6 @@ export async function generateMetadata({
   if (!article) {
     const canonicalSlug = await getNewsCanonicalSlug(slug);
     if (canonicalSlug) permanentRedirect(`/en/news/${canonicalSlug}`);
-    if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
     notFound();
   }
   const imageUrl = article.hero.startsWith('http') ? article.hero : `${siteUrl}${article.hero}`;
@@ -46,7 +45,6 @@ export default async function NewsArticlePage({
   if (!article) {
     const canonicalSlug = await getNewsCanonicalSlug(slug);
     if (canonicalSlug) permanentRedirect(`/en/news/${canonicalSlug}`);
-    if (/^auto-202606\d{2}-/i.test(slug)) permanentRedirect('/en/news');
     notFound();
   }
   setRequestLocale(locale);

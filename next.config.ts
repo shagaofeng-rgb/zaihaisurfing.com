@@ -20,6 +20,26 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/policies/shipping-policy',
+        destination: '/en/shipping',
+        permanent: true
+      },
+      {
+        source: '/policies/refund-policy',
+        destination: '/en/returns',
+        permanent: true
+      },
+      {
+        source: '/policies/terms-of-service',
+        destination: '/en/terms',
+        permanent: true
+      },
+      {
+        source: '/pt-pt/collections-all',
+        destination: '/pt/products',
+        permanent: true
+      },
+      {
         source: '/pages/contact-us',
         destination: '/en/contact',
         permanent: true
