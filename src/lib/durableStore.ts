@@ -143,18 +143,27 @@ async function readLocalLines<T>(fileName: string) {
 }
 
 async function readBlobText(fileName: string) {
-  try {
-    const result = await get(blobPath(fileName), {
-      access: 'private',
-      token: BLOB_TOKEN,
-      useCache: false
-    });
-    if (!result || result.statusCode !== 200) return '';
-    return await new Response(result.stream).text();
-  } catch (error) {
-    if (error instanceof BlobNotFoundError) return '';
-    throw error;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const result = await get(blobPath(fileName), {
+        access: 'private',
+        token: BLOB_TOKEN,
+        useCache: false
+      });
+      if (!result) return '';
+      // A transient storage failure must never look like an absent file: callers
+      // may initialize a missing store, which would overwrite production data.
+      if (result.statusCode !== 200) throw new Error(`Blob read failed: ${result.statusCode}`);
+      return await new Response(result.stream).text();
+    } catch (error) {
+      if (error instanceof BlobNotFoundError) return '';
+      const message = error instanceof Error ? error.message : String(error);
+      const retryable = /\b(?:429|500|502|503|504)\b|fetch failed|timeout|ECONNRESET/i.test(message);
+      if (!retryable || attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 200 * (2 ** attempt)));
+    }
   }
+  throw new Error('Blob read failed after retries');
 }
 
 async function writeBlobText(fileName: string, text: string, contentType = 'text/plain; charset=utf-8') {
