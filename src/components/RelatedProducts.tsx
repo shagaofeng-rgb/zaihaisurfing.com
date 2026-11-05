@@ -1,5 +1,6 @@
 import {Link} from '@/i18n/navigation';
-import {products, type ProductSlug} from '@/lib/site';
+import {type ProductSlug} from '@/lib/site';
+import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
 
 const recommendationMap: Record<ProductSlug, ProductSlug[]> = {
   x1: ['x1-pro', 'rage-shark-x', 'p1-pro'],
@@ -13,8 +14,8 @@ type RelatedProductsProps = {
   currentSlug: ProductSlug;
 };
 
-export default function RelatedProducts({currentSlug}: RelatedProductsProps) {
-  const related = recommendationMap[currentSlug];
+export default async function RelatedProducts({currentSlug}: RelatedProductsProps) {
+  const related = await listRuntimeCatalogProducts(recommendationMap[currentSlug]);
 
   return (
     <section className="related-products" aria-labelledby="related-products-title">
@@ -24,11 +25,11 @@ export default function RelatedProducts({currentSlug}: RelatedProductsProps) {
         <p>Compare a second ride option for resort packages, rental fleets or distributor catalogs.</p>
       </div>
       <div className="related-grid">
-        {related.map((slug) => {
-          const product = products[slug];
+        {related.map((product) => {
+          const slug = product.slug;
           return (
             <Link className="related-card" href={`/products/${slug}`} key={slug}>
-              <img src={product.thumbnail} alt={`${product.name} product recommendation`} />
+              <img src={product.thumbnail} alt={`${product.name} product recommendation`} width="480" height="360" loading="lazy" decoding="async" />
               <div>
                 <span>{product.category}</span>
                 <h3>{product.name}</h3>

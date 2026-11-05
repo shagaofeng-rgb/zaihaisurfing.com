@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
@@ -34,7 +35,7 @@ export default async function AdminLeadsPage({
     <AdminShell active="leads">
       <div className="admin-title">
         <p className="eyebrow">客户</p>
-        <h1>表单与意向信号</h1>
+        <h1><VisualIcon name="chat" size={24} /> 表单与意向信号</h1>
         <p>区分已提交表单与结账、联系点击、待付款等行为信号。</p>
         <AdminTimeFilter action="/admin/leads" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="线索活跃时间" summary={timeFilter.summary} params={params} />
       </div>

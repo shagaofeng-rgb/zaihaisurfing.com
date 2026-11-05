@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
@@ -22,7 +23,7 @@ export default async function AdminReturnsPage({searchParams}: {searchParams: Pr
     <AdminShell active="returns">
       <div className="admin-title">
         <p className="eyebrow">退换货管理</p>
-        <h1>退款与售后记录</h1>
+        <h1><VisualIcon name="package" size={24} /> 退款与售后记录</h1>
         <p>这里展示真实退款记录。新增退款请进入订单详情页处理，避免脱离订单和支付状态单独改账。</p>
         <AdminTimeFilter action="/admin/returns" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="退款创建时间" summary={timeFilter.summary} params={params} />
       </div>

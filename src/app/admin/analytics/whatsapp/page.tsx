@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
@@ -33,7 +34,7 @@ export default async function AdminWhatsAppAnalyticsPage({
     <AdminShell active="whatsapp">
       <div className="admin-title">
         <p className="eyebrow">WhatsApp 转化</p>
-        <h1>WhatsApp 点击分析</h1>
+        <h1><VisualIcon name="chat" size={24} /> WhatsApp 点击分析</h1>
         <p>仅记录网站内的真实 WhatsApp 跳转点击。点击不等于已经对话或成交；后续询盘和订单仅按同一匿名访客的时间顺序关联。</p>
         <AdminTimeFilter action="/admin/analytics/whatsapp" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="WhatsApp 统计时间" summary={timeFilter.summary} />
       </div>

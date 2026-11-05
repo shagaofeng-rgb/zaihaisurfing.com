@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
@@ -21,7 +22,7 @@ export default async function AdminFulfillmentPage({searchParams}: {searchParams
     <AdminShell active="fulfillment">
       <div className="admin-title">
         <p className="eyebrow">发货与物流</p>
-        <h1>发货、跟踪号与物流状态</h1>
+        <h1><VisualIcon name="truck" size={24} /> 发货、跟踪号与物流状态</h1>
         <p>物流信息在订单详情页保存，会同步到订单、物流记录和访客事件，方便客服跟踪交付进度。</p>
         <AdminTimeFilter action="/admin/fulfillment" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="订单更新时间" summary={timeFilter.summary} params={params} />
       </div>

@@ -1,3 +1,5 @@
+import AdminVisitTrend from '@/components/AdminVisitTrend';
+import AdminBarChart from '@/components/AdminBarChart';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
@@ -34,8 +36,8 @@ export default async function AdminAnalyticsPage({
     <AdminShell active="analytics">
       <div className="admin-title">
         <p className="eyebrow">访问行为</p>
-        <h1>访问统计</h1>
-        <p>这里显示前台异步埋点采集到的真实访问、产品浏览、CTA 点击和结账行为。</p>
+        <h1>访问分析</h1>
+        <p>这里显示前台异步埋点采集到的访问、产品浏览、CTA 点击和结账行为。</p>
         <AdminTimeFilter action="/admin/analytics" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="访问统计时间" summary={timeFilter.summary} />
       </div>
       <div className="admin-metrics">
@@ -44,16 +46,11 @@ export default async function AdminAnalyticsPage({
         <article><span>产品浏览</span><strong>{data.metrics.productViews}</strong><small>产品详情页访问</small></article>
         <article><span>结账事件</span><strong>{data.metrics.checkoutEvents}</strong><small>结账或订单相关信号</small></article>
       </div>
-      <section className="admin-panel">
-        <div>
-          <p className="eyebrow">来源与国家</p>
-          <h2>需求分布</h2>
-        </div>
-        <div className="admin-two-col">
-          <div className="admin-bar-list">{data.trafficSources.length ? data.trafficSources.map((row) => <p key={row.label}><span>{row.label}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实来源数据</span><strong>0</strong></p>}</div>
-          <div className="admin-bar-list">{data.countries.length ? data.countries.map((row) => <p key={row.label}><span>{zhCountry(row.label)}</span><strong>{row.value}</strong></p>) : <p><span>暂无真实国家/地区数据</span><strong>0</strong></p>}</div>
-        </div>
-      </section>
+      <div className="admin-two-col admin-visual-charts">
+        <AdminVisitTrend events={data.filteredEvents} />
+        <AdminBarChart title="访问会话来源" rows={data.trafficSources} />
+      </div>
+      <AdminBarChart title="国家与地区分布" rows={data.countries.map((row) => ({...row, label: zhCountry(row.label)}))} />
       <section className="admin-panel">
         <div>
           <p className="eyebrow">最近行为</p>
@@ -83,7 +80,7 @@ export default async function AdminAnalyticsPage({
                     ].filter(Boolean).join(' / '))}</td>
                   </tr>
                 );
-              }) : <tr><td colSpan={8}>暂无真实访问事件。前台页面打开后会异步记录。</td></tr>}
+              }) : <tr><td colSpan={8}>暂无访问事件。前台页面打开后会异步记录。</td></tr>}
             </tbody>
           </table>
         </div>

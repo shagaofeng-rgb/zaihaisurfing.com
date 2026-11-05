@@ -1,3 +1,5 @@
+import {revalidateTag} from 'next/cache';
+import {ADMIN_BUSINESS_DATA_CACHE_TAG} from '@/lib/adminBusinessData';
 import {appendAnalyticsEvent} from '@/lib/commerceStore';
 import {sendContactInquiryEmail} from '@/lib/emailService';
 import {checkRateLimit, clientIp} from '@/lib/rateLimit';
@@ -110,6 +112,12 @@ export async function POST(request: Request) {
         message: inquiry.message
       }
     });
+
+    try {
+      revalidateTag(ADMIN_BUSINESS_DATA_CACHE_TAG, {expire: 0});
+    } catch (error) {
+      console.warn('Inquiry saved; admin cache refresh deferred', error);
+    }
 
     let emailStatus: 'sent' | 'skipped' | 'failed' = 'sent';
     try {

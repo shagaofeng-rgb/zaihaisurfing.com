@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import type {Locale} from '@/i18n/routing';
 import {findStoreOrder} from '@/lib/commerceStore';
 import {hasOrderAccess} from '@/lib/orderAccess';
@@ -10,25 +11,25 @@ export default async function CheckoutSuccessPage({
   searchParams: Promise<{order?: string; payment?: string}>;
 }) {
   const {locale} = await params;
-  const {order: orderId, payment} = await searchParams;
+  const {order: orderId} = await searchParams;
   const foundOrder = orderId ? await findStoreOrder(orderId) : null;
   const order = foundOrder && await hasOrderAccess(foundOrder) ? foundOrder : null;
   const paymentId = order?.paymentId || order?.transactionId || '';
-  const statusCopy = order
-    ? order.status === 'paid'
-      ? 'Payment confirmed'
-      : order.gatewayStatus === 'processing' || payment === 'verified'
-        ? 'Payment confirmation is processing'
-        : order.gatewayStatus === 'failed' || order.status === 'failed'
-          ? 'Payment failed'
-          : 'Order received'
-    : 'Order lookup unavailable';
+  const failed = order?.gatewayStatus === 'failed' || order?.status === 'failed';
+  const paid = order?.status === 'paid';
+  const statusCopy = !order ? 'Order lookup unavailable'
+    : paid ? 'Payment confirmed'
+    : failed ? 'Payment failed'
+    : order.gatewayStatus === 'processing' ? 'Payment is being verified'
+    : order.status === 'pending_payment' ? 'Awaiting payment'
+    : 'Order received';
 
   return (
-    <main>
+    <main className="interior-page design-checkout design-checkout-result">
       <section className="checkout-hero">
         <div>
-          <p className="eyebrow">Order received</p>
+          <VisualIcon name={paid ? 'payment' : failed || !order ? 'warning' : 'time'} size={32} />
+          <p className="eyebrow">Payment result</p>
           <h1>{statusCopy}</h1>
           {order ? (
             <div className="checkout-success-summary">

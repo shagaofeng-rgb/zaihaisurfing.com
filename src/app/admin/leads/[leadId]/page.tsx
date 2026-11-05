@@ -46,7 +46,7 @@ export default async function AdminLeadDetailPage({
         <div>
           <p className="eyebrow">客户线索档案</p>
           <h1>{lead.name}</h1>
-          <p>客户表单、订单、来源归因和访问活动均来自真实订单及 Analytics 记录。</p>
+          <p>客户表单、订单、来源归因和访问活动均来自订单及 Analytics 记录。</p>
         </div>
         <a className="admin-detail-link" href="/admin/leads">返回线索列表</a>
       </div>

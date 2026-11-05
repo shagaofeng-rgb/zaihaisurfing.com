@@ -40,6 +40,8 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
         return;
       }
       window.location.href = '/account/orders';
+    } catch {
+      setStatus('Connection lost. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -49,8 +51,8 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
     <form className={isCompactEntry ? 'account-form account-email-form' : 'account-form'} onSubmit={handleSubmit}>
       {isCompactEntry ? (
         <label className="account-email-field">
-          <span className="sr-only">Email</span>
-          <input name="email" type="email" placeholder="Enter your email" autoComplete="email" required />
+          <span>Email address</span>
+          <input name="email" type="email" placeholder="name@company.com" autoComplete="email" required />
         </label>
       ) : (
         mode !== 'reset' && (
@@ -62,7 +64,7 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
       )}
       {requiresPassword && (
         <label className={isCompactEntry ? 'account-email-field' : undefined}>
-          <span className={isCompactEntry ? 'sr-only' : undefined}>Password</span>
+          <span>Password</span>
           <input
             name="password"
             type="password"
@@ -75,7 +77,7 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
       )}
       {(mode === 'register' || mode === 'reset') && (
         <label className={isCompactEntry ? 'account-email-field' : undefined}>
-          <span className={isCompactEntry ? 'sr-only' : undefined}>Confirm password</span>
+          <span>Confirm password</span>
           <input
             name="confirmPassword"
             type="password"
@@ -92,7 +94,7 @@ export default function AccountAuthForm({mode, token = ''}: {mode: Mode; token?:
       {isCompactEntry && (
         <p className="account-legal">Use the same email from checkout to view matching orders in your customer center.</p>
       )}
-      {status && <p className="account-status">{status}</p>}
+      {status && <p className="account-status" role="status">{status}</p>}
     </form>
   );
 }

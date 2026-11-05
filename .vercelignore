@@ -43,3 +43,8 @@ node_modules/
 /social-links.json
 /ZAIHAI建站信息表分析与规划.md
 /ZAIHAI独立站SEO-AIO-GEO规划.md
+
+# Local review evidence and agent notes are not runtime assets
+/reports/
+/.learnings/
+/design-qa.md

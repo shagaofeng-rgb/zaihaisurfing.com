@@ -48,8 +48,8 @@ export default async function BlogPage({
   const latest = articles.slice(1);
 
   return (
-    <main>
-      <section className="page-hero news-hero">
+    <main className="interior-page design-blog">
+      <section className="page-hero news-hero design-mast">
         <div>
           <p className="eyebrow">Buying Guides</p>
           <h1>Product Knowledge for Commercial Water Sports Buyers</h1>

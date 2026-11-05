@@ -8,7 +8,7 @@ export default async function AdminLoginPage({searchParams}: {searchParams: Prom
         <h1>后台登录</h1>
         <p>登录后可查看订单、客户线索、访问统计、转化漏斗和支付接口状态。</p>
         {query.error ? <strong className="admin-login-error">登录失败，请检查邮箱和密码。</strong> : null}
-        {query.reset ? <strong className="admin-login-notice">已收到重置请求。需要配置 SMTP 后才能发送安全重置邮件。</strong> : null}
+        {query.reset ? <strong className="admin-login-notice">请联系系统管理员协助重置密码。</strong> : null}
         <label>
           邮箱
           <input name="email" type="email" defaultValue="info@zaihaisurfing.com" required />

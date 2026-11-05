@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
@@ -35,7 +36,7 @@ export default async function NewsAutopilotPage({
   return <AdminShell active="news-autopilot">
     <div className="admin-title">
       <p className="eyebrow">新闻内容</p>
-      <h1>新闻采集与发布</h1>
+      <h1><VisualIcon name="time" size={24} /> 新闻采集与发布</h1>
       <p>查看新闻内容的采集、审核、发布和前台展示结果。</p>
       <AdminTimeFilter action="/admin/news-autopilot" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="自动任务记录时间" summary={timeFilter.summary} params={params} />
     </div>

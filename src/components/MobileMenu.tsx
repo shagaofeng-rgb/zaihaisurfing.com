@@ -1,5 +1,6 @@
 'use client';
 
+import {ListIcon} from '@phosphor-icons/react';
 import {useState} from 'react';
 import {Link} from '@/i18n/navigation';
 
@@ -15,7 +16,7 @@ export default function MobileMenu({items}: MobileMenuProps) {
 
   return (
     <details className="mobile-menu" open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
-      <summary>Menu</summary>
+      <summary aria-label="Menu"><ListIcon className="mobile-menu-symbol" size={24} aria-hidden="true" /><span>Menu</span></summary>
       <div>
         {items.map((item) => (
           item.href.startsWith('/account') ? (

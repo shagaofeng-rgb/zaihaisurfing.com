@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminShell from '@/components/AdminShell';
 import {readAdminStore} from '@/lib/backendStore';
 
@@ -10,7 +11,7 @@ export default async function AdminSettingsPage({searchParams}: {searchParams: P
     <AdminShell active="系统设置">
       <div className="admin-title">
         <p className="eyebrow">系统配置</p>
-        <h1>系统设置</h1>
+        <h1><VisualIcon name="tools" size={24} /> 系统设置</h1>
         <p>管理企业资料、联系方式与通知配置。</p>
         {saved === '1' ? <p className="admin-save-success" role="status">设置已保存。</p> : null}
       </div>

@@ -3,7 +3,7 @@ import {notFound, permanentRedirect} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
-import {EditorialContent} from '@/components/EditorialContent';
+import {ArticleContents, EditorialContent} from '@/components/EditorialContent';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllBlogSlugs, getBlogArticleBySlug, getBlogCanonicalSlug} from '@/lib/blogFeed';
 import {siteUrl} from '@/lib/site';
@@ -68,7 +68,7 @@ export default async function BlogArticlePage({
   };
 
   return (
-    <main className="blog-detail-page">
+    <main className="interior-page design-blog blog-detail-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />
       <section className="blog-detail-hero">
         <div className="blog-hero-copy">
@@ -102,8 +102,10 @@ export default async function BlogArticlePage({
               <div><dt>Updated</dt><dd>{article.updatedAt}</dd></div>
             </dl>
           </div>
+          <ArticleContents sections={article.body} />
         </aside>
         <article className="blog-article">
+          <ArticleContents sections={article.body} mobile />
           <section className="blog-key-takeaways">
             <p className="blog-section-kicker">At a glance</p>
             <h2>Key takeaways</h2>

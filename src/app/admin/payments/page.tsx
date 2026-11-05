@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
@@ -23,7 +24,7 @@ export default async function AdminPaymentsPage({searchParams}: {searchParams: P
     <AdminShell active="payments">
       <div className="admin-title">
         <p className="eyebrow">支付与退款</p>
-        <h1>支付、通知、退款记录</h1>
+        <h1><VisualIcon name="payment" size={24} /> 支付、通知、退款记录</h1>
         <p>读取订单支付状态、Oceanpayment 通知、退款记录和预授权记录。退款操作在订单详情页执行并写入真实退款日志。</p>
       </div>
       <div className="admin-metrics">

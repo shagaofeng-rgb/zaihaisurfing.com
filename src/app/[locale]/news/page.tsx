@@ -48,8 +48,8 @@ export default async function NewsPage({
   const latest = newsArticles.slice(1);
 
   return (
-    <main>
-      <section className="page-hero news-hero">
+    <main className="interior-page design-news">
+      <section className="page-hero news-hero design-mast">
         <div>
           <p className="eyebrow">News & Insights</p>
           <h1>Water Sports Market Updates for Buyers</h1>

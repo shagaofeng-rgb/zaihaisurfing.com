@@ -50,8 +50,8 @@ export default async function NewsTagPage({
   setRequestLocale(locale);
 
   return (
-    <main>
-      <section className="page-hero news-hero">
+    <main className="interior-page design-news">
+      <section className="page-hero news-hero design-mast">
         <div>
           <Link href="/news" className="text-link">Back to News</Link>
           <p className="eyebrow">News Tag</p>

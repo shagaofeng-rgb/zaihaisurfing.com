@@ -35,7 +35,7 @@ export default async function AdminCartsPage({searchParams}: {searchParams: Prom
       <div className="admin-metrics">
         <article><span>结账行为</span><strong>{checkoutEvents.length}</strong><small>cart / checkout / payment / order 事件</small></article>
         <article><span>疑似弃购</span><strong>{abandoned.length}</strong><small>未匹配到成交订单的结账行为</small></article>
-        <article><span>成交订单</span><strong>{orders.length}</strong><small>真实订单数量</small></article>
+        <article><span>成交订单</span><strong>{orders.length}</strong><small>订单数量</small></article>
         <article><span>已成交金额</span><strong>{money(orders.filter((order) => ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status)).reduce((sum, order) => sum + order.total, 0))}</strong><small>已付款订单合计</small></article>
         <AdminTimeFilter action="/admin/carts" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="结账行为时间" summary={timeFilter.summary} params={params} />
       </div>

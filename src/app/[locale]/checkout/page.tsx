@@ -34,8 +34,8 @@ export default async function CheckoutPage({
 
   if (await isOneTimePaymentUnavailable(productSlug)) {
     return (
-      <main>
-        <section className="checkout-hero">
+      <main className="interior-page design-checkout">
+        <section className="page-hero design-mast">
           <div>
             <p className="eyebrow">Payment Link Closed</p>
             <h1>This one-time payment link is no longer available.</h1>
@@ -47,8 +47,8 @@ export default async function CheckoutPage({
   }
 
   return (
-    <main>
-      <section className="checkout-hero">
+    <main className="interior-page design-checkout">
+      <section className="page-hero design-mast">
         <div>
           <p className="eyebrow">B2B Project Order</p>
           <h1>Confirm Buyer Details and Payment Preparation</h1>

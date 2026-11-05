@@ -2,8 +2,8 @@ import {Link} from '@/i18n/navigation';
 
 export default function NotFound() {
   return (
-    <main>
-      <section className="page-hero">
+    <main className="interior-page">
+      <section className="page-hero design-mast design-mast-dark">
         <div>
           <p className="eyebrow">Page not found</p>
           <h1>We could not find this page</h1>

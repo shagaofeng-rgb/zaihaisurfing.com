@@ -83,7 +83,7 @@ export default function PricingDashboard({
   }
 
   return (
-    <div className="pricing-admin-page">
+    <div className="pricing-admin-page"><aside className="pricing-design-nav"><a href="/pricing-admin"><strong>ZAIHAI 报价后台</strong><small>SALES WORKSPACE</small></a><nav aria-label="报价导航"><a href="/pricing-admin">报价与成交</a><a href="#pricing-records">订单记录</a><a href="/admin">企业后台</a><a href="/en" target="_blank" rel="noopener noreferrer">查看网站</a></nav></aside><div className="pricing-workspace">
       <header className="pricing-admin-hero">
         <div>
           <p className="pricing-kicker">独立计价后台</p>
@@ -233,7 +233,7 @@ export default function PricingDashboard({
         </aside>
       </section>
 
-      <section className="pricing-card">
+      <section className="pricing-card" id="pricing-records">
         <div className="pricing-card-head">
           <div>
             <p className="pricing-kicker">订单记录</p>
@@ -268,6 +268,6 @@ export default function PricingDashboard({
           </table>
         </div>
       </section>
-    </div>
+    </div></div>
   );
 }

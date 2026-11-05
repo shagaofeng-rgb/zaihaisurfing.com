@@ -1,4 +1,5 @@
 import '../globals.css';
+import '../interior.css';
 
 export const metadata = {
   robots: {

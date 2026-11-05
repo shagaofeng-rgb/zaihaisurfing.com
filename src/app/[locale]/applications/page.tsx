@@ -6,11 +6,11 @@ import {localizedMetadata} from '@/lib/metadata';
 import {uiCopy} from '@/lib/uiCopy';
 
 const scenarioImages = [
-  '/assets/banners/zaihai-main-banner-desktop-optimized.jpg',
-  '/assets/catalog/optimized/x1.jpg',
-  '/assets/catalog/optimized/rage-shark-x.jpg',
-  '/assets/catalog/optimized/x1-pro.jpg',
-  '/assets/catalog/optimized/p1-pro.jpg',
+  '/assets/home-ocean/resort-electric.webp',
+  '/assets/home-ocean/resort-hero.webp',
+  '/assets/home-ocean/resort-kart.webp',
+  '/assets/home-ocean/hero-rider.jpg',
+  '/assets/home-ocean/resort-fuel.webp',
   '/assets/catalog/optimized/p1.jpg'
 ];
 
@@ -83,30 +83,25 @@ export default async function ApplicationsPage({params}: {params: Promise<{local
   const copy = uiCopy[locale].applicationsPage;
 
   return (
-    <main>
-      <section className="page-hero">
-        <div>
+    <main className="interior-page design-applications">
+      <section className="story-hero">
+        <div className="story-hero-inner"><div>
           <p className="eyebrow">{copy.eyebrow}</p>
-          <h1>{copy.h1}</h1>
-          <p>{copy.intro}</p>
+          <h1>{locale === 'en' ? 'Choose by water area and rider.' : copy.h1}</h1>
+          <p>{locale === 'en' ? 'Explore the operating context before comparing individual models.' : copy.intro}</p>
+          <Link className="button primary" href="/contact">Discuss your project</Link>
+        </div>
+          <img src="/assets/home-ocean/resort-hero.webp" alt="ZAIHAI water sports equipment in use" width="850" height="540" fetchPriority="high" />
         </div>
       </section>
       <section className="application-section">
-        <div className="application-intro-band">
-          <div>
-            <p className="eyebrow">{copy.buyerFit}</p>
-            <h2>{copy.matrixTitle}</h2>
-          </div>
-          <p>{copy.matrixText}</p>
-        </div>
+        <div className="section-heading"><h2>{locale === 'en' ? 'Solutions by operation' : copy.matrixTitle}</h2></div>
         <div className="application-scenario-grid">
           {copy.scenarios.map((scenario, index) => (
             <article className="application-card" key={scenario.title}>
               <img src={scenarioImages[index]} alt={`${scenario.title} ZAIHAI water sports application`} loading="lazy" decoding="async" width="1100" height="733" />
-              <span>{scenario.label}</span>
               <h3>{scenario.title}</h3>
               <p>{scenario.text}</p>
-              <strong>{scenario.products}</strong>
               <Link className="text-link" href={scenario.href} prefetch={false}>
                 {scenario.cta}
               </Link>

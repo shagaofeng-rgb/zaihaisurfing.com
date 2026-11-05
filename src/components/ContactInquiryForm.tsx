@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {classifyTraffic, isMeaningfulMarketingTouch, type TrafficTouch} from '@/lib/trafficAttribution';
 
 type ContactInquiryFormProps = {
+  selectedProduct?: string;
   copy: {
     fields: {
       name: string;
@@ -61,15 +62,15 @@ function attributionSnapshot(visitorId: string, sessionId: string) {
   };
 }
 
-export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
-  const [status, setStatus] = useState('');
+export default function ContactInquiryForm({copy, selectedProduct}: ContactInquiryFormProps) {
+  const [feedback, setFeedback] = useState<{message: string; tone: 'success' | 'error'} | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     setBusy(true);
-    setStatus('');
+    setFeedback(null);
     const form = event.currentTarget;
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
@@ -92,13 +93,13 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setStatus(result.message || 'Submission failed. Please try again.');
+        setFeedback({message: result.message || 'Submission failed. Please try again.', tone: 'error'});
         return;
       }
       form.reset();
-      setStatus(result.message || 'Thank you. We received your request.');
+      setFeedback({message: result.message || 'Thank you. We received your request.', tone: 'success'});
     } catch {
-      setStatus('Network error. Please try again or email info@zaihaisurfing.com.');
+      setFeedback({message: 'Network error. Please try again or email info@zaihaisurfing.com.', tone: 'error'});
     } finally {
       setBusy(false);
     }
@@ -111,6 +112,7 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
       toolname="submit_zaihai_project_inquiry"
       tooldescription="Send a commercial inquiry to ZAIHAI SURFING for electric surfboards, fuel surfboards, go-kart boats, distributor projects or resort rental fleets."
     >
+      {feedback ? <p className="form-status full" data-tone={feedback.tone} role={feedback.tone === 'error' ? 'alert' : 'status'}>{feedback.message}</p> : null}
       <label>
         <span>{copy.fields.name}</span>
         <input name="name" required placeholder="Your name" autoComplete="name" toolparamdescription="Buyer's full name." />
@@ -136,7 +138,7 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
       </label>
       <label>
         <span>{copy.fields.product}</span>
-        <select name="product" required defaultValue="" toolparamdescription="Interested ZAIHAI product line or model.">
+        <select name="product" required defaultValue={selectedProduct || ''} toolparamdescription="Interested ZAIHAI product line or model.">
           <option value="" disabled>Select product</option>
           {copy.productOptions.map((item) => <option value={item} key={item}>{item}</option>)}
         </select>
@@ -178,7 +180,6 @@ export default function ContactInquiryForm({copy}: ContactInquiryFormProps) {
       <button className="button primary" disabled={busy} type="submit">
         {busy ? 'Sending...' : copy.fields.submit}
       </button>
-      {status && <p className="form-status full" role="status" aria-live="polite">{status}</p>}
     </form>
   );
 }

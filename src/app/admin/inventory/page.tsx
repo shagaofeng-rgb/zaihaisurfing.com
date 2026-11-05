@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import {formatAdminDate, money} from '@/lib/adminDataViews';
@@ -18,7 +19,7 @@ export default async function AdminInventoryPage({searchParams}: {searchParams: 
     <AdminShell active="inventory">
       <div className="admin-title">
         <p className="eyebrow">库存管理</p>
-        <h1>商品库存与可售状态</h1>
+        <h1><VisualIcon name="package" size={24} /> 商品库存与可售状态</h1>
         <p>当前库存读取后台商品真实库存字段。后续库存流水、入库、出库和锁定库存会继续在同一持久化数据层扩展。</p>
       </div>
       <div className="admin-metrics">

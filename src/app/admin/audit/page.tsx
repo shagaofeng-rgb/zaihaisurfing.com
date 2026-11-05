@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
@@ -36,7 +37,7 @@ export default async function AdminAuditPage({searchParams}: {searchParams: Prom
     <AdminShell active="audit">
       <div className="admin-title">
         <p className="eyebrow">操作日志</p>
-        <h1>关键操作与系统事件</h1>
+        <h1><VisualIcon name="shield" size={24} /> 关键操作与系统事件</h1>
         <p>合并展示后台操作、支付通知、退款、物流、邮件和结账类事件，方便排查订单与数据同步问题。</p>
         <AdminTimeFilter action="/admin/audit" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="日志记录时间" summary={timeFilter.summary} params={params} />
       </div>

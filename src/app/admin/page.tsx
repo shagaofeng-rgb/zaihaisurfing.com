@@ -1,3 +1,5 @@
+import AdminVisitTrend from '@/components/AdminVisitTrend';
+import VisualIcon from '@/components/VisualIcon';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
 import AdminPagination from '@/components/AdminPagination';
@@ -27,13 +29,24 @@ export default async function AdminDashboardPage({
   return (
     <AdminShell active="dashboard">
       <div className="admin-title admin-dashboard-title" id="overview">
-        <div><p className="eyebrow">工作台</p><h1>经营工作台</h1><p>聚焦待处理事项，查看真实业务数据。</p></div>
+        <div><p className="eyebrow">工作台</p><h1>经营总览</h1><p>聚焦待处理事项，查看业务概览。</p></div>
         <AdminTimeFilter action="/admin" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="数据统计" summary={timeFilter.summary} />
       </div>
 
-      <div className="admin-workbench-grid">
-        <div className="admin-workbench-primary">
-          <section className="admin-panel admin-task-panel">
+      <section className="admin-metrics admin-visual-summary" aria-label="本期经营指标">
+        <article><span>访问客户</span><strong>{backend.metrics.visitors.toLocaleString()}</strong><small>本期去重访客</small></article>
+        <article><span>表单咨询 <VisualIcon name="chat" size={18} /></span><strong>{backend.inquiryEvents.length.toLocaleString()}</strong><small>客户已提交的咨询</small></article>
+        <article><span>订单 <VisualIcon name="order" size={18} /></span><strong>{backend.metrics.orders.toLocaleString()}</strong><small>当前时间范围</small></article>
+        <article><span>销售额 <VisualIcon name="payment" size={18} /></span><strong>{money(backend.metrics.revenue)}</strong><small>本期已付款及履约中订单</small></article>
+      </section>
+      <div className="admin-two-col admin-visual-charts">
+        <AdminVisitTrend events={backend.filteredEvents} />
+        <AdminBarChart title="访问会话来源" rows={backend.trafficSources} />
+      </div>
+
+      <div className="admin-two-col admin-visual-charts admin-operating-panels">
+        <AdminBarChart title="国家与地区分布" rows={backend.countries} />
+        <section className="admin-panel admin-task-panel">
             <div className="admin-panel-heading"><div><h2>待处理事项</h2><p>本周期的业务信号与待处理订单。</p></div></div>
             <div className="admin-task-grid">
               <article className="admin-task-card">
@@ -51,8 +64,10 @@ export default async function AdminDashboardPage({
                 <a className="admin-task-link" href="/admin/orders">查看订单 <AdminIcon name="arrow" size={18} /></a>
               </article>
             </div>
-          </section>
-
+        </section>
+      </div>
+      <div className="admin-workbench-grid">
+        <div className="admin-workbench-primary">
           <section className="admin-panel admin-inquiry-panel">
             <div className="admin-panel-heading"><div><h2>最近表单咨询</h2><p>仅显示客户实际提交的咨询表单。</p></div><a className="admin-detail-link" href="/admin/leads">查看全部 <AdminIcon name="arrow" size={17} /></a></div>
             {backend.inquiryEvents.length ? <div className="admin-table-wrap"><table><thead><tr><th>时间</th><th>客户</th><th>咨询内容</th><th>操作</th></tr></thead><tbody>
@@ -65,7 +80,7 @@ export default async function AdminDashboardPage({
           </section>
         </div>
 
-        <aside className="admin-panel admin-overview-panel" aria-label="真实数据概览">
+        <aside className="admin-panel admin-overview-panel" aria-label="业务数据概览">
           <div className="admin-panel-heading"><div><h2>数据概览</h2><p>{timeFilter.summary}</p></div></div>
           <dl className="admin-overview-list">
             <div><dt><AdminIcon name="customers" />访问客户<small>匿名访客去重</small></dt><dd>{backend.metrics.visitors}</dd></div>
@@ -94,10 +109,6 @@ export default async function AdminDashboardPage({
         </div>
       </section>
 
-      <div className="admin-two-col admin-dashboard-secondary">
-        <AdminBarChart title="访问会话来源" rows={backend.trafficSources} />
-        <AdminBarChart title="访问会话国家与地区" rows={backend.countries} />
-      </div>
 
       <section className="admin-panel admin-dashboard-secondary">
         <div>
@@ -120,7 +131,7 @@ export default async function AdminDashboardPage({
                   <td>{zhOrderStatus(order.status)}</td>
                   <td>{zhPaymentStatus(order.gatewayStatus)}</td>
                 </tr>
-              )) : <tr><td colSpan={7}>暂无真实订单数据。</td></tr>}
+              )) : <tr><td colSpan={7}>暂无订单记录。</td></tr>}
             </tbody>
           </table>
         </div>

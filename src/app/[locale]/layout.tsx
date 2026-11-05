@@ -14,6 +14,7 @@ import FloatingWidgetGuard from '@/components/FloatingWidgetGuard';
 import DelayedThirdPartyScript from '@/components/DelayedThirdPartyScript';
 import {siteUrl} from '@/lib/site';
 import '../globals.css';
+import '../interior.css';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({locale}));

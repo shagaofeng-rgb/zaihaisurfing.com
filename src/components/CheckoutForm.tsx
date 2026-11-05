@@ -2,6 +2,7 @@
 
 import {useEffect, useMemo, useState} from 'react';
 import Script from 'next/script';
+import VisualIcon from '@/components/VisualIcon';
 import {shippingEstimateFor} from '@/lib/shipping';
 import type {CheckoutProductSlug} from '@/lib/site';
 import {classifyTraffic, isMeaningfulMarketingTouch, type TrafficTouch} from '@/lib/trafficAttribution';
@@ -396,7 +397,12 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       <Script src="https://secure.oceanpayment.com/gateway/js/googlepay_ec.js" strategy="afterInteractive" />
       <Script src="https://secure.oceanpayment.com/gateway/js/applepay_ec.js" strategy="afterInteractive" />
       <div className="checkout-left">
-        <section className="checkout-block">
+        <nav className="checkout-progress" aria-label="Checkout sections">
+          <a href="#checkout-contact">1. Buyer details</a>
+          <a href="#checkout-delivery">2. Delivery</a>
+          <a href="#checkout-payment">3. Payment</a>
+        </nav>
+        <section className="checkout-block" id="checkout-contact">
           <div className="checkout-block-title">
             <h2>Contact</h2>
             <a href={`/${locale}/contact`}>Need help?</a>
@@ -408,7 +414,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           </label>
         </section>
 
-        <section className="checkout-block">
+        <section className="checkout-block" id="checkout-delivery">
           <h2>Delivery</h2>
           <label className="field-shell full">
             <span>Country / region</span>
@@ -543,7 +549,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         </section>
       </div>
 
-      <aside className="shopline-summary">
+      <aside className="shopline-summary" aria-labelledby="order-summary-title">
+        <h2 id="order-summary-title"><VisualIcon name="order" size={19} /> Order summary</h2>
         <div className="summary-product">
           <div className="summary-image-wrap">
             <img src={productImage} alt={`${productName} checkout thumbnail`} />

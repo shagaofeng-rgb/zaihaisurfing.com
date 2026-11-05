@@ -20,6 +20,8 @@ export function isBusinessOrder(order: StoreOrder) {
   return [order.id, order.userId, order.customer.email].every((value) => !INTERNAL_ID.test(String(value || '')));
 }
 
+export const ADMIN_BUSINESS_DATA_CACHE_TAG = 'zaihai-admin-business-data';
+
 const readCachedBusinessCommerceData = unstable_cache(
   async () => {
     const [orders, events] = await Promise.all([readStoreOrders(), readAnalyticsEvents()]);
@@ -32,8 +34,8 @@ const readCachedBusinessCommerceData = unstable_cache(
     // every admin navigation re-read the entire durable event file.
     return gzipSync(JSON.stringify(data)).toString('base64');
   },
-  ['zaihai-admin-business-data-v3-gzip-filter'],
-  {revalidate: 30}
+  ['zaihai-admin-business-data-v4-gzip-filter'],
+  {revalidate: 30, tags: [ADMIN_BUSINESS_DATA_CACHE_TAG]}
 );
 
 /**

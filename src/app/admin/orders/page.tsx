@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
@@ -25,7 +26,7 @@ export default async function AdminOrdersPage({
     <AdminShell active="orders">
       <div className="admin-title">
         <p className="eyebrow">订单管理</p>
-        <h1>订单管理</h1>
+        <h1><VisualIcon name="order" size={24} /> 订单管理</h1>
         <p>前台结账、Oceanpayment 通知、物流、退款和客户账号绑定都会同步到这里。订单详情页可处理物流、退款和预授权。</p>
         <AdminTimeFilter action="/admin/orders" range={timeFilter.range} start={timeFilter.start} end={timeFilter.end} label="订单创建时间" summary={timeFilter.summary} params={params} />
       </div>
@@ -60,7 +61,7 @@ export default async function AdminOrdersPage({
                   <td>{formatAdminDate(order.createdAt)}</td>
                   <td><Link className="button secondary small" href={`/admin/orders/${order.id}`}>查看详情</Link></td>
                 </tr>
-              )) : <tr><td colSpan={8}>暂无真实订单数据。客户在前台结账页提交后会实时出现在这里。</td></tr>}
+              )) : <tr><td colSpan={8}>暂无订单记录。客户在前台结账页提交后会实时出现在这里。</td></tr>}
             </tbody>
           </table>
         </div>

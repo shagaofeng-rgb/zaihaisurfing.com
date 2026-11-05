@@ -1,3 +1,4 @@
+import DesignIcon from '@/components/DesignIcon';
 import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
@@ -26,15 +27,22 @@ export default async function AboutPage({params}: {params: Promise<{locale: Loca
   const t = await getTranslations({locale, namespace: 'about'});
 
   return (
-    <main>
-      <section className="page-hero">
-        <div>
+    <main className="interior-page design-about">
+      <section className="story-hero">
+        <div className="story-hero-inner"><div>
           <p className="eyebrow">About ZAIHAI SURFING</p>
-          <h1>{t('h1')}</h1>
+          <h1>{locale === 'en' ? 'Water sports equipment for operators.' : t('h1')}</h1>
           <p>{t('intro')} ZAIHAI SURFING is operated by Quzhou Qiying Import & Export Co., Ltd.</p>
+        </div>
+          <img src="/assets/home-ocean/resort-hero.webp" alt="ZAIHAI rider on the water" width="850" height="540" fetchPriority="high" />
         </div>
       </section>
 
+      <section className="section business-feature-grid" aria-label="ZAIHAI services"><div className="card-grid">{[
+        {title:'Product focus',text:'Electric surfboards, fuel-powered surfboards and go-kart boats for commercial water sports.',image:'electric',icon:'ride' as const},
+        {title:'Buyer support',text:'Model comparison, accessories and practical operating requirements for your project.',image:'kart',icon:'support' as const},
+        {title:'Global reach',text:'Distributor cooperation, packaging and export documentation for overseas buyers.',image:'fuel',icon:'global' as const}
+      ].map(item=><article className="info-card" key={item.title}><img src={`/assets/home-ocean/resort-${item.image}.webp`} alt={item.title} width="600" height="400" loading="lazy" /><div><DesignIcon name={item.icon} /><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div></section>
       <section className="section about-story">
         <div className="section-heading">
           <p className="eyebrow">Premium water sports equipment brand</p>

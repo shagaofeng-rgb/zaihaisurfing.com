@@ -3,7 +3,7 @@ import {notFound, permanentRedirect} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import type {Locale} from '@/i18n/routing';
 import {Link} from '@/i18n/navigation';
-import {EditorialContent} from '@/components/EditorialContent';
+import {ArticleContents, EditorialContent} from '@/components/EditorialContent';
 import {englishOnlyEditorialMetadata} from '@/lib/metadata';
 import {getAllNewsSlugs, getNewsArticleBySlug, getNewsCanonicalSlug} from '@/lib/newsFeed';
 import {siteUrl} from '@/lib/site';
@@ -68,7 +68,7 @@ export default async function NewsArticlePage({
   };
 
   return (
-    <main className="news-detail-page">
+    <main className="interior-page design-news news-detail-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />
       <section className="news-detail-hero">
         <div className="news-hero-copy">
@@ -117,8 +117,10 @@ export default async function NewsArticlePage({
               </div>
             </dl>
           </div>
+          <ArticleContents sections={article.body} />
         </aside>
         <article className="news-article">
+          <ArticleContents sections={article.body} mobile />
           <div className="source-note">
             <strong>Editorial disclaimer</strong>
             <p>{article.editorialDisclaimer}</p>

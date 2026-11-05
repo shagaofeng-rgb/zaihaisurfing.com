@@ -17,25 +17,28 @@ export default async function FactoryPage({params}: {params: Promise<{locale: Lo
   const copy = uiCopy[locale].factoryPage;
 
   return (
-    <main>
-      <section className="page-hero">
-        <div>
+    <main className="interior-page design-factory">
+      <section className="story-hero">
+        <div className="story-hero-inner"><div>
           <p className="eyebrow">{copy.eyebrow}</p>
-          <h1>{copy.h1}</h1>
+          <h1>{locale === 'en' ? 'Configure. Inspect. Prepare to ship.' : copy.h1}</h1>
           <p>{copy.intro}</p>
+          <Link className="button primary" href="/contact">Discuss your project</Link>
+        </div>
+          <img src="/assets/home-ocean/export-support.jpg" alt="ZAIHAI export preparation and logistics" width="850" height="540" fetchPriority="high" />
         </div>
       </section>
-      <section className="quality-section">
+      <section className="quality-section" id="oem-distributor">
         <div className="section-heading">
           <p className="eyebrow">{copy.supportTitle}</p>
           <h2>{copy.supportTitle}</h2>
           <p>{copy.intro}</p>
         </div>
         <div className="quality-support-grid">
-          {copy.support.map((item) => (
+          {copy.support.map((item,index) => (
             <article className="info-card" key={item.title}>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
+              <img src={`/assets/home-ocean/resort-${['electric','kart','fuel'][index % 3]}.webp`} alt={item.title} width="600" height="400" loading="lazy" decoding="async" /><div><h3>{item.title}</h3>
+              <p>{item.text}</p></div>
             </article>
           ))}
         </div>

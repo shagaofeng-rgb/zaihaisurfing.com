@@ -4,7 +4,7 @@ export default function AdminResetPasswordPage() {
       <form className="admin-login-card" action="/api/admin/reset-password" method="post">
         <p className="eyebrow">密码重置</p>
         <h1>设置新密码</h1>
-        <p>此页面预留给邮件 Token 重置流程。正式使用前需要配置 SMTP 和重置 Token 存储。</p>
+        <p>如无法使用重置链接，请联系系统管理员。</p>
         <label>
           重置 Token
           <input name="token" required placeholder="邮件中的 Token" />

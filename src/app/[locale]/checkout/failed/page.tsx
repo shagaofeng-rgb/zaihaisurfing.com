@@ -1,3 +1,4 @@
+import VisualIcon from '@/components/VisualIcon';
 import type {Locale} from '@/i18n/routing';
 import {findStoreOrder} from '@/lib/commerceStore';
 import {hasOrderAccess} from '@/lib/orderAccess';
@@ -21,9 +22,10 @@ export default async function CheckoutFailedPage({
       : 'Payment was declined, failed, or cancelled.';
 
   return (
-    <main>
+    <main className="interior-page design-checkout design-checkout-result">
       <section className="checkout-hero">
         <div>
+          <VisualIcon name="warning" size={32} />
           <p className="eyebrow">Payment result</p>
           <h1>Payment failed</h1>
           {order ? (
