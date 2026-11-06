@@ -8,11 +8,12 @@ import ProductGallery from '@/components/ProductGallery';
 import VisualIcon, {type VisualIconName} from '@/components/VisualIcon';
 import ProductStickyInquiry from '@/components/ProductStickyInquiry';
 import {productPresentation, seriesFields, summaryFields} from '@/lib/productPresentation';
+import {frenchProductPresentation, frenchProductTypes, productLabel, productSpecValue} from '@/lib/productFrench';
 import '@/app/product-review.css';
 import {localizedMetadata} from '@/lib/metadata';
-import {canonicalFor, productDetailedSpecs, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
+import {canonicalFor, productDetailedSpecs, productIndexLocales, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
 import {uiCopy} from '@/lib/uiCopy';
-import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
+import {getPublicCatalogProduct} from '@/lib/catalogRuntime';
 
 const productGalleries: Record<ProductSlug, string[]> = {
   'x1': ['/assets/catalog/x1/hero-angle.png', '/assets/catalog/x1/side-view.png', '/assets/catalog/x1/top-view.png', '/assets/catalog/x1/tail-closeup.png'],
@@ -33,18 +34,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale, slug} = await params;
   if (!productSlugs.includes(slug as ProductSlug)) notFound();
-  const runtimeProduct = await getRuntimeCatalogProduct(slug as ProductSlug);
+  const model = slug as ProductSlug;
+  const runtimeProduct = await getPublicCatalogProduct(model);
   if (!runtimeProduct) notFound();
-  const names = await getTranslations({locale, namespace: 'productNames'});
-  const seo = await getTranslations({locale, namespace: 'seo'});
-  const title = runtimeProduct.seoTitle || `${names(slug as ProductSlug)} for Commercial Water Sports Projects | ZAIHAI SURFING`;
-  const description = runtimeProduct.seoDescription || seo('productsDescription');
-  const metadata = localizedMetadata(locale, `/products/${slug}`, title, description);
-  if (locale !== 'en') {
-    const canonical = canonicalFor('en', `/products/${slug}`);
-    metadata.alternates = {canonical, languages: {en: canonical, 'x-default': canonical}};
-    metadata.robots = {index: false, follow: true};
-  }
+  const path = `/products/${slug}`;
+  const englishUrl = canonicalFor('en', path);
+  const localIndex = productIndexLocales.includes(locale);
+  const presentation = productPresentation[model];
+  const title = locale === 'fr'
+    ? `${presentation.short} · ${frenchProductTypes[presentation.category]} | ZAIHAI SURFING`
+    : runtimeProduct.seoTitle;
+  const description = locale === 'fr' ? frenchProductPresentation[model].description : runtimeProduct.seoDescription;
+  const metadata = localizedMetadata(locale, path, title, description, {url: new URL(runtimeProduct.image, siteUrl).href});
+  metadata.alternates = {
+    canonical: localIndex ? canonicalFor(locale, path) : englishUrl,
+    languages: {
+      ...Object.fromEntries(productIndexLocales.map((language) => [language, canonicalFor(language, path)])),
+      'x-default': englishUrl
+    }
+  };
+  if (!localIndex) metadata.robots = {index: false, follow: true};
   return metadata;
 }
 
@@ -57,7 +66,7 @@ export default async function ProductDetailPage({
   if (!productSlugs.includes(slug as ProductSlug)) notFound();
   setRequestLocale(locale);
   const productSlug = slug as ProductSlug;
-  const product = await getRuntimeCatalogProduct(productSlug);
+  const product = await getPublicCatalogProduct(productSlug);
   if (!product) notFound();
   const approvedGallery = productGalleries[productSlug];
   const publishedGallery = product.galleryImages;
@@ -65,22 +74,26 @@ export default async function ProductDetailPage({
   const gallery = isDefaultGallery
     ? [...new Set([...approvedGallery, ...publishedGallery])]
     : publishedGallery.length ? publishedGallery : approvedGallery;
-  const content = productPresentation[productSlug];
+  const french = locale === 'fr';
+  const local = (english: string, frenchText: string) => french ? frenchText : english;
+  const source = productPresentation[productSlug];
+  const content = french ? {...source, ...frenchProductPresentation[productSlug], type: frenchProductTypes[source.category]} : source;
   const specs = productDetailedSpecs[productSlug];
   const names = await getTranslations({locale, namespace: 'productNames'});
   const alt = await getTranslations({locale, namespace: 'alt'});
   const copy = uiCopy[locale].productDetail;
-  const title = locale === 'en' ? content.short : names(productSlug);
+  const title = locale === 'en' || french ? content.short : names(productSlug);
   const quoteHref = `/${locale}/contact?product=${productSlug}#inquiry-form`;
   const canBuy = product.allowDirectOrder && (product.stock === null || product.stock > 0);
-  const companion = content.compare ? await getRuntimeCatalogProduct(content.compare) : null;
+  const companion = content.compare ? await getPublicCatalogProduct(content.compare) : null;
   const groups = new Map<string, typeof specs>();
   for (const spec of specs) {
     const {label} = spec;
-    const group = /gasoline|fuel ratio|fuel tank|lubricating oil/i.test(label) ? 'Fuel and lubrication'
-      : /engine|ignit|compression|spark plug|cylinder|start mode|operating power/i.test(label) ? 'Engine and service'
-      : /power|speed|voltage|battery|endurance|waterproof/i.test(label) ? (content.category === 'fuel' ? 'Performance and load' : 'Drive and electrical system')
-      : /accessories|warranty/i.test(label) ? 'Equipment and coverage' : 'Construction and dimensions';
+    const group = /gasoline|fuel ratio|fuel tank|lubricating oil/i.test(label) ? local('Fuel and lubrication', 'Carburant et lubrification')
+      : /engine|ignit|compression|spark plug|cylinder|start mode|operating power/i.test(label) ? local('Engine and service', 'Moteur et entretien')
+      : /power|speed|voltage|battery|endurance|waterproof/i.test(label)
+        ? (content.category === 'fuel' ? local('Performance and load', 'Performances et charge') : local('Drive and electrical system', 'Propulsion et système électrique'))
+        : /accessories|warranty/i.test(label) ? local('Equipment and coverage', 'Équipement et garantie') : local('Construction and dimensions', 'Construction et dimensions');
     const rows = groups.get(group) || [];
     rows.push(spec);
     groups.set(group, rows);
@@ -89,7 +102,7 @@ export default async function ProductDetailPage({
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.name,
+    name: title,
     description: content.description,
     image: gallery.map((image) => new URL(image, siteUrl).href),
     sku: `ZH-${productSlug.toUpperCase()}`,
@@ -102,7 +115,7 @@ export default async function ProductDetailPage({
       '@type': 'Offer',
       price: product.priceAmount,
       priceCurrency: 'USD',
-      availability: product.stock !== null && product.stock <= 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+      ...(product.stock === null ? {} : {availability: product.stock <= 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'}),
       url: productUrl
     },
     url: productUrl
@@ -114,28 +127,29 @@ export default async function ProductDetailPage({
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Products',
+        name: local('Products', 'Produits'),
         item: `${siteUrl}/${locale}/products`
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: product.name,
+        name: title,
         item: productUrl
       }
     ]
   };
 
   const sections = [
-    ['Overview', 'overview'], ['Specifications', 'specifications'], ['What’s included', 'package'],
-    ['Delivery & support', 'delivery'], ['Compare', 'compare']
+    [local('Overview', 'Présentation'), 'overview'], [local('Specifications', 'Caractéristiques'), 'specifications'],
+    [local('What’s included', 'Équipement inclus'), 'package'],
+    [local('Delivery & support', 'Livraison et assistance'), 'delivery'], [local('Compare', 'Comparer'), 'compare']
   ];
   const packageCards: {icon: VisualIconName; title: string; lines: readonly string[]}[] = [
-    {icon: 'package', title: 'Standard configuration', lines: content.included},
-    {icon: 'tools', title: 'Options to discuss', lines: content.optional},
-    {icon: 'shield', title: 'Before dispatch', lines: content.handover}
+    {icon: 'package', title: local('Standard configuration', 'Configuration standard'), lines: content.included},
+    {icon: 'tools', title: local('Options to discuss', 'Options à confirmer'), lines: content.optional},
+    {icon: 'shield', title: local('Before dispatch', 'Avant l’expédition'), lines: content.handover}
   ];
-  const faq = locale === 'en' ? content.questions : copy.faq.map((question, index) =>
+  const faq = locale === 'en' || french ? content.questions : copy.faq.map((question, index) =>
     [question, content.questions[index]?.[1] || content.description] as const
   );
 
@@ -145,8 +159,8 @@ export default async function ProductDetailPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c')}} />
       <section className="model-hero" id="product-first-view">
         <div className="model-wrap">
-          <nav className="model-crumb" aria-label="Breadcrumb">
-            <Link href="/products">Products</Link><span>/</span><span>{content.type}</span><span>/</span><span aria-current="page">{title}</span>
+          <nav className="model-crumb" aria-label={local('Breadcrumb', 'Fil d’Ariane')}>
+            <Link href="/products">{local('Products', 'Produits')}</Link><span>/</span><span>{content.type}</span><span>/</span><span aria-current="page">{title}</span>
           </nav>
           <div className="model-grid">
             <div className="model-heading">
@@ -155,33 +169,33 @@ export default async function ProductDetailPage({
               <p className="model-sub">{content.use.slice(0, 2).join(' · ')}</p>
               <p className="model-intro">{content.description}</p>
             </div>
-            <ProductGallery images={gallery} mainAlt={alt(productSlug)} productName={product.name} />
+            <ProductGallery images={gallery} mainAlt={french ? `Photo du ${title}` : alt(productSlug)} productName={title} french={french} />
             <div className="model-info">
-              <div className="model-price"><strong>{product.price}</strong><small>Catalog price · freight confirmed separately</small></div>
+              <div className="model-price"><strong>{french ? new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'USD', currencyDisplay: 'code'}).format(product.priceAmount) : product.price}</strong><small>{local('Catalog price · freight confirmed separately', 'Prix catalogue · transport à confirmer séparément')}</small></div>
               <dl className="model-quick">
                 {content.key.map(([icon, label, fallback], index) => {
                   const value = specs.find(({label: field}) => field === summaryFields[productSlug][index])?.value;
                   const display = label === 'Power' || label === 'Published rating' ? value?.split(' / ')[0].split(' waterproof')[0] : value?.replace(' minutes', ' min').replace(/(\d)-(\d)/g, '$1–$2');
-                  return <div key={label}><VisualIcon name={icon} size={20} /><dt>{label}</dt><dd>{display || fallback}</dd></div>;
+                  return <div key={label}><VisualIcon name={icon} size={20} /><dt>{productLabel(label, french)}</dt><dd>{productSpecValue(display || fallback, french)}</dd></div>;
                 })}
               </dl>
               <div className="model-actions">
                 <a className="button primary" href={quoteHref}>{copy.requestQuote}</a>
-                {canBuy ? <Link className="button ghost" href={`/checkout?product=${productSlug}&qty=1`}>Buy now</Link> : null}
+                {canBuy ? <Link className="button ghost" href={`/checkout?product=${productSlug}&qty=1`}>{local('Buy now', 'Acheter')}</Link> : null}
                 <a className="button ghost model-chat" data-whatsapp-placement="product_detail_cta" href="https://wa.me/8617621485205" target="_blank" rel="noopener noreferrer" aria-label={copy.whatsapp}><VisualIcon name="chat" size={20} /><span>{copy.whatsapp}</span></a>
               </div>
-              <p className="model-fine">For quotes, confirm destination, quantity and configuration.</p>
+              <p className="model-fine">{local('For quotes, confirm destination, quantity and configuration.', 'Pour un devis, indiquez la destination, la quantité et la configuration.')}</p>
             </div>
           </div>
         </div>
       </section>
-      <nav className="model-section-nav" aria-label="Product sections"><div className="model-wrap">
+      <nav className="model-section-nav" aria-label={local('Product sections', 'Sections du produit')}><div className="model-wrap">
         {sections.map(([label, id]) => <a key={id} href={`#${id}`}>{label}</a>)}
       </div></nav>
       <section id="overview" className="model-block">
         <div className="model-wrap model-split">
           <article className="model-feature">
-            <p className="eyebrow"><VisualIcon name={content.category === 'fuel' ? 'engine' : content.category === 'kart' ? 'steering' : 'charge'} size={16} /> Use and operation</p>
+            <p className="eyebrow"><VisualIcon name={content.category === 'fuel' ? 'engine' : content.category === 'kart' ? 'steering' : 'charge'} size={16} /> {local('Use and operation', 'Usage et exploitation')}</p>
             <h2>{content.title}</h2><p>{content.story}</p>
             <ul className="model-tags">{content.use.map((item) => <li key={item}>{item}</li>)}</ul>
           </article>
@@ -193,18 +207,20 @@ export default async function ProductDetailPage({
       </section>
       <section id="specifications" className="model-block model-wash">
         <div className="model-wrap">
-          <h2>Technical specifications</h2>
-          <p className="model-lede">{content.category === 'fuel' ? 'Tank volume and fuel requirements are separate from ride duration.' : 'Listed speed and ride time depend on operating conditions. Confirm the test basis when comparing configurations.'}</p>
+          <h2>{local('Technical specifications', 'Caractéristiques techniques')}</h2>
+          <p className="model-lede">{content.category === 'fuel'
+            ? local('Tank volume and fuel requirements are separate from ride duration.', 'Le volume du réservoir et le carburant requis sont indiqués séparément de l’autonomie.')
+            : local('Listed speed and ride time depend on operating conditions. Confirm the test basis when comparing configurations.', 'La vitesse et l’autonomie varient selon les conditions d’utilisation. Vérifiez les conditions d’essai pour comparer les modèles.')}</p>
           <div className="model-specs">
             {[...groups].map(([heading, rows]) => <article key={heading} className="model-spec-group">
-              <h3>{heading}</h3><dl>{rows.map(({label, value}) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+              <h3>{heading}</h3><dl>{rows.map(({label, value}) => <div key={label}><dt>{productLabel(label, french)}</dt><dd>{productSpecValue(value, french)}</dd></div>)}</dl>
             </article>)}
           </div>
         </div>
       </section>
       <section id="package" className="model-block">
         <div className="model-wrap">
-          <h2>What’s included</h2><p className="model-lede">Confirm exact items and quantities on the quotation or packing list.</p>
+          <h2>{local('What’s included', 'Équipement inclus')}</h2><p className="model-lede">{local('Confirm exact items and quantities on the quotation or packing list.', 'Confirmez les articles et les quantités sur le devis ou la liste de colisage.')}</p>
           <div className="model-packages">{packageCards.map(({icon, title: heading, lines}) => <article className="model-card" key={heading}>
             <VisualIcon name={icon} /><h3>{heading}</h3><ul>{lines.map((line) => <li key={line}>{line}</li>)}</ul>
           </article>)}</div>
@@ -213,11 +229,11 @@ export default async function ProductDetailPage({
       <section id="delivery" className="model-block model-wash">
         <div className="model-wrap model-split">
           <div>
-            <h2>Delivery and support</h2>
-            <article className="model-card"><VisualIcon name="truck" /><h3>Shipping and export</h3><p>Confirm freight, packing and destination requirements for this model.</p><Link href="/shipping">Shipping details →</Link></article>
-            <article className="model-card"><VisualIcon name="support" /><h3>Warranty and parts</h3><p>Use the purchase record and model details when contacting after-sales support.</p><Link href="/warranty">Warranty support →</Link></article>
+            <h2>{local('Delivery and support', 'Livraison et assistance')}</h2>
+            <article className="model-card"><VisualIcon name="truck" /><h3>{local('Shipping and export', 'Transport et exportation')}</h3><p>{local('Confirm freight, packing and destination requirements for this model.', 'Vérifiez les frais de transport, l’emballage et les exigences de destination pour ce modèle.')}</p><a href="/en/shipping">{local('Shipping details →', 'Conditions de livraison en anglais →')}</a></article>
+            <article className="model-card"><VisualIcon name="support" /><h3>{local('Warranty and parts', 'Garantie et pièces')}</h3><p>{local('Use the purchase record and model details when contacting after-sales support.', 'Pour contacter le service après-vente, préparez votre justificatif d’achat et le modèle concerné.')}</p><a href="/en/warranty">{local('Warranty support →', 'Conditions de garantie en anglais →')}</a></article>
           </div>
-          <div className="model-faq"><h2>Common questions</h2>
+          <div className="model-faq"><h2>{local('Common questions', 'Questions fréquentes')}</h2>
             {faq.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
           </div>
         </div>
@@ -225,26 +241,26 @@ export default async function ProductDetailPage({
       <section id="compare" className="model-block">
         <div className="model-wrap">
           {companion && content.category !== 'kart' ? <>
-            <h2>Compare within the series</h2>
+            <h2>{local('Compare within the series', 'Comparer les modèles de la gamme')}</h2>
             <div className="model-comparison">
               {[productSlug, companion.slug as ProductSlug].map((model) => <article key={model} className="model-compare-card" data-current={model === productSlug}>
                 <h3>{productPresentation[model].short}</h3>
-                <dl>{seriesFields[content.category].map(([label, key]) => <div key={key}><dt>{label}</dt><dd>{productDetailedSpecs[model].find((row) => row.label === key)?.value || '—'}</dd></div>)}</dl>
-                {model !== productSlug ? <Link href={`/products/${model}`}>View model →</Link> : <small aria-current="page">Current model</small>}
+                <dl>{seriesFields[content.category].map(([label, key]) => <div key={key}><dt>{productLabel(label, french)}</dt><dd>{productSpecValue(productDetailedSpecs[model].find((row) => row.label === key)?.value || '—', french)}</dd></div>)}</dl>
+                {model !== productSlug ? <Link href={`/products/${model}`}>{local('View model →', 'Voir le modèle →')}</Link> : <small aria-current="page">{local('Current model', 'Modèle actuel')}</small>}
               </article>)}
             </div>
           </> : <>
-            <h2>Evaluate your operating setup</h2>
+            <h2>{local('Evaluate your operating setup', 'Évaluer votre installation')}</h2>
             <div className="model-comparison">
-              <article className="model-card"><VisualIcon name="hull" /><h3>Compare by operating area</h3><p>Share route size, rider profile and supervision plan.</p><Link href="/applications">Applications →</Link></article>
-              <article className="model-card"><VisualIcon name="charge" /><h3>Plan fleet operations</h3><p>Review operating needs and available configurations.</p><Link href="/products">View all products →</Link></article>
+              <article className="model-card"><VisualIcon name="hull" /><h3>{local('Compare by operating area', 'Comparer selon la zone d’utilisation')}</h3><p>{local('Share route size, rider profile and supervision plan.', 'Indiquez la taille du parcours, le profil des utilisateurs et le mode de supervision.')}</p><Link href="/applications">Applications →</Link></article>
+              <article className="model-card"><VisualIcon name="charge" /><h3>{local('Plan fleet operations', 'Préparer l’exploitation d’une flotte')}</h3><p>{local('Review operating needs and available configurations.', 'Vérifiez les besoins d’exploitation et les configurations disponibles.')}</p><Link href="/products">{local('View all products →', 'Voir tous les produits →')}</Link></article>
             </div>
           </>}
         </div>
       </section>
       <section className="model-quote" id="product-final-inquiry">
-        <div className="model-wrap"><div><h2>Get a quote for {title}</h2><p>Tell us your destination, quantity and application.</p></div>
-          <a className="button primary" href={quoteHref}>Send project requirements</a></div>
+        <div className="model-wrap"><div><h2>{local(`Get a quote for ${title}`, `Demander un devis pour le ${title}`)}</h2><p>{local('Tell us your destination, quantity and application.', 'Indiquez la destination, la quantité et l’usage prévu.')}</p></div>
+          <a className="button primary" href={quoteHref}>{local('Send project requirements', 'Envoyer les détails du projet')}</a></div>
       </section>
       <ProductStickyInquiry name={title} href={quoteHref} label={copy.requestQuote} />
     </main>

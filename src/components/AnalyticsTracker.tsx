@@ -1,8 +1,8 @@
 'use client';
 
 import {useEffect, useRef} from 'react';
-import {usePathname, useSearchParams} from 'next/navigation';
-import {classifyTraffic, isMeaningfulMarketingTouch, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
+import {usePathname} from 'next/navigation';
+import {classifyTraffic, isMeaningfulMarketingTouch, safeTrafficUrl, type AttributionSnapshot, type TrafficTouch} from '@/lib/trafficAttribution';
 
 function getId(storage: Storage, key: string, prefix: string) {
   let value = storage.getItem(key);
@@ -15,10 +15,7 @@ function getId(storage: Storage, key: string, prefix: string) {
 
 function sendEvent(payload: Record<string, unknown>) {
   const body = JSON.stringify(payload);
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon('/api/analytics/track', new Blob([body], {type: 'application/json'}));
-    return;
-  }
+  if (navigator.sendBeacon?.('/api/analytics/track', new Blob([body], {type: 'application/json'}))) return;
   fetch('/api/analytics/track', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -74,10 +71,14 @@ function productSlugFromPath(pathname: string) {
 
 function shouldTrackWhatsAppClick(placement: string, page: string) {
   const key = `zaihai_whatsapp_click:${placement}:${page}`;
-  const previous = Number(window.sessionStorage.getItem(key) || 0);
-  const now = Date.now();
-  if (Number.isFinite(previous) && now - previous < 8_000) return false;
-  window.sessionStorage.setItem(key, String(now));
+  try {
+    const previous = Number(window.sessionStorage.getItem(key) || 0);
+    const now = Date.now();
+    if (Number.isFinite(previous) && now - previous < 8_000) return false;
+    window.sessionStorage.setItem(key, String(now));
+  } catch {
+    // Tracking is optional when browser storage is restricted.
+  }
   return true;
 }
 
@@ -105,25 +106,33 @@ function readAttribution(visitorId: string, sessionId: string, page: string): At
   return {visitorId, sessionId, firstTouch: first, lastTouch: last, sessionTouch: session};
 }
 
+function trackedAttribution(page: string) {
+  try {
+    const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+    const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+    return readAttribution(visitorId, sessionId, page);
+  } catch {
+    return null;
+  }
+}
+
 export default function AnalyticsTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const previousPage = useRef('');
 
   useEffect(() => {
     if (pathname?.startsWith('/admin')) return;
-    const page = `${pathname || '/'}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
+    const page = pathname || '/';
     if (previousPage.current === page) return;
-    const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
-    const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
-    const attribution = readAttribution(visitorId, sessionId, page);
+    const attribution = trackedAttribution(page);
+    if (!attribution) return;
     const base = {
-      visitorId,
-      sessionId,
+      visitorId: attribution.visitorId,
+      sessionId: attribution.sessionId,
       page,
       previousPage: previousPage.current,
       pageTitle: document.title,
-      referrer: document.referrer,
+      referrer: safeTrafficUrl(document.referrer),
       timestamp: new Date().toISOString(),
       language: document.documentElement.lang || navigator.language,
       screen: `${window.screen.width}x${window.screen.height}`,
@@ -133,7 +142,7 @@ export default function AnalyticsTracker() {
     if (pathname?.includes('/products/')) sendEvent({...base, type: 'product_view'});
     if (pathname?.includes('/checkout')) sendEvent({...base, type: 'checkout_start'});
     previousPage.current = page;
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   useEffect(() => {
     if (pathname?.startsWith('/admin')) return undefined;
@@ -144,10 +153,10 @@ export default function AnalyticsTracker() {
       if (!link) return;
       const text = link.textContent?.trim().slice(0, 120) || '';
       const targetKind = safeLinkTarget(link);
-      const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
-      const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
       const page = window.location.pathname;
-      const attribution = readAttribution(visitorId, sessionId, page);
+      const attribution = trackedAttribution(page);
+      if (!attribution) return;
+      const {visitorId, sessionId} = attribution;
 
       if (targetKind === 'whatsapp') {
         const placement = whatsappPlacement(link);

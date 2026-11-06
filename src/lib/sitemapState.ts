@@ -14,6 +14,7 @@ export type SitemapRunResult = {
   finishedAt: string;
   durationMs: number;
   success: boolean;
+  validationPassed?: boolean;
   dryRun: boolean;
   changed: boolean;
   generated: boolean;
@@ -101,11 +102,12 @@ export async function finishSitemapRun(token: string, result: SitemapRunResult, 
     const state = stored || emptyState;
     if (state.lock?.token !== token) return state;
     finished = true;
+    const clearDirty = result.success && !result.dryRun && state.dirtyAt <= result.startedAt;
     return {
       ...state,
-      dirtyAt: result.success && !result.dryRun ? '' : state.dirtyAt,
-      dirtyReason: result.success && !result.dryRun ? '' : state.dirtyReason,
-      snapshot: result.success && !result.dryRun && snapshot ? snapshot : state.snapshot,
+      dirtyAt: clearDirty ? '' : state.dirtyAt,
+      dirtyReason: clearDirty ? '' : state.dirtyReason,
+      snapshot: (result.validationPassed ?? result.success) && !result.dryRun && snapshot ? snapshot : state.snapshot,
       lastRun: result,
       lastSuccessfulGoogleSubmissionAt: result.googleSubmission.success
         ? result.finishedAt

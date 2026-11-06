@@ -1,8 +1,8 @@
-import {locales, pathnames} from '@/i18n/routing';
+import {locales, pathnames, type Locale} from '@/i18n/routing';
 import {listAdminProducts} from '@/lib/backendStore';
 import {getAllBlogArticles} from '@/lib/blogFeed';
 import {getAllNewsArticles, isIndexableNewsTaxonomy} from '@/lib/newsFeed';
-import {productSlugs, siteUrl} from '@/lib/site';
+import {productIndexLocales, productSlugs, siteUrl} from '@/lib/site';
 import {
   chunkSitemapEntries,
   isIndexableRecord,
@@ -14,7 +14,8 @@ import {
 
 const STATIC_PAGE_LASTMOD = '2026-07-08';
 const FALLBACK_PRODUCT_LASTMOD = '2026-06-24';
-const PRODUCT_TEMPLATE_LASTMOD = '2026-08-08';
+const PRODUCT_TEMPLATE_LASTMOD = '2026-11-06';
+const englishLocales = ['en'] as const;
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -25,16 +26,15 @@ function normalizeLastmod(value: string, fallback: string) {
   return Number.isNaN(date.getTime()) ? fallback : date.toISOString().slice(0, 10);
 }
 
-function localizedAlternates(path: string) {
+function localizedAlternates(path: string, targetLocales: readonly Locale[]) {
   return {
-    ...Object.fromEntries(locales.map((locale) => [locale, `${siteUrl}/${locale}${path}`])),
+    ...Object.fromEntries(targetLocales.map((locale) => [locale, `${siteUrl}/${locale}${path}`])),
     'x-default': `${siteUrl}/en${path}`
   };
 }
 
-function localizedEntries(section: SitemapSection, path: string, lastModified: string, onlyEnglish = false): SitemapEntry[] {
-  const targetLocales = onlyEnglish ? ['en'] as const : locales;
-  const alternates = onlyEnglish ? {'en': `${siteUrl}/en${path}`, 'x-default': `${siteUrl}/en${path}`} : localizedAlternates(path);
+function localizedEntries(section: SitemapSection, path: string, lastModified: string, targetLocales: readonly Locale[] = locales): SitemapEntry[] {
+  const alternates = localizedAlternates(path, targetLocales);
   return targetLocales.map((locale) => ({
     section,
     url: `${siteUrl}/${locale}${path}`,
@@ -69,13 +69,13 @@ export async function buildSitemapEntries() {
     'pages',
     String(path),
     STATIC_PAGE_LASTMOD,
-    englishOnlySupportPaths.has(String(path))
+    englishOnlySupportPaths.has(String(path)) ? englishLocales : locales
   ));
 
   const newsLastmod = newestDate(newsArticles.map((article) => article.updatedAt || article.date), STATIC_PAGE_LASTMOD);
   const blogLastmod = newestDate(blogArticles.map((article) => article.updatedAt || article.date), STATIC_PAGE_LASTMOD);
-  pages.push(...localizedEntries('pages', '/news', newsLastmod, true));
-  pages.push(...localizedEntries('pages', '/blog', blogLastmod, true));
+  pages.push(...localizedEntries('pages', '/news', newsLastmod, englishLocales));
+  pages.push(...localizedEntries('pages', '/blog', blogLastmod, englishLocales));
 
   const adminBySlug = new Map(adminProducts.map((product) => [product.slug, product]));
   const productEntries = productSlugs.flatMap((slug) => {
@@ -85,12 +85,12 @@ export async function buildSitemapEntries() {
       'products',
       `/products/${slug}`,
       newestDate([adminProduct?.updatedAt || '', PRODUCT_TEMPLATE_LASTMOD], FALLBACK_PRODUCT_LASTMOD),
-      true
+      productIndexLocales
     );
   });
 
-  const newsEntries = newsArticles.flatMap((article) => localizedEntries('news', `/news/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
-  const blogEntries = blogArticles.flatMap((article) => localizedEntries('blog', `/blog/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), true));
+  const newsEntries = newsArticles.flatMap((article) => localizedEntries('news', `/news/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), englishLocales));
+  const blogEntries = blogArticles.flatMap((article) => localizedEntries('blog', `/blog/${article.slug}`, normalizeLastmod(article.updatedAt || article.date, article.date), englishLocales));
 
   const categoryArticles = new Map<string, Map<string, string>>();
   const tagArticles = new Map<string, Map<string, string>>();
@@ -112,10 +112,10 @@ export async function buildSitemapEntries() {
   const categoryEntries = [
     ...Array.from(categoryArticles.entries())
       .filter(([, articles]) => isIndexableNewsTaxonomy(articles.size))
-      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/category/${slug}`, newestDate([...articles.values()], newsLastmod), true)),
+      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/category/${slug}`, newestDate([...articles.values()], newsLastmod), englishLocales)),
     ...Array.from(tagArticles.entries())
       .filter(([, articles]) => isIndexableNewsTaxonomy(articles.size))
-      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate([...articles.values()], newsLastmod), true))
+      .flatMap(([slug, articles]) => localizedEntries('categories', `/news/tag/${slug}`, newestDate([...articles.values()], newsLastmod), englishLocales))
   ];
 
   return dedupeEntries([...pages, ...productEntries, ...newsEntries, ...blogEntries, ...categoryEntries]);

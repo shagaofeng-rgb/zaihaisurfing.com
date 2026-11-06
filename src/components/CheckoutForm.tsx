@@ -63,6 +63,14 @@ function readJson<T>(storage: Storage, key: string): T | null {
 }
 
 function attributionSnapshot() {
+  try {
+    return readCheckoutAttribution();
+  } catch {
+    return null;
+  }
+}
+
+function readCheckoutAttribution() {
   const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
   const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
   const touch = classifyTraffic({
@@ -104,13 +112,17 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   useEffect(() => {
     const storageKey = `zaihai-checkout-idem-${productSlug}-${quantity}`;
-    const existing = window.sessionStorage.getItem(storageKey);
-    if (existing) {
-      setClientRequestId(existing);
-      return;
-    }
     const next = `idem-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
-    window.sessionStorage.setItem(storageKey, next);
+    try {
+      const existing = window.sessionStorage.getItem(storageKey);
+      if (existing) {
+        setClientRequestId(existing);
+        return;
+      }
+      window.sessionStorage.setItem(storageKey, next);
+    } catch {
+      // Keep the same request ID in memory until the customer leaves this page.
+    }
     setClientRequestId(next);
   }, [productSlug, quantity]);
 
@@ -284,7 +296,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || !clientRequestId) return;
     setIsSubmitting(true);
     setStatus('Submitting project order details...');
     const formData = new FormData(event.currentTarget);
@@ -335,10 +347,10 @@ export default function CheckoutForm({locale, productSlug, productName, productI
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(body)
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setStatus(result.message || 'Order submission failed. Please check required fields.');
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null);
+    if (!response?.ok || !result?.order?.id) {
+      setStatus(result?.message || 'Unable to confirm the order. Please try again.');
       setIsSubmitting(false);
       return;
     }
@@ -348,15 +360,15 @@ export default function CheckoutForm({locale, productSlug, productName, productI
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({orderId: result.order.id, paymentMethod, scene: paymentScene, locale, checkoutUrl: window.location.href})
-      });
-      const paymentResult = await paymentResponse.json();
-      if (!paymentResponse.ok) {
-        setStatus(paymentResult.message || 'Oceanpayment request failed. Please contact ZAIHAI sales.');
+      }).catch(() => null);
+      const paymentResult = await paymentResponse?.json().catch(() => null);
+      if (!paymentResponse?.ok || !paymentResult?.oceanpayment) {
+        setStatus(paymentResult?.message || 'Oceanpayment could not open. Please try again or contact ZAIHAI sales.');
         setIsSubmitting(false);
         return;
       }
       if (paymentResult.status === 'waiting_for_credentials') {
-        setStatus(`Order ${result.order.id} saved. Oceanpayment credentials are not configured yet: ${paymentResult.oceanpayment.requiredEnv.join(', ')}.`);
+        setStatus(`Order ${result.order.id} saved. Please contact ZAIHAI sales to arrange payment.`);
         setIsSubmitting(false);
         return;
       }
@@ -380,7 +392,7 @@ export default function CheckoutForm({locale, productSlug, productName, productI
   }
 
   return (
-    <form className="shopline-checkout" onSubmit={handleSubmit} aria-label="Project order form">
+    <form className="shopline-checkout" method="post" onSubmit={handleSubmit} aria-label="Project order form">
       <Script
         id="oceanpayment-core-sdk"
         src="https://secure.oceanpayment.com/pub/js/op.js"
@@ -574,7 +586,8 @@ export default function CheckoutForm({locale, productSlug, productName, productI
           {discount ? <div><dt>Discount</dt><dd>- USD {discount.toLocaleString()}</dd></div> : null}
           <div className="summary-total"><dt>Estimated total</dt><dd><small>USD</small> {finalTotal.toLocaleString()}</dd></div>
         </dl>
-        <button className="button primary checkout-pay-button" type="submit" disabled={isSubmitting}>
+        <noscript><p>Enable JavaScript for secure checkout or <a href={`/${locale}/contact`}>contact ZAIHAI sales</a>.</p></noscript>
+        <button className="button primary checkout-pay-button" type="submit" disabled={isSubmitting || !clientRequestId}>
           {isSubmitting ? 'Processing...' : 'Pay now'}
         </button>
         <p className="form-note">{status || 'After submission, ZAIHAI sales will confirm final quotation, logistics and payment method before any charge.'}</p>

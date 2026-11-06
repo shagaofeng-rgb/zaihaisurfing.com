@@ -42,7 +42,24 @@
   "factory": {"h1": "Qualität und Exportunterstützung", "intro": "Wir koordinieren Produktion, Prüfung, Verpackung und Exportunterstützung je nach Projektanforderung.", "items": "OEM/ODM, Batteriesicherheit, Wasserdichtigkeitsprüfung, Verpackung und weltweite Lieferunterstützung."},
   "projects": {"h1": "Projekte und Anwendungsfälle", "intro": "Sehen Sie, wie ZAIHAI Produkte Resorts, Vermietungen, Wasserparks und Händlerprojekte unterstützen."},
   "blog": {"h1": "Kaufberater und News", "intro": "Informationen für internationale Käufer von elektrischen Surfboards, Go-Kart-Booten und Wassersportausrüstung."},
-  "contact": {"h1": "Kontaktieren Sie ZAIHAI SURFING", "intro": "Kontaktieren Sie unser Team für Angebote, Produktvideos, OEM/ODM, Versandunterstützung und Händlerkooperation.", "mapTitle": "Quzhou, Zhejiang, China", "viewMap": "Auf Google Maps ansehen"},
+  "contact": {
+    "h1": "Kontaktieren Sie ZAIHAI SURFING",
+    "intro": "Kontaktieren Sie unser Team für Angebote, Produktvideos, OEM/ODM, Versandunterstützung und Händlerkooperation.",
+    "mapTitle": "Quzhou, Zhejiang, China",
+    "viewMap": "Auf Google Maps ansehen",
+    "received": "Vielen Dank. Ihre Anfrage ist eingegangen.",
+    "invalid": "Bitte prüfen Sie die Pflichtfelder und versuchen Sie es erneut.",
+    "rateLimited": "Zu viele Anfragen. Bitte warten Sie einige Minuten und versuchen Sie es erneut.",
+    "retry": "Ihre Anfrage konnte nicht bestätigt werden. Bitte versuchen Sie es erneut oder schreiben Sie an info@zaihaisurfing.com.",
+    "reference": "Referenz {id}",
+    "optional": "optional",
+    "sending": "Wird gesendet…",
+    "directContact": "Direkter Kontakt",
+    "deliveryPrompt": "Teilen Sie uns mit, wie Sie das Gerät einsetzen möchten und wohin es geliefert werden soll.",
+    "selectBuyer": "Käufertyp auswählen",
+    "selectProduct": "Produkt auswählen",
+    "moreDetails": "Weitere Projektdetails"
+  },
   "productNames": {"x1": "ZAIHAI X1 Electric Surfboard", "x1-pro": "ZAIHAI X1 Pro Electric Surfboard", "rage-shark-x": "Rage Shark X Electric Go-Kart Boat", "p1": "ZAIHAI P1 Fuel-Powered Surfboard", "p1-pro": "ZAIHAI P1 Pro Fuel-Powered Surfboard"},
   "alt": {"hero": "ZAIHAI Electric Surfboard Fahrer auf dem Wasser", "logo": "ZAIHAI SURFING Logo", "x1": "ZAIHAI X1 Electric Surfboard Produktbild", "x1-pro": "ZAIHAI X1 Pro Electric Surfboard Produktbild", "rage-shark-x": "Rage Shark X Electric Go-Kart Boat Produktbild", "p1": "ZAIHAI P1 Fuel-Powered Surfboard Produktbild", "p1-pro": "ZAIHAI P1 Pro Fuel-Powered Surfboard Produktbild"}
 }

@@ -1,11 +1,13 @@
-import {products, productSlugs, siteUrl} from '@/lib/site';
+import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
+import {productSlugs, siteUrl} from '@/lib/site';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export function GET() {
-  const productLines = productSlugs
-    .map((slug) => `- ${products[slug].name}: ${products[slug].category}, ${products[slug].price}, details ${siteUrl}/en/products/${slug}`)
+export async function GET() {
+  const catalog = await listRuntimeCatalogProducts(productSlugs);
+  const productLines = catalog
+    .map((product) => `- ${product.name}: ${product.category}, ${product.price}, details ${siteUrl}/en/products/${product.slug}`)
     .join('\n');
 
   const body = `# ZAIHAI SURFING
@@ -37,7 +39,7 @@ ${productLines}
   return new Response(body, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600'
+      'Cache-Control': 'public, max-age=60, s-maxage=60'
     }
   });
 }

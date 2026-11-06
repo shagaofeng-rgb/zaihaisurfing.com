@@ -1,12 +1,14 @@
-import {products, productDetailedSpecs, productSlugs, siteUrl} from '@/lib/site';
+import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
+import {productDetailedSpecs, productSlugs, siteUrl, type ProductSlug} from '@/lib/site';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export function GET() {
-  const productSections = productSlugs
-    .map((slug) => {
-      const product = products[slug];
+export async function GET() {
+  const catalog = await listRuntimeCatalogProducts(productSlugs);
+  const productSections = catalog
+    .map((product) => {
+      const slug = product.slug as ProductSlug;
       const specs = productDetailedSpecs[slug].map((row) => `  - ${row.label}: ${row.value}`).join('\n');
 
       return `## ${product.name}
@@ -40,7 +42,7 @@ ${productSections}
   return new Response(body, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600'
+      'Cache-Control': 'public, max-age=60, s-maxage=60'
     }
   });
 }

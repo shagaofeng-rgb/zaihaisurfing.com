@@ -2,11 +2,13 @@ import {notFound} from 'next/navigation';
 import AdminPagination from '@/components/AdminPagination';
 import AdminShell from '@/components/AdminShell';
 import AdminTimeFilter from '@/components/AdminTimeFilter';
+import {requireAdminSession} from '@/lib/adminAuth';
 import {formatAdminDate} from '@/lib/adminDataViews';
 import {paginate, parseAdminPagination} from '@/lib/adminPagination';
 import {isAdminTimestampInRange, parseAdminTimeFilter} from '@/lib/adminTimeFilter';
 import {zhLeadStatus} from '@/lib/adminZh';
 import {getCustomerLeadDetail} from '@/lib/backendStore';
+import {readInquiryNotification} from '@/lib/inquiryNotifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,8 +33,9 @@ export default async function AdminLeadDetailPage({
   params: Promise<{leadId: string}>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requireAdminSession();
   const [{leadId}, query] = await Promise.all([params, searchParams]);
-  const detail = await getCustomerLeadDetail(decodeURIComponent(leadId));
+  const [detail, notification] = await Promise.all([getCustomerLeadDetail(leadId), readInquiryNotification(leadId)]);
   if (!detail) notFound();
   const timeFilter = parseAdminTimeFilter(query);
   const {page, perPage} = parseAdminPagination(query);
@@ -61,6 +64,12 @@ export default async function AdminLeadDetailPage({
         <dl className="admin-detail-list">
           <div><dt>姓名</dt><dd>{fieldValue(lead.name)}</dd></div>
           <div><dt>最后活跃</dt><dd>{formatAdminDate(lead.lastActiveTime)}</dd></div>
+          {notification ? <>
+            <div><dt>询价编号</dt><dd>{leadId}</dd></div>
+            <div><dt>邮件通知</dt><dd>{
+              {sent: '邮件服务已接受', sending: '等待核对', failed: '发送失败', skipped: '未发出', unknown: '等待核对'}[notification.status]
+            } · {formatAdminDate(notification.updatedAt)} · 尝试 {notification.attempts} 次</dd></div>
+          </> : null}
           <div><dt>邮箱</dt><dd>{fieldValue(lead.email)}</dd></div>
           <div><dt>电话</dt><dd>{fieldValue(lead.phone)}</dd></div>
           <div><dt>公司</dt><dd>{fieldValue(lead.company)}</dd></div>

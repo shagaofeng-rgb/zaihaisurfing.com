@@ -1,8 +1,20 @@
+import {unstable_cache} from 'next/cache';
+import {cache} from 'react';
 import type {AdminStore} from '@/lib/backendStore';
 import {readStoreObject} from '@/lib/durableStore';
 import {products, type CheckoutProductSlug} from '@/lib/site';
 
 const STORE_FILE = 'admin-store.json';
+export const PUBLIC_CATALOG_CACHE_TAG = 'zaihai-public-catalog';
+
+async function readCatalog() {
+  return (await readStoreObject<AdminStore>(STORE_FILE))?.products || [];
+}
+
+const readPublicCatalog = cache(unstable_cache(readCatalog, ['public-catalog-v1'], {
+  revalidate: 60,
+  tags: [PUBLIC_CATALOG_CACHE_TAG]
+}));
 
 export type RuntimeCatalogProduct = {
   slug: CheckoutProductSlug;
@@ -27,10 +39,9 @@ function usd(amount: number) {
   return `USD ${amount.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
 }
 
-export async function getRuntimeCatalogProduct(slug: CheckoutProductSlug): Promise<RuntimeCatalogProduct | null> {
+function catalogProduct(slug: CheckoutProductSlug, catalog: AdminStore['products']): RuntimeCatalogProduct | null {
   const fallback = products[slug];
-  const store = await readStoreObject<AdminStore>(STORE_FILE).catch(() => null);
-  const adminProduct = store?.products.find((product) => product.slug === slug);
+  const adminProduct = catalog.find((product) => product.slug === slug);
   if (adminProduct && adminProduct.status !== 'published') return null;
   if (!adminProduct) {
     return {
@@ -68,7 +79,16 @@ export async function getRuntimeCatalogProduct(slug: CheckoutProductSlug): Promi
   };
 }
 
+export async function getRuntimeCatalogProduct(slug: CheckoutProductSlug) {
+  return catalogProduct(slug, await readCatalog());
+}
+
+export async function getPublicCatalogProduct(slug: CheckoutProductSlug) {
+  return catalogProduct(slug, await readPublicCatalog());
+}
+
 export async function listRuntimeCatalogProducts(slugs: readonly CheckoutProductSlug[]) {
-  const rows = await Promise.all(slugs.map((slug) => getRuntimeCatalogProduct(slug)));
+  const catalog = await readPublicCatalog();
+  const rows = slugs.map((slug) => catalogProduct(slug, catalog));
   return rows.filter((row): row is RuntimeCatalogProduct => Boolean(row));
 }

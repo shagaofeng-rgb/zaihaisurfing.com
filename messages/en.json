@@ -134,7 +134,19 @@
     "h1": "Contact ZAIHAI SURFING",
     "intro": "Contact our sales team for quotation, product videos, OEM/ODM customization, shipping support and distributor cooperation.",
     "mapTitle": "Quzhou, Zhejiang, China",
-    "viewMap": "View on Google Maps"
+    "viewMap": "View on Google Maps",
+    "received": "Thank you. Your inquiry has been received.",
+    "invalid": "Please check the required fields and try again.",
+    "rateLimited": "Too many submissions. Please wait a few minutes and try again.",
+    "retry": "We couldn’t confirm your inquiry. Please retry or email info@zaihaisurfing.com.",
+    "reference": "Reference {id}",
+    "optional": "optional",
+    "sending": "Sending…",
+    "directContact": "Direct contact",
+    "deliveryPrompt": "Tell us how the equipment will be used and where it will be delivered.",
+    "selectBuyer": "Select buyer type",
+    "selectProduct": "Select product",
+    "moreDetails": "More project details"
   },
   "productNames": {
     "x1": "ZAIHAI X1 Electric Surfboard",

@@ -1,70 +1,14 @@
 import {cronAuthorized} from '@/lib/cronAuth';
+import {runContactFormHealthCheck} from '@/lib/contactFormHealth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) {
     return Response.json({ok: false, error: 'Unauthorized'}, {status: 401});
   }
-
-  const origin = new URL(request.url).origin;
-  const checkedAt = new Date().toISOString();
-  const payload = {
-    name: 'ZAIHAI Monthly Contact Form Health Check',
-    email: 'monthly-form-check@zaihaisurfing.com',
-    phone: '+86 17621485205',
-    country: 'Automated Test',
-    company: 'ZAIHAI SURFING Website Monitor',
-    buyerType: 'Website health check',
-    product: 'Contact form email delivery test',
-    quantity: '1 monthly test',
-    targetMarket: 'Internal operations',
-    waterArea: 'N/A',
-    oem: 'No',
-    destinationPort: 'N/A',
-    message: `Automated monthly contact form test. If this email arrives at info@zaihaisurfing.com, the website form email delivery path is working. Checked at ${checkedAt}.`,
-    page: '/en/contact?form_health_check=1',
-    referrer: 'vercel-cron',
-    visitorId: 'monthly-contact-form-health-check',
-    sessionId: `monthly-contact-form-health-check-${checkedAt.slice(0, 10)}`,
-    website: ''
-  };
-
-  try {
-    const response = await fetch(`${origin}/api/contact/inquiry`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'ZAIHAI-Monthly-Contact-Form-Health-Check/1.0'
-      },
-      body: JSON.stringify(payload),
-      cache: 'no-store'
-    });
-    const result = await response.json().catch(() => ({}));
-    const emailStatus = typeof result.emailStatus === 'string' ? result.emailStatus : 'unknown';
-    const ok = response.ok && emailStatus === 'sent';
-
-    return Response.json(
-      {
-        ok,
-        checkedAt,
-        endpointStatus: response.status,
-        emailStatus,
-        inquiryId: result.id || '',
-        message: ok ? 'Monthly contact form email test sent.' : 'Monthly contact form email test did not complete successfully.',
-        result
-      },
-      {status: ok ? 200 : 500}
-    );
-  } catch (error) {
-    return Response.json(
-      {
-        ok: false,
-        checkedAt,
-        error: error instanceof Error ? error.message : 'Unknown contact form health check error'
-      },
-      {status: 500}
-    );
-  }
+  const result = await runContactFormHealthCheck();
+  return Response.json(result, {status: result.ok ? 200 : 502});
 }

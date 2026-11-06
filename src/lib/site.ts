@@ -18,6 +18,7 @@ export const siteUrl = (() => {
 
 export const productSlugs = ['x1', 'x1-pro', 'rage-shark-x', 'p1', 'p1-pro'] as const;
 export type ProductSlug = (typeof productSlugs)[number];
+export const productIndexLocales: readonly Locale[] = ['en', 'fr'];
 export const oneTimePaymentSlug = 'one-time-35' as const;
 export const checkoutProductSlugs = [...productSlugs, 'payment-test', oneTimePaymentSlug] as const;
 export type CheckoutProductSlug = (typeof checkoutProductSlugs)[number];

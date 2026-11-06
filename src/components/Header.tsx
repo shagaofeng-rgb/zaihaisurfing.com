@@ -24,7 +24,7 @@ export default async function Header({locale}: {locale: Locale}) {
   const mobileNavItems = [
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
-    {...applications, className: 'operations-only'},
+    applications,
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
     ...editorialItems,
     {href: '/about', label: copy.nav.about},
@@ -37,14 +37,6 @@ export default async function Header({locale}: {locale: Locale}) {
       <Link className="brand" href="/" aria-label="ZAIHAI SURFING home">
         <img src="/assets/home-fast-v1/brand.webp" alt="" aria-hidden="true" width="960" height="450" decoding="async" />
         <span>ZAIHAI SURFING</span>
-      </Link>
-      <MobileMenu items={mobileNavItems} />
-      <a className="mobile-header-whatsapp" aria-label="WhatsApp" data-whatsapp-placement="mobile_header" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
-        <span>WhatsApp</span><WhatsappLogoIcon className="operations-only" size={20} aria-hidden="true" />
-      </a>
-      <Link className="mobile-header-quote" href="/contact">
-        <span className="operations-secondary">{copy.nav.quote}</span>
-        <span className="operations-only">{home('quoteButton')}</span>
       </Link>
       <nav className="nav-links">
         <Link className="operations-secondary" href="/" prefetch={false}>{copy.nav.home}</Link>
@@ -76,6 +68,14 @@ export default async function Header({locale}: {locale: Locale}) {
           <ArrowRightIcon className="operations-only" size={15} aria-hidden="true" />
         </Link>
       </div>
+      <a className="mobile-header-whatsapp" aria-label="WhatsApp" data-whatsapp-placement="mobile_header" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+        <span>WhatsApp</span><WhatsappLogoIcon size={20} aria-hidden="true" />
+      </a>
+      <Link className="mobile-header-quote" href="/contact">
+        <span className="operations-secondary">{copy.nav.quote}</span>
+        <span className="operations-only">{home('quoteButton')}</span>
+      </Link>
+      <MobileMenu items={mobileNavItems} />
     </header>
   );
 }

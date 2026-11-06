@@ -2,6 +2,7 @@ import Image from 'next/image';
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import CatalogFilters from '@/components/CatalogFilters';
+import {fastCatalogImage} from '@/lib/catalogImages';
 import type {Locale} from '@/i18n/routing';
 import {productDetailedSpecs, productSlugs, type ProductSlug} from '@/lib/site';
 import {listRuntimeCatalogProducts} from '@/lib/catalogRuntime';
@@ -35,9 +36,12 @@ export default async function ProductGrid({locale}: {locale: Locale}) {
         {products.map((product) => {
           const slug = product.slug as ProductSlug;
           const model = productPresentation[slug];
+          const fastImage = fastCatalogImage(product.image);
+          const sizes = '(max-width: 760px) 44vw, (max-width: 1100px) 46vw, 32vw';
           return <article className="catalog-product-card" id={`quick-${slug}`} data-product-type={model.category} key={slug}>
             <Link className="catalog-image-wrap" href={`/products/${slug}`} aria-label={title(slug)}>
-              <Image src={product.image} unoptimized={!product.image.startsWith('/') || product.image.startsWith('//')} alt={alt(slug)} fill sizes="(max-width: 760px) 44vw, (max-width: 1100px) 46vw, 32vw" />
+              {fastImage ? <img {...fastImage} alt={alt(slug)} sizes={sizes} className="catalog-fast-photo" loading="lazy" />
+                : <Image src={product.image} unoptimized={!product.image.startsWith('/') || product.image.startsWith('//')} alt={alt(slug)} fill sizes={sizes} />}
             </Link>
             <div>
               <p className="eyebrow">{model.type}</p>

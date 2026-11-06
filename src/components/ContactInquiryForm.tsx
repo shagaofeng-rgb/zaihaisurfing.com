@@ -1,10 +1,17 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
+import {useTranslations} from 'next-intl';
+import type {Locale} from '@/i18n/routing';
+import type {InquiryFeedback} from '@/lib/contactInquiry';
 import {classifyTraffic, isMeaningfulMarketingTouch, type TrafficTouch} from '@/lib/trafficAttribution';
 
 type ContactInquiryFormProps = {
+  locale: Locale;
+  submissionKey: string;
+  productSlug?: string;
   selectedProduct?: string;
+  initialFeedback?: {status: InquiryFeedback; reference?: string};
   copy: {
     fields: {
       name: string;
@@ -62,45 +69,59 @@ function attributionSnapshot(visitorId: string, sessionId: string) {
   };
 }
 
-export default function ContactInquiryForm({copy, selectedProduct}: ContactInquiryFormProps) {
-  const [feedback, setFeedback] = useState<{message: string; tone: 'success' | 'error'} | null>(null);
+function optionalAttribution() {
+  try {
+    const visitorId = getId(window.localStorage, 'zaihai_visitor_id', 'v');
+    const sessionId = getId(window.sessionStorage, 'zaihai_session_id', 's');
+    return {visitorId, sessionId, attribution: attributionSnapshot(visitorId, sessionId)};
+  } catch {
+    return {};
+  }
+}
+
+export default function ContactInquiryForm({copy, locale, submissionKey, productSlug, selectedProduct, initialFeedback}: ContactInquiryFormProps) {
+  const t = useTranslations('contact');
+  const [feedback, setFeedback] = useState(initialFeedback);
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
+  const statusRef = useRef<HTMLParagraphElement>(null);
+  const keyRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (feedback && feedback !== initialFeedback) statusRef.current?.focus();
+  }, [feedback, initialFeedback]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
-    setFeedback(null);
+    setFeedback(undefined);
     const form = event.currentTarget;
-    const formData = new FormData(form);
-    const body = Object.fromEntries(formData.entries());
 
     try {
       const response = await fetch('/api/contact/inquiry', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          ...body,
-          visitorId: getId(window.localStorage, 'zaihai_visitor_id', 'v'),
-          sessionId: getId(window.sessionStorage, 'zaihai_session_id', 's'),
+          ...Object.fromEntries(new FormData(form)),
+          ...optionalAttribution(),
           page: window.location.pathname,
-          referrer: document.referrer,
-          attribution: attributionSnapshot(
-            getId(window.localStorage, 'zaihai_visitor_id', 'v'),
-            getId(window.sessionStorage, 'zaihai_session_id', 's')
-          )
+          referrer: document.referrer.split(/[?#]/)[0]
         })
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setFeedback({message: result.message || 'Submission failed. Please try again.', tone: 'error'});
+      if (!response.ok || result.ok !== true) {
+        setFeedback({status: response.status === 429 ? 'rateLimited' : response.status < 500 ? 'invalid' : 'retry'});
         return;
       }
       form.reset();
-      setFeedback({message: result.message || 'Thank you. We received your request.', tone: 'success'});
+      if (keyRef.current) keyRef.current.value = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+      setFeedback({status: 'received', reference: typeof result.id === 'string' ? result.id : undefined});
     } catch {
-      setFeedback({message: 'Network error. Please try again or email info@zaihaisurfing.com.', tone: 'error'});
+      setFeedback({status: 'retry'});
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
@@ -108,11 +129,21 @@ export default function ContactInquiryForm({copy, selectedProduct}: ContactInqui
   return (
     <form
       className="inquiry-form"
+      method="post"
+      action="/api/contact/inquiry"
       onSubmit={handleSubmit}
       toolname="submit_zaihai_project_inquiry"
       tooldescription="Send a commercial inquiry to ZAIHAI SURFING for electric surfboards, fuel surfboards, go-kart boats, distributor projects or resort rental fleets."
     >
-      {feedback ? <p className="form-status full" data-tone={feedback.tone} role={feedback.tone === 'error' ? 'alert' : 'status'}>{feedback.message}</p> : null}
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="productSlug" value={productSlug || ''} />
+      <input type="hidden" name="submissionKey" ref={keyRef} defaultValue={submissionKey} />
+      {feedback ? (
+        <p ref={statusRef} tabIndex={-1} className="form-status full" data-tone={feedback.status === 'received' ? 'success' : 'error'}
+          role={feedback.status === 'received' ? 'status' : 'alert'}>
+          {t(feedback.status)}{feedback.reference ? <> {t('reference', {id: feedback.reference})}</> : null}
+        </p>
+      ) : null}
       <label>
         <span>{copy.fields.name}</span>
         <input name="name" required placeholder="Your name" autoComplete="name" toolparamdescription="Buyer's full name." />
@@ -122,8 +153,8 @@ export default function ContactInquiryForm({copy, selectedProduct}: ContactInqui
         <input name="email" required type="email" placeholder="name@company.com" autoComplete="email" toolparamdescription="Buyer's email address for the quotation reply." />
       </label>
       <label>
-        <span>{copy.fields.phone}</span>
-        <input name="phone" required type="tel" placeholder="+1 555 000 0000" autoComplete="tel" toolparamdescription="Phone or WhatsApp number for sales follow-up." />
+        <span>{copy.fields.phone} ({t('optional')})</span>
+        <input name="phone" type="tel" placeholder="+1 555 000 0000" autoComplete="tel" toolparamdescription="Phone or WhatsApp number for sales follow-up." />
       </label>
       <label>
         <span>{copy.fields.country}</span>
@@ -132,14 +163,14 @@ export default function ContactInquiryForm({copy, selectedProduct}: ContactInqui
       <label>
         <span>{copy.fields.buyerType}</span>
         <select name="buyerType" required defaultValue="" toolparamdescription="Buyer type, such as resort, distributor, rental fleet, yacht club or water park.">
-          <option value="" disabled>Select buyer type</option>
+          <option value="" disabled>{t('selectBuyer')}</option>
           {copy.buyerTypes.map((item) => <option value={item} key={item}>{item}</option>)}
         </select>
       </label>
       <label>
         <span>{copy.fields.product}</span>
         <select name="product" required defaultValue={selectedProduct || ''} toolparamdescription="Interested ZAIHAI product line or model.">
-          <option value="" disabled>Select product</option>
+          <option value="" disabled>{t('selectProduct')}</option>
           {copy.productOptions.map((item) => <option value={item} key={item}>{item}</option>)}
         </select>
       </label>
@@ -148,7 +179,7 @@ export default function ContactInquiryForm({copy, selectedProduct}: ContactInqui
         <textarea name="message" required rows={5} placeholder="Quantity, application scenario, shipment plan, branding needs..." toolparamdescription="Project details including quantity, application scenario, shipment plan, branding or customization needs." />
       </label>
       <details className="form-more full">
-        <summary>More Project Details</summary>
+        <summary>{t('moreDetails')}</summary>
         <div className="advanced-fields">
           <label>
             <span>{copy.fields.company}</span>
@@ -178,7 +209,7 @@ export default function ContactInquiryForm({copy, selectedProduct}: ContactInqui
       </details>
       <input name="website" tabIndex={-1} autoComplete="off" className="form-trap" aria-hidden="true" />
       <button className="button primary" disabled={busy} type="submit">
-        {busy ? 'Sending...' : copy.fields.submit}
+        {busy ? t('sending') : copy.fields.submit}
       </button>
     </form>
   );

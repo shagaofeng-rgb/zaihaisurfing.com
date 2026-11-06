@@ -1,19 +1,20 @@
+import {createHash, randomUUID} from 'node:crypto';
 import {revalidateTag} from 'next/cache';
+import {isLocale} from '@/i18n/routing';
 import {ADMIN_BUSINESS_DATA_CACHE_TAG} from '@/lib/adminBusinessData';
-import {appendAnalyticsEvent} from '@/lib/commerceStore';
-import {sendContactInquiryEmail} from '@/lib/emailService';
+import {appendAnalyticsEventOnce} from '@/lib/commerceStore';
+import {parseContactInquiry, validContactInquiry, type InquiryFeedback} from '@/lib/contactInquiry';
+import {durableStoreConfigured} from '@/lib/durableStore';
+import {deliverInquiryNotification} from '@/lib/inquiryNotifications';
 import {checkRateLimit, clientIp} from '@/lib/rateLimit';
-import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
+import {productSlugs} from '@/lib/site';
+import {classifyTraffic, compactAttribution, safeTrafficUrl} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function clean(value: unknown, limit = 300) {
   return String(value || '').trim().replace(/\s+/g, ' ').slice(0, limit);
-}
-
-function textarea(value: unknown, limit = 1200) {
-  return String(value || '').trim().slice(0, limit);
 }
 
 function detectDevice(userAgent = '') {
@@ -41,54 +42,82 @@ function detectOs(userAgent = '') {
 }
 
 export async function POST(request: Request) {
+  const nativeForm = request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded') ?? false;
+  let locale = 'en';
+  let productSlug = '';
+  function reply(feedback: InquiryFeedback, status: number, message: string, reference = '', emailStatus?: string) {
+    if (nativeForm) {
+      const query = new URLSearchParams({inquiry: feedback});
+      if (productSlug) query.set('product', productSlug);
+      if (reference) query.set('ref', reference);
+      return new Response(null, {status: 303, headers: {
+        Location: `/${locale}/contact?${query}#inquiry-form`,
+        'Cache-Control': 'no-store'
+      }});
+    }
+    return Response.json({ok: feedback === 'received', feedback, message, id: reference, emailStatus}, {
+      status, headers: {'Cache-Control': 'no-store'}
+    });
+  }
+
+  if (request.headers.get('sec-fetch-site') === 'cross-site') {
+    return reply('invalid', 403, 'Please open the inquiry form on our website.');
+  }
   if (!checkRateLimit(`contact-inquiry:${clientIp(request)}`, 8, 10 * 60_000)) {
-    return Response.json({message: 'Too many inquiries. Please try again later.'}, {status: 429});
+    return reply('rateLimited', 429, 'Too many inquiries. Please try again later.');
   }
 
   try {
-    const payload = await request.json().catch(() => ({}));
+    if (Number(request.headers.get('content-length')) > 24_000) {
+      return reply('invalid', 413, 'The inquiry is too long.');
+    }
+    const raw = await request.text();
+    if (raw.length > 24_000) return reply('invalid', 413, 'The inquiry is too long.');
+    let payload: Record<string, unknown>;
+    try {
+      const body = nativeForm ? Object.fromEntries(new URLSearchParams(raw)) : JSON.parse(raw);
+      if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid body');
+      payload = body;
+    } catch {
+      return reply('invalid', 400, 'Please complete the required fields.');
+    }
+    const requestedLocale = clean(payload.locale, 8);
+    if (isLocale(requestedLocale)) locale = requestedLocale;
+    productSlug = productSlugs.find((slug) => slug === payload.productSlug) || '';
     if (clean(payload.website, 80)) {
-      return Response.json({ok: true, message: 'Thank you. We received your request.'});
+      return reply('received', 200, 'Thank you. We received your request.');
     }
 
-    const inquiry = {
-      name: clean(payload.name, 120),
-      email: clean(payload.email, 160).toLowerCase(),
-      phone: clean(payload.phone, 80),
-      country: clean(payload.country, 120),
-      company: clean(payload.company, 160),
-      buyerType: clean(payload.buyerType, 120),
-      product: clean(payload.product, 160),
-      quantity: clean(payload.quantity, 80),
-      targetMarket: clean(payload.targetMarket, 160),
-      waterArea: clean(payload.waterArea, 160),
-      oem: clean(payload.oem, 200),
-      destinationPort: clean(payload.destinationPort, 160),
-      message: textarea(payload.message)
-    };
-
-    if (!inquiry.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiry.email) || !inquiry.phone || !inquiry.country || !inquiry.buyerType || !inquiry.product || !inquiry.message) {
-      return Response.json({message: 'Please complete the required fields.'}, {status: 400});
+    const inquiry = parseContactInquiry(payload);
+    if (!validContactInquiry(inquiry)) {
+      return reply('invalid', 400, 'Please complete the required fields.');
+    }
+    if (process.env.VERCEL_ENV === 'production' && !durableStoreConfigured()) {
+      console.error('Inquiry storage is not configured');
+      return reply('retry', 503, 'Inquiry submission failed. Please try again.');
     }
 
     const userAgent = request.headers.get('user-agent') || '';
-    const eventId = `contact-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-    const attribution = compactAttribution(payload.attribution) || {
-      visitorId: clean(payload.visitorId || 'contact-inquiry', 80),
-      sessionId: clean(payload.sessionId || eventId, 80),
-      firstTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)}),
-      lastTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)}),
-      sessionTouch: classifyTraffic({url: clean(payload.page || '/contact', 240), referrer: clean(payload.referrer, 240)})
+    const key = clean(payload.submissionKey, 64) || randomUUID();
+    const eventId = `contact-${createHash('sha256').update(JSON.stringify([key, inquiry])).digest('hex').slice(0, 32)}`;
+    const tracked = compactAttribution(payload.attribution);
+    const visitorId = clean(payload.visitorId, 80) || tracked?.visitorId || eventId;
+    const sessionId = clean(payload.sessionId, 80) || tracked?.sessionId || eventId;
+    const page = safeTrafficUrl(payload.page) || `/${locale}/contact`;
+    const referrer = safeTrafficUrl(payload.referrer);
+    const touch = classifyTraffic({url: page, referrer, locale});
+    const attribution = tracked || {
+      visitorId, sessionId, firstTouch: touch, lastTouch: touch, sessionTouch: touch
     };
-    await appendAnalyticsEvent({
+    const added = await appendAnalyticsEventOnce({
       id: eventId,
       type: 'contact_inquiry',
-      visitorId: clean(payload.visitorId || 'contact-inquiry', 80),
-      sessionId: clean(payload.sessionId || eventId, 80),
-      page: clean(payload.page || '/contact', 240),
+      visitorId,
+      sessionId,
+      page,
       pageTitle: 'Contact inquiry',
-      referrer: clean(payload.referrer, 240),
-      country: inquiry.country || request.headers.get('x-vercel-ip-country') || 'Unknown',
+      referrer,
+      country: request.headers.get('x-vercel-ip-country') || 'Unknown',
       city: request.headers.get('x-vercel-ip-city') || '',
       device: detectDevice(userAgent),
       browser: detectBrowser(userAgent),
@@ -96,54 +125,23 @@ export async function POST(request: Request) {
       ip: clientIp(request),
       timestamp: new Date().toISOString(),
       attribution,
-      payload: {
-        name: inquiry.name,
-        email: inquiry.email,
-        phone: inquiry.phone,
-        company: inquiry.company,
-        buyerType: inquiry.buyerType,
-        product: inquiry.product,
-        quantity: inquiry.quantity,
-        country: inquiry.country,
-        targetMarket: inquiry.targetMarket,
-        waterArea: inquiry.waterArea,
-        oem: inquiry.oem,
-        destinationPort: inquiry.destinationPort,
-        message: inquiry.message
-      }
+      payload: inquiry
     });
 
     try {
-      revalidateTag(ADMIN_BUSINESS_DATA_CACHE_TAG, {expire: 0});
+      if (added) revalidateTag(ADMIN_BUSINESS_DATA_CACHE_TAG, {expire: 0});
     } catch (error) {
       console.warn('Inquiry saved; admin cache refresh deferred', error);
     }
 
-    let emailStatus: 'sent' | 'skipped' | 'failed' = 'sent';
-    try {
-      const result = await sendContactInquiryEmail(inquiry);
-      emailStatus = result.skipped ? 'skipped' : 'sent';
-    } catch {
-      emailStatus = 'failed';
-    }
-
-    if (emailStatus !== 'sent') {
-      return Response.json({
-        ok: true,
-        id: eventId,
-        emailStatus,
-        message: 'Your inquiry was saved successfully. Our email alert is temporarily unavailable, but the sales team can view your request in the dashboard.'
-      }, {status: 202});
-    }
-
-    return Response.json({
-      ok: true,
-      id: eventId,
-      emailStatus,
-      message: 'Thank you. We received your request and will reply within 24 business hours.'
+    const emailStatus = await deliverInquiryNotification(eventId, inquiry).catch((error) => {
+      console.warn('Inquiry notification status unavailable', {reference: eventId, error});
+      return 'unknown';
     });
+    console.info('[contact-inquiry]', {reference: eventId, added, emailStatus});
+    return reply('received', emailStatus === 'sent' ? 200 : 202, 'Thank you. We received your request.', eventId, emailStatus);
   } catch (error) {
     console.error('Contact inquiry failed', error);
-    return Response.json({message: 'Inquiry submission failed. Please try again.'}, {status: 500});
+    return reply('retry', 500, 'Inquiry submission failed. Please try again.');
   }
 }

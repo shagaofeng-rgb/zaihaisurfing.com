@@ -1,15 +1,18 @@
 import createMiddleware from 'next-intl/middleware';
 import {NextResponse, type NextRequest} from 'next/server';
 import {locales, pathnames, routing} from './i18n/routing';
+import {ADMIN_COOKIE_NAME, verifyAdminSession} from './lib/adminAuth';
 
 const intlMiddleware = createMiddleware(routing);
 const blockedCountries = new Set(['IN']);
 const englishEditorialLocales = new Set(['es', 'fr', 'de', 'ar', 'pt', 'ru']);
 const publicPathnames = new Set<string>(pathnames);
 const englishOnlySupportPaths = new Set(['faq', 'shipping', 'warranty', 'returns', 'privacy', 'terms']);
+const publicAdminPaths = new Set(['/admin/login', '/admin/forgot-password', '/admin/reset-password']);
 const crawlerUserAgentPattern = /\b(Googlebot(?:-Image|-News|-Video)?|GoogleOther(?:-Image|-Video)?|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Bingbot|DuckDuckBot|Applebot|YandexBot|Baiduspider)\b/i;
 
 export default function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
   const host = request.headers.get('host')?.toLowerCase() || '';
   if (host === 'zaihaisurfing.com') {
     const url = request.nextUrl.clone();
@@ -17,6 +20,13 @@ export default function proxy(request: NextRequest) {
     url.hostname = 'www.zaihaisurfing.com';
     url.port = '';
     return NextResponse.redirect(url, 301);
+  }
+
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    if (publicAdminPaths.has(pathname) || verifyAdminSession(request.cookies.get(ADMIN_COOKIE_NAME)?.value)) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
   // The external publishing plugin validates custom webhooks against POST /.
@@ -31,7 +41,6 @@ export default function proxy(request: NextRequest) {
   // Old editorial URLs without a locale are stable aliases of the English
   // content. Redirect before next-intl's temporary locale redirect so Google
   // receives a permanent canonical signal.
-  const pathname = request.nextUrl.pathname;
   const pathParts = pathname.split('/');
   if ((request.method === 'GET' || request.method === 'HEAD') && pathname === '/') {
     const url = request.nextUrl.clone();
@@ -89,5 +98,5 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/((?!api|admin|pricing-admin|account|_next|_vercel|.*\\..*).*)']
+  matcher: ['/', '/admin/:path*', '/((?!api|admin|pricing-admin|account|_next|_vercel|.*\\..*).*)']
 };

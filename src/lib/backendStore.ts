@@ -1,5 +1,6 @@
 import path from 'node:path';
-import {revalidatePath} from 'next/cache';
+import {revalidatePath, revalidateTag} from 'next/cache';
+import {PUBLIC_CATALOG_CACHE_TAG} from '@/lib/catalogRuntime';
 import {newsArticles} from '@/lib/news';
 import {products, productSlugs, type ProductSlug} from '@/lib/site';
 import {type AnalyticsEvent, type StoreOrder} from '@/lib/commerceStore';
@@ -239,6 +240,7 @@ export async function writeAdminStore(updater: (store: AdminStore) => AdminStore
   });
   if (sitemapFingerprint(current) !== sitemapFingerprint(next)) {
     await markSitemapDirty('Published catalog or editorial content changed.').catch(() => undefined);
+    revalidateTag(PUBLIC_CATALOG_CACHE_TAG, {expire: 0});
     revalidatePath('/', 'layout');
   }
   return next;

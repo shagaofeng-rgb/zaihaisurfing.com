@@ -110,15 +110,118 @@ body:has(:is(.interior-page,.customer-design)) .site-header{min-height:66px;box-
 .interior-page .product-summary .share-panel{padding:16px 0;background:transparent;border:0;box-shadow:none;color:#49616c}.interior-page .product-summary .share-panel :is(strong,p){color:#49616c}
 .interior-page .section-heading h2{max-width:none}.interior-page .model-heading{max-width:900px}.interior-page .quality-support-grid .info-card:has(img){padding:0}.interior-page .quality-support-grid .info-card img{display:block;width:100%;height:230px;object-fit:cover}.interior-page .quality-support-grid .info-card>div{padding:25px}.interior-page .business-feature-grid{padding-block:56px 0}.interior-page .business-feature-grid .info-card{padding:0}.interior-page .business-feature-grid img{display:block;width:100%;height:230px;object-fit:cover}.interior-page .business-feature-grid .info-card>div{padding:25px}
 .mobile-menu-symbol{display:none}.customer-design .account-email-submit{box-shadow:none}.customer-design .account-card-copy{font-family:var(--font-body);font-weight:400;letter-spacing:0}
-@media(max-width:760px){body:has(:is(.interior-page,.customer-design)) .site-header{display:flex;align-items:center;gap:12px;min-height:65px;padding:10px 17px}body:has(:is(.interior-page,.customer-design)) .site-header>.brand{order:2;flex:1;font:800 11px 'Zaihai DM',Arial,sans-serif;gap:7px}body:has(:is(.interior-page,.customer-design)) .site-header>.brand img{width:48px;height:28px;object-fit:contain}body:has(:is(.interior-page,.customer-design)) .site-header>.brand span{display:block}body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-menu{order:1;margin:0}body:has(:is(.interior-page,.customer-design)) .mobile-menu summary{display:flex;align-items:center;justify-content:center;padding:0;min-width:24px;width:24px;min-height:36px;background:transparent;border:0;border-radius:0;color:#173b48}body:has(:is(.interior-page,.customer-design)) .mobile-menu summary>span{display:none}body:has(:is(.interior-page,.customer-design)) .mobile-menu-symbol{display:block}body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-header-whatsapp{display:none}body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-header-quote{order:3;background:#d7fb63;color:#071d2a;border-radius:5px;min-height:38px;padding:10px 13px;font:800 11px 'Zaihai DM',Arial,sans-serif;box-shadow:none}body:has(:is(.interior-page,.customer-design)) .mobile-menu>div{left:0;right:0;top:100%;width:100%;border:1px solid #dce5e8;box-shadow:0 12px 25px #071d2a15;background:white}body:has(:is(.interior-page,.customer-design)) .mobile-menu a{font:600 14px 'Zaihai DM',Arial,sans-serif;padding:13px 20px}}
 .customer-auth .account-card{text-align:start}.customer-auth .account-card-copy{margin-bottom:26px}.customer-design .account-email-submit:hover{background:#163a4c;box-shadow:none}
-@media(max-width:760px){
-body:has(:is(.interior-page,.customer-design)) .site-header>.brand{position:static;inset:auto;max-width:none;min-width:0}
-body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-menu{position:static;display:block;flex:0 0 24px;width:24px}
-body:has(:is(.interior-page,.customer-design)) .mobile-menu summary{position:static;inset:auto}
-body:has(:is(.interior-page,.customer-design)) .mobile-menu>div{position:fixed;top:65px;max-height:calc(100dvh - 145px);color:#173b48;border-radius:0 0 8px 8px}
-body:has(:is(.interior-page,.customer-design)) .mobile-menu a{color:#173b48;border-bottom:1px solid #e3ebed}
-body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-header-quote{position:static;inset:auto;white-space:nowrap;flex:0 0 auto;width:auto}
+@media (max-width: 960px) {
+  body:not(:has(.operations-home)) .site-header {
+    display: flex;
+    align-items: center;
+    gap: clamp(5px, 1.3vw, 12px);
+    min-height: 60px;
+    height: auto;
+    padding: 7px clamp(12px, 3.2vw, 28px);
+    background: white;
+  }
+  body:not(:has(.operations-home)) .site-header > .brand {
+    position: static;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+  body:not(:has(.operations-home)) .site-header > .brand img {
+    width: clamp(60px, 16vw, 100px);
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  body:not(:has(.operations-home)) .site-header :is(.nav-links, .header-account, .header-cta) {
+    display: none;
+  }
+  body:not(:has(.operations-home)) .site-header :is(.header-tools, .language-switcher) {
+    display: flex;
+    position: static;
+  }
+  body:not(:has(.operations-home)) .site-header .language-trigger {
+    min-width: 44px;
+    color: #173b48;
+    background: transparent;
+    border: 0;
+  }
+  body:not(:has(.operations-home)) .site-header .language-menu {
+    inset: 100% auto auto;
+    inset-inline-end: 12px;
+    z-index: 101;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    color: #173b48;
+  }
+  body:not(:has(.operations-home)) .site-header :is(.mobile-header-quote, .mobile-header-whatsapp, .mobile-menu summary) {
+    position: static;
+    inset: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: auto;
+    min-height: 42px;
+    box-shadow: none;
+  }
+  body:not(:has(.operations-home)) .site-header .mobile-header-quote {
+    background: #d7fb63;
+    color: #071d2a;
+    border-radius: 5px;
+    padding: 7px 9px;
+    max-width: min(32vw, 145px);
+    white-space: normal;
+    text-align: center;
+    font: 800 11px 'Zaihai DM', Arial, sans-serif;
+  }
+  body:not(:has(.operations-home)) .site-header .mobile-header-whatsapp {
+    min-width: 36px;
+    color: #173b48;
+    background: transparent;
+    padding: 0;
+    border: 0;
+  }
+  body:not(:has(.operations-home)) .site-header :is(.mobile-header-whatsapp span, .mobile-menu summary > span) {
+    display: none;
+  }
+  body:not(:has(.operations-home)) .site-header > .mobile-menu {
+    position: static;
+    display: block;
+    margin: 0;
+  }
+  body:not(:has(.operations-home)) .mobile-menu summary {
+    min-width: 42px;
+    padding: 0;
+    color: #173b48;
+    background: transparent;
+    border: 0;
+  }
+  body:not(:has(.operations-home)) .mobile-menu-symbol {
+    display: block;
+  }
+  body:not(:has(.operations-home)) .mobile-menu[open] > div {
+    position: absolute;
+    inset: 100% 0 auto;
+    display: grid;
+    width: 100%;
+    max-height: calc(100dvh - 65px);
+    overflow-y: auto;
+    border: 1px solid #dce5e8;
+    border-radius: 0 0 8px 8px;
+    background: white;
+    box-shadow: 0 12px 25px #071d2a15;
+  }
+  body:not(:has(.operations-home)) .mobile-menu a {
+    padding: 13px 20px;
+    border-bottom: 1px solid #e3ebed;
+    color: #173b48;
+    font: 600 14px 'Zaihai DM', Arial, sans-serif;
+  }
+}
+
+@media (max-width: 760px) {
+body:not(:has(.operations-home)) .site-header > .brand span { display: none; }
 .interior-page .product-summary h1{max-width:100%}.interior-page .eyebrow{display:block}
 }
 .design-support .page-hero{background:#0a2c3c}
@@ -129,6 +232,7 @@ body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-header-quote
 @media(max-width:760px){.interior-page :is(.page-hero,.contact-hero){min-height:330px}.contact-location-copy{min-height:240px;padding:25px}}
 
 /* Catalog and shared reading layouts from the approved gallery. */
+.catalog-fast-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .catalog-review .catalog-mast { background: #0b2635; color: white; padding: 44px 0; }
 .catalog-mast > div, .catalog-inquiry > div { width: min(1264px,calc(100% - 96px)); margin-inline: auto; }
 .catalog-mast h1 { font-size: clamp(38px,5.2vw,70px); margin: 10px 0 14px; }

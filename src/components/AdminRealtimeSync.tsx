@@ -33,7 +33,7 @@ export default function AdminRealtimeSync() {
   async function sync() {
     setStatus('syncing');
     try {
-      const response = await fetch('/api/admin/realtime', {cache: 'no-store', credentials: 'include'});
+      const response = await fetch('/api/admin/realtime?summary=1', {cache: 'no-store', credentials: 'include'});
       if (!response.ok) throw new Error(`Sync failed: ${response.status}`);
       setPayload(await response.json() as RealtimePayload);
       setStatus('online');

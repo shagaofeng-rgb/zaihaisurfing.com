@@ -1,6 +1,6 @@
 import {appendAnalyticsEvent, type AnalyticsEvent} from '@/lib/commerceStore';
 import {checkRateLimit} from '@/lib/rateLimit';
-import {classifyTraffic, compactAttribution} from '@/lib/trafficAttribution';
+import {classifyTraffic, compactAttribution, safeTrafficUrl} from '@/lib/trafficAttribution';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,17 +9,8 @@ const EVENT_TYPES = new Set([
   'page_view',
   'product_view',
   'checkout_start',
-  'checkout_submit',
-  'checkout_duplicate_submit',
   'commerce_click',
-  'whatsapp_click',
-  'contact_inquiry',
-  'payment_request_create',
-  'payment_return',
-  'payment_notice',
-  'admin_order_shipment',
-  'admin_order_refund',
-  'admin_order_authorization'
+  'whatsapp_click'
 ]);
 
 const SENSITIVE_KEYS = /email|phone|name|message|address|contact|cardholder|token|password|secret/i;
@@ -30,11 +21,6 @@ function clean(value: unknown, limit = 240) {
 
 function isBot(userAgent = '') {
   return /bot|crawler|spider|crawling|lighthouse|pagespeed|headless|vercel|uptime|monitor|preview|facebookexternalhit|slurp|bingpreview/i.test(userAgent);
-}
-
-function safeEventType(value: unknown) {
-  const type = clean(value, 80);
-  return EVENT_TYPES.has(type) ? type : 'custom_event';
 }
 
 function sanitizePayload(payload: Record<string, unknown>) {
@@ -62,7 +48,11 @@ function sanitizePayload(payload: Record<string, unknown>) {
   return Object.fromEntries(
     allowed
       .filter((key) => key in payload && !SENSITIVE_KEYS.test(key))
-      .map((key) => [key, typeof payload[key] === 'number' || typeof payload[key] === 'boolean' ? payload[key] : clean(payload[key], 180)])
+      .map((key) => {
+        const value = payload[key];
+        if (key === 'page' || key === 'previousPage') return [key, safeTrafficUrl(value)];
+        return [key, typeof value === 'number' || typeof value === 'boolean' ? value : clean(value, 180)];
+      })
   );
 }
 
@@ -110,22 +100,25 @@ export async function POST(request: Request) {
     if (isBot(userAgent)) {
       return Response.json({ok: true, skipped: 'bot'});
     }
+    const type = clean(payload.type || 'page_view', 80);
+    if (!EVENT_TYPES.has(type)) return Response.json({ok: false}, {status: 400});
     const safePayload = sanitizePayload(payload);
+    const page = safeTrafficUrl(payload.page) || '/';
+    const referrer = safeTrafficUrl(payload.referrer);
+    const touch = classifyTraffic({url: clean(payload.page || '/', 500), referrer});
     const attribution = compactAttribution(payload.attribution) || {
       visitorId: clean(payload.visitorId || 'anonymous', 80),
       sessionId: clean(payload.sessionId || 'session', 80),
-      firstTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)}),
-      lastTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)}),
-      sessionTouch: classifyTraffic({url: clean(payload.page || '/', 240), referrer: clean(payload.referrer || '', 240)})
+      firstTouch: touch, lastTouch: touch, sessionTouch: touch
     };
     const event: AnalyticsEvent = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      type: safeEventType(payload.type || 'page_view'),
+      type,
       visitorId: clean(payload.visitorId || 'anonymous', 80),
       sessionId: clean(payload.sessionId || 'session', 80),
-      page: clean(payload.page || '/', 240),
+      page,
       pageTitle: clean(payload.pageTitle || '', 180),
-      referrer: clean(payload.referrer || '', 240),
+      referrer,
       country: request.headers.get('x-vercel-ip-country') || 'Unknown',
       city: request.headers.get('x-vercel-ip-city') || '',
       device: detectDevice(userAgent),

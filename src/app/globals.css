@@ -1296,6 +1296,7 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(30px) saturate(165%);
   -webkit-backdrop-filter: blur(30px) saturate(165%);
+  visibility: hidden;
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
@@ -1303,7 +1304,8 @@ a {
   transform-origin: top center;
   transition:
     opacity 180ms ease,
-    transform 220ms ease;
+    transform 220ms ease,
+    visibility 0s linear 180ms;
 }
 
 .mega-panel::before {
@@ -1317,9 +1319,11 @@ a {
 }
 
 .has-mega.is-open .mega-panel {
+  visibility: visible;
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0) scale(1);
+  transition-delay: 0s;
 }
 
 .mega-feature,
@@ -1479,6 +1483,10 @@ a {
 }
 
 .language-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
   min-width: 54px;
   height: 42px;
   color: var(--white);
@@ -1487,6 +1495,10 @@ a {
   border-radius: 999px;
   font-weight: 950;
   cursor: pointer;
+}
+
+.language-trigger::-webkit-details-marker {
+  display: none;
 }
 
 .language-menu {
@@ -1508,8 +1520,11 @@ a {
   transition: 160ms ease;
 }
 
-.language-switcher:hover .language-menu,
-.language-switcher:focus-within .language-menu {
+.language-switcher:not([open]) > .language-menu {
+  display: none;
+}
+
+.language-switcher[open] > .language-menu {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
@@ -3378,10 +3393,12 @@ a {
 
 .form-trap {
   position: absolute;
-  left: -10000px;
   width: 1px !important;
   height: 1px !important;
-  opacity: 0;
+  min-height: 0 !important;
+  padding: 0 !important;
+  clip-path: inset(50%);
+  overflow: hidden;
   pointer-events: none;
 }
 

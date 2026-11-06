@@ -14,7 +14,7 @@ function hash(value: unknown) {
   return crypto.createHash('sha256').update(JSON.stringify(value), 'utf8').digest('hex').slice(0, 16);
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const {response} = await requireAdminApiSession();
   if (response) return response;
 
@@ -35,11 +35,11 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
       version: hash(state),
       state,
-      recent: {
+      ...(new URL(request.url).searchParams.get('summary') === '1' ? {} : {recent: {
         orders: orders.slice(-5).reverse(),
         events: events.slice(-5).reverse(),
         leads: leads.slice(0, 5)
-      }
+      }})
     },
     {
       headers: {

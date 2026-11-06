@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {shouldAutomaticallySubmitSitemap} from '../src/lib/sitemapMaintenance';
+import {shouldAutomaticallySubmitSitemap, sitemapRunErrors} from '../src/lib/sitemapMaintenance';
+
+test('reports failed or disabled Google submission even when sitemap validation passed', () => {
+  const rejected = {attempted: true, success: false, status: 403, message: 'Access denied'};
+  assert.deepEqual(sitemapRunErrors([], true, rejected), ['Google sitemap submission: Access denied']);
+  assert.deepEqual(sitemapRunErrors([], false, rejected), []);
+  assert.deepEqual(sitemapRunErrors([], true, {...rejected, attempted: false, message: 'Disabled'}), ['Google sitemap submission: Disabled']);
+  assert.deepEqual(sitemapRunErrors([], true, {...rejected, success: true, status: 204}), []);
+  assert.deepEqual(sitemapRunErrors(['Invalid XML'], true, rejected), ['Invalid XML']);
+});
 
 test('submits automatically when a configured sitemap changes', () => {
   assert.equal(shouldAutomaticallySubmitSitemap({

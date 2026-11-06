@@ -78,8 +78,23 @@ const CLICK_ID_MAP: Record<string, {source: string; channel: TrafficChannel; med
   epik: {source: 'pinterest_ads', channel: 'paid_social', medium: 'paid_social'}
 };
 
+const trafficChannels = new Set<TrafficChannel>([
+  'direct', 'organic_search', 'paid_search', 'organic_social', 'paid_social', 'referral', 'email', 'affiliate', 'display', 'unknown'
+]);
+
 function clean(value: unknown, limit = 200) {
   return String(value || '').trim().replace(/[<>"'`]/g, '').replace(/\s+/g, ' ').slice(0, limit);
+}
+
+export function safeTrafficUrl(value: unknown) {
+  const url = clean(value, 500).split(/[?#]/)[0];
+  if (/^\/(?!\/)/.test(url)) return url;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? `${parsed.origin}${parsed.pathname}` : '';
+  } catch {
+    return '';
+  }
 }
 
 function domainFrom(referrer: string) {
@@ -121,9 +136,11 @@ export function classifyTraffic(input: {
   browser?: string;
   now?: string;
 }): TrafficTouch {
-  const currentUrl = clean(input.url || '', 500);
-  const params = new URLSearchParams(currentUrl.includes('?') ? currentUrl.split('?').slice(1).join('?') : '');
-  const referrer = clean(input.referrer || '', 500);
+  const sourceUrl = clean(input.url || '', 1000).split('#')[0];
+  const queryStart = sourceUrl.indexOf('?');
+  const params = new URLSearchParams(queryStart < 0 ? '' : sourceUrl.slice(queryStart + 1));
+  const currentUrl = safeTrafficUrl(sourceUrl);
+  const referrer = safeTrafficUrl(input.referrer);
   const referrerDomain = domainFrom(referrer);
   const utmSource = clean(params.get('utm_source'), 100).toLowerCase();
   const utmMedium = clean(params.get('utm_medium'), 100).toLowerCase();
@@ -131,7 +148,6 @@ export function classifyTraffic(input: {
   const term = clean(params.get('utm_term'), 200);
   const content = clean(params.get('utm_content'), 200);
   const clickEntry = Object.keys(CLICK_ID_MAP).find((key) => params.has(key));
-  const landingPage = clean(currentUrl.split('#')[0], 500);
   const createdAt = input.now || new Date().toISOString();
 
   let source = '';
@@ -147,7 +163,8 @@ export function classifyTraffic(input: {
     medium = mapped.medium;
     channel = mapped.channel;
   } else {
-    const referred = sourceFromReferrer(referrerDomain);
+    const sameSite = referrerDomain === domainFrom(currentUrl) || referrerDomain === 'zaihaisurfing.com';
+    const referred = sameSite ? null : sourceFromReferrer(referrerDomain);
     if (referred) {
       source = referred.source;
       medium = referred.medium;
@@ -179,7 +196,7 @@ export function classifyTraffic(input: {
     clickIdType: clickEntry || '',
     referrer,
     referrerDomain,
-    landingPage,
+    landingPage: currentUrl,
     currentUrl,
     locale: clean(input.locale || '', 20),
     countryCode: clean(input.countryCode || '', 20),
@@ -196,6 +213,25 @@ export function isMeaningfulMarketingTouch(touch: TrafficTouch) {
 export function compactAttribution(input: unknown): AttributionSnapshot | null {
   if (!input || typeof input !== 'object') return null;
   const value = input as AttributionSnapshot;
-  if (!value.visitorId || !value.sessionId || !value.firstTouch || !value.lastTouch || !value.sessionTouch) return null;
-  return value;
+  const visitorId = clean(value.visitorId, 80);
+  const sessionId = clean(value.sessionId, 80);
+  const firstTouch = compactTouch(value.firstTouch);
+  const lastTouch = compactTouch(value.lastTouch);
+  const sessionTouch = compactTouch(value.sessionTouch);
+  if (!visitorId || !sessionId || !firstTouch || !lastTouch || !sessionTouch) return null;
+  return {visitorId, sessionId, firstTouch, lastTouch, sessionTouch};
+}
+
+function compactTouch(touch: TrafficTouch | undefined): TrafficTouch | null {
+  if (!touch || !trafficChannels.has(touch.channel)) return null;
+  const referrer = safeTrafficUrl(touch.referrer);
+  return {
+    source: clean(touch.source, 100), medium: clean(touch.medium, 100), channel: touch.channel,
+    campaign: clean(touch.campaign), term: clean(touch.term), content: clean(touch.content),
+    clickId: clean(touch.clickId, 240), clickIdType: clean(touch.clickIdType, 40),
+    referrer, referrerDomain: domainFrom(referrer), landingPage: safeTrafficUrl(touch.landingPage),
+    currentUrl: safeTrafficUrl(touch.currentUrl), locale: clean(touch.locale, 20),
+    countryCode: clean(touch.countryCode, 20), deviceType: clean(touch.deviceType, 40),
+    browser: clean(touch.browser, 40), createdAt: clean(touch.createdAt, 40)
+  };
 }

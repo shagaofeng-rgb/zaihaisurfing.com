@@ -1,12 +1,14 @@
 import tls from 'node:tls';
 import {appendEmailLog, hasSentEmail, type StoreOrder} from '@/lib/commerceStore';
 import {readAdminStore} from '@/lib/backendStore';
+import type {ContactInquiry} from '@/lib/contactInquiry';
 
 type MailPayload = {
   to: string;
   subject: string;
   text: string;
   html: string;
+  messageId?: string;
 };
 
 const DEFAULT_SMTP_HOST = 'smtp.exmail.qq.com';
@@ -88,38 +90,41 @@ function rowsHtml(rows: string[][]) {
     .join('');
 }
 
+export class SmtpDeliveryUncertain extends Error {}
+
 async function sendSmtpMail(message: MailPayload) {
   const config = smtpConfig();
   if (!config.host || !config.user || !config.pass) {
     return {ok: false, skipped: true, message: 'SMTP is not configured'};
   }
   if (!validMailbox(config.from) || !validMailbox(message.to)) {
-    return {ok: false, skipped: false, message: 'Invalid email address'};
+    throw new Error('Invalid sender or recipient address');
   }
 
   const socket = tls.connect({host: config.host, port: config.port, servername: config.host});
+  const deadline = setTimeout(() => socket.destroy(new Error('SMTP timeout')), 12_000);
   let buffer = '';
 
   function readLine() {
     return new Promise<string>((resolve, reject) => {
       const cleanup = () => {
-        clearTimeout(timeout);
         socket.off('data', onData);
         socket.off('error', onError);
+        socket.off('close', onClose);
       };
       const onError = (error: Error) => {
         cleanup();
         reject(error);
       };
-      const timeout = setTimeout(() => {
+      const onClose = () => {
         cleanup();
-        reject(new Error('SMTP timeout'));
-      }, 15000);
+        reject(new Error('SMTP connection closed'));
+      };
       const onData = (chunk: Buffer) => {
         buffer += chunk.toString('utf8');
         const lines = buffer.split(/\r?\n/).filter(Boolean);
         const last = lines[lines.length - 1] || '';
-        if (/^\d{3} /.test(last)) {
+        if (buffer.endsWith('\n') && /^\d{3} /.test(last)) {
           cleanup();
           const response = buffer;
           buffer = '';
@@ -128,6 +133,7 @@ async function sendSmtpMail(message: MailPayload) {
       };
       socket.on('data', onData);
       socket.on('error', onError);
+      socket.on('close', onClose);
     });
   }
 
@@ -138,48 +144,57 @@ async function sendSmtpMail(message: MailPayload) {
     return response;
   }
 
-  await new Promise<void>((resolve, reject) => {
-    socket.once('secureConnect', resolve);
-    socket.once('error', reject);
-  });
-  await readLine();
-  await command(`EHLO ${config.host}`);
-  await command('AUTH LOGIN', /^334/);
-  await command(b64(config.user), /^334/);
-  await command(b64(config.pass), /^235/);
-  await command(`MAIL FROM:<${config.from}>`);
-  await command(`RCPT TO:<${message.to}>`);
-  await command('DATA', /^354/);
+  try {
+    await new Promise<void>((resolve, reject) => {
+      socket.once('secureConnect', resolve);
+      socket.once('error', reject);
+      socket.once('close', () => reject(new Error('SMTP connection closed')));
+    });
+    const greeting = await readLine();
+    if (!/^220[ -]/.test(greeting)) throw new Error(greeting.trim());
+    await command(`EHLO ${config.host}`, /^250[ -]/);
+    await command('AUTH LOGIN', /^334[ -]/);
+    await command(b64(config.user), /^334[ -]/);
+    await command(b64(config.pass), /^235[ -]/);
+    await command(`MAIL FROM:<${config.from}>`, /^250[ -]/);
+    await command(`RCPT TO:<${message.to}>`, /^25[01][ -]/);
+    await command('DATA', /^354[ -]/);
 
-  const boundary = `zaihai-${Date.now()}`;
-  const raw = [
-    `From: ZAIHAI SURFING <${config.from}>`,
-    `To: ${message.to}`,
-    `Subject: =?UTF-8?B?${b64(message.subject)}?=`,
-    'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    '',
-    dotStuff(message.text),
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-    '',
-    dotStuff(message.html),
-    '',
-    `--${boundary}--`,
-    '.'
-  ].join('\r\n');
+    const boundary = `zaihai-${Date.now()}`;
+    const raw = [
+      `From: ZAIHAI SURFING <${config.from}>`,
+      `To: ${message.to}`,
+      `Subject: =?UTF-8?B?${b64(message.subject)}?=`,
+      ...(message.messageId ? [`Message-ID: <${message.messageId}>`] : []),
+      'MIME-Version: 1.0',
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      'Content-Type: text/plain; charset=UTF-8',
+      'Content-Transfer-Encoding: 8bit',
+      '',
+      dotStuff(message.text),
+      '',
+      `--${boundary}`,
+      'Content-Type: text/html; charset=UTF-8',
+      'Content-Transfer-Encoding: 8bit',
+      '',
+      dotStuff(message.html),
+      '',
+      `--${boundary}--`,
+      '.'
+    ].join('\r\n');
 
-  socket.write(`${raw}\r\n`);
-  const dataResponse = await readLine();
-  await command('QUIT', /^[23]/).catch(() => undefined);
-  socket.end();
-  return {ok: true, skipped: false, message: dataResponse.trim()};
+    socket.write(`${raw}\r\n`);
+    const dataResponse = await readLine().catch(() => {
+      throw new SmtpDeliveryUncertain('SMTP disconnected before acknowledging message delivery');
+    });
+    if (!/^250[ -]/.test(dataResponse)) throw new Error(dataResponse.trim());
+    return {ok: true, skipped: false, message: dataResponse.trim()};
+  } finally {
+    clearTimeout(deadline);
+    socket.destroy();
+  }
 }
 
 export async function sendOrderSuccessEmailOnce(order: StoreOrder) {
@@ -450,24 +465,11 @@ export async function sendRegistrationWelcomeEmail(email: string, name: string) 
   }
 }
 
-export async function sendContactInquiryEmail(input: {
-  name: string;
-  email: string;
-  phone: string;
-  country: string;
-  company: string;
-  buyerType: string;
-  product: string;
-  quantity: string;
-  targetMarket: string;
-  waterArea: string;
-  oem: string;
-  destinationPort: string;
-  message: string;
-}) {
+export async function sendContactInquiryEmail(input: ContactInquiry, reference: string) {
   const adminEmail = await adminNotificationEmail();
-  const subject = `New ZAIHAI inquiry from ${input.email}`;
+  const subject = `ZAIHAI inquiry ${reference}`;
   const rows = [
+    ['Reference', reference],
     ['Name', input.name],
     ['Email', input.email],
     ['Phone / WhatsApp', input.phone],
@@ -492,30 +494,28 @@ export async function sendContactInquiryEmail(input: {
     </div>
   `;
 
-  try {
-    const result = await sendSmtpMail({to: adminEmail, subject, text, html});
+  const result = await sendSmtpMail({to: adminEmail, subject, text, html, messageId: `${reference}@zaihaisurfing.com`}).catch(async (error) => {
     await appendEmailLog({
-      orderId: 'contact',
+      orderId: reference,
       customerEmail: input.email,
       templateType: 'contact_inquiry',
-      status: result.skipped ? 'skipped' : 'sent',
-      providerMessageId: result.message,
-      errorMessage: '',
-      sentAt: result.skipped ? '' : new Date().toISOString()
-    });
-    return result;
-  } catch (error) {
-    await appendEmailLog({
-      orderId: 'contact',
-      customerEmail: input.email,
-      templateType: 'contact_inquiry',
-      status: 'failed',
+      status: error instanceof SmtpDeliveryUncertain ? 'pending' : 'failed',
       providerMessageId: '',
       errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Unknown SMTP error',
       sentAt: ''
-    });
+    }).catch(() => console.warn('Inquiry email log unavailable', {reference}));
     throw error;
-  }
+  });
+  await appendEmailLog({
+    orderId: reference,
+    customerEmail: input.email,
+    templateType: 'contact_inquiry',
+    status: result.skipped ? 'skipped' : 'sent',
+    providerMessageId: result.ok ? result.message : '',
+    errorMessage: result.ok ? '' : result.message,
+    sentAt: result.ok ? new Date().toISOString() : ''
+  }).catch(() => console.warn('Inquiry email log unavailable', {reference}));
+  return result;
 }
 
 export async function sendSystemAlertEmail(subject: string, text: string) {

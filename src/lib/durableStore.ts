@@ -259,6 +259,31 @@ export async function appendStoreLine(fileName: string, value: unknown) {
   });
 }
 
+/** Append a keyed business record once, including when a client retries after a timeout. */
+export async function appendStoreLineOnce<T extends {id: string}>(fileName: string, value: T) {
+  return withStoreMutationLock(fileName, async () => {
+    const line = JSON.stringify(value);
+    if (KV_URL && KV_TOKEN) {
+      const script = "if redis.call('exists', KEYS[2]) == 1 then return 0 end; redis.call('rpush', KEYS[1], ARGV[1]); redis.call('set', KEYS[2], '1'); return 1";
+      const listKey = storeKey(fileName);
+      const idKey = `{${listKey}}:id:${value.id}`;
+      const [added] = await kvPipeline<number>([['EVAL', script, '2', listKey, idKey, line]]);
+      return added === 1;
+    }
+    if (BLOB_TOKEN) {
+      const current = await readBlobText(fileName);
+      if (current.split('\n').some((row) => safeJson<{id: string}>(row)?.id === value.id)) return false;
+      await writeBlobText(fileName, `${current}${line}\n`);
+    } else {
+      const current = await readLocalLines<T>(fileName);
+      if (current.some((row) => row.id === value.id)) return false;
+      await fs.mkdir(LOCAL_DATA_DIR, {recursive: true});
+      await fs.appendFile(localFile(fileName), `${line}\n`, 'utf8');
+    }
+    return true;
+  });
+}
+
 export async function readStoreLines<T>(fileName: string) {
   return readStoreLinesUnlocked<T>(fileName);
 }
@@ -307,8 +332,9 @@ async function writeStoreObjectUnlocked(fileName: string, value: unknown) {
     await writeBlobText(fileName, JSON.stringify(value, null, 2), 'application/json; charset=utf-8');
     return;
   }
-  await fs.mkdir(LOCAL_DATA_DIR, {recursive: true});
-  await fs.writeFile(localFile(fileName), JSON.stringify(value, null, 2), 'utf8');
+  const target = localFile(fileName);
+  await fs.mkdir(path.dirname(target), {recursive: true});
+  await fs.writeFile(target, JSON.stringify(value, null, 2), 'utf8');
 }
 
 export async function mutateStoreObject<T>(fileName: string, mutation: (value: T | null) => T | Promise<T>) {

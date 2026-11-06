@@ -12,6 +12,8 @@ type ProductsMegaMenuProps = {
 export default function ProductsMegaMenu({copy}: ProductsMegaMenuProps) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   function clearCloseTimer() {
@@ -23,7 +25,9 @@ export default function ProductsMegaMenu({copy}: ProductsMegaMenuProps) {
 
   function closeSoon() {
     clearCloseTimer();
-    closeTimer.current = setTimeout(() => setOpen(false), 140);
+    closeTimer.current = setTimeout(() => {
+      if (!panel.current?.contains(document.activeElement)) setOpen(false);
+    }, 140);
   }
 
   useEffect(() => {
@@ -35,32 +39,39 @@ export default function ProductsMegaMenu({copy}: ProductsMegaMenuProps) {
   return (
     <div
       className={`nav-item has-mega${open ? ' is-open' : ''}`}
-      onPointerEnter={() => {
+      onPointerEnter={(event) => {
+        if (event.pointerType !== 'mouse') return;
         clearCloseTimer();
         setOpen(true);
       }}
       onPointerLeave={closeSoon}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') setOpen(false);
+        if (event.key === 'Escape' && open) {
+          event.preventDefault();
+          clearCloseTimer();
+          setOpen(false);
+          trigger.current?.focus();
+        }
       }}
     >
       <button
         className="nav-trigger"
+        ref={trigger}
         type="button"
-        aria-haspopup="true"
         aria-expanded={open}
         aria-controls="products-mega-menu"
-        onClick={() => {
+        onClick={(event) => {
           clearCloseTimer();
-          // Pointer enter and focus can open this menu before click fires.
-          // Toggling here immediately hid the panel on a normal mouse click.
-          setOpen(true);
+          if (event.detail > 0 && window.matchMedia('(hover: hover)').matches) setOpen(true);
+          else setOpen((current) => !current);
         }}
-        onFocus={() => setOpen(true)}
       >
         {copy.nav.products}
       </button>
-      <div className="mega-panel" id="products-mega-menu" aria-label="Product mega menu" aria-hidden={!open}>
+      <div ref={panel} className="mega-panel" id="products-mega-menu" aria-hidden={!open} inert={!open}>
         <div className="mega-feature">
           <span>{copy.mega.featured}</span>
           <img src="/assets/catalog/x1-pro/product-mega-thumb.jpg" alt="ZAIHAI X1 Pro electric surfboard" loading="lazy" decoding="async" width="268" height="336" />

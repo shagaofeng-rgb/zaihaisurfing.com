@@ -34,6 +34,11 @@ export function shouldAutomaticallySubmitSitemap(input: {
   return input.submissionEnabled && input.generated && (input.changed || !input.hasPreviousSnapshot);
 }
 
+export function sitemapRunErrors(validationErrors: string[], submissionRequested: boolean, submission: SitemapRunResult['googleSubmission']) {
+  if (validationErrors.length || !submissionRequested || submission.success) return validationErrors;
+  return [`Google sitemap submission: ${submission.message}`];
+}
+
 function entryMap(entries: SitemapEntry[]) {
   return new Map(entries.map((entry) => [entry.url, entry.lastModified]));
 }
@@ -65,9 +70,8 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
   if (!token) return {locked: true as const, result: null};
   const started = Date.now();
   const startedAt = new Date(started).toISOString();
-  const state = await readSitemapState();
-
   try {
+    const state = await readSitemapState();
     const manifest = await buildSitemapManifest();
     const diffs = compareSnapshots(state.snapshot, manifest.entries);
     const changed = Boolean(state.dirtyAt || diffs.added.length || diffs.modified.length || diffs.deleted.length);
@@ -88,6 +92,11 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       ...manifest.parts.map((part) => fetchPublicStatus(`${origin}/sitemaps/${part.file}`))
     ]);
     publicChecks.filter((check) => !check.ok).forEach((check) => errors.push(`Public URL check failed (${check.status}): ${check.url}`));
+    publicChecks.filter((check) => check.ok && check.url.endsWith('.xml')).forEach((check) => {
+      if (!validateSitemapXml(check.text, check.url.endsWith('/sitemap.xml') ? 'sitemapindex' : 'urlset')) {
+        errors.push(`Published sitemap XML is invalid: ${check.url}`);
+      }
+    });
     const robotsCheck = publicChecks.find((check) => check.url.endsWith('/robots.txt'));
     const robotsValid = Boolean(robotsCheck?.ok && robotsCheck.text.includes('Sitemap: https://www.zaihaisurfing.com/sitemap.xml'));
     if (!robotsValid) errors.push('robots.txt does not declare the canonical sitemap index.');
@@ -105,6 +114,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
         ? {attempted: false, success: false, status: 0, message: 'Submission skipped because public sitemap validation failed.'}
         : await submitSitemapToGoogle(googleConfig.sitemapUrl);
     const googleReadback = await readGoogleSitemapStatus(googleConfig.sitemapUrl);
+    const runErrors = sitemapRunErrors(errors, shouldSubmit, googleSubmission);
 
     const finishedAt = new Date().toISOString();
     const result: SitemapRunResult = {
@@ -113,7 +123,8 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       startedAt,
       finishedAt,
       durationMs: Date.now() - started,
-      success: errors.length === 0,
+      success: runErrors.length === 0,
+      validationPassed: errors.length === 0,
       dryRun: Boolean(options.dryRun),
       changed,
       generated,
@@ -121,7 +132,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       processedUrls: manifest.entries.length,
       successfulUrls: manifest.entries.length,
       skippedUrls: 0,
-      errorCount: errors.length,
+      errorCount: runErrors.length,
       added: diffs.added,
       modified: diffs.modified,
       deleted: diffs.deleted,
@@ -130,7 +141,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       publicValidation: publicChecks.map(({url, status, ok, error}) => ({url, status, ok, ...(error ? {error} : {})})),
       googleSubmission,
       googleReadback,
-      errors
+      errors: runErrors
     };
     if (!options.dryRun) await finishSitemapRun(token, result, manifest.entries);
     return {locked: false as const, result};
@@ -143,6 +154,7 @@ export async function runSitemapMaintenance(options: MaintenanceOptions) {
       finishedAt: new Date().toISOString(),
       durationMs: Date.now() - started,
       success: false,
+      validationPassed: false,
       dryRun: Boolean(options.dryRun),
       changed: false,
       generated: false,

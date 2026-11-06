@@ -1,19 +1,10 @@
 import {cronAuthorized} from '@/lib/cronAuth';
 import {runSitemapMaintenance} from '@/lib/sitemapMaintenance';
+import {siteUrl} from '@/lib/site';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
-
-function canonicalSiteOrigin(requestOrigin: string) {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL || '').trim().replace(/\/$/, '');
-  try {
-    const url = new URL(configured);
-    return url.protocol === 'https:' ? url.origin : requestOrigin;
-  } catch {
-    return requestOrigin;
-  }
-}
 
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) {
@@ -26,7 +17,7 @@ export async function GET(request: Request) {
     // Vercel Cron invokes a deployment URL. Validate and submit the public
     // canonical domain instead, so an internal deployment alias cannot make a
     // healthy public sitemap look unavailable.
-    origin: canonicalSiteOrigin(url.origin),
+    origin: new URL(siteUrl).origin,
     force: url.searchParams.get('force') === '1',
     dryRun: url.searchParams.get('dryRun') === '1',
     submit: trigger === 'cron' || url.searchParams.get('submit') === '1'
@@ -36,6 +27,9 @@ export async function GET(request: Request) {
   }
   console.info('[sitemap-health]', JSON.stringify({
     success: output.result?.success || false,
+    validationPassed: output.result?.validationPassed || false,
+    trigger,
+    runId: output.result?.id,
     changed: output.result?.changed || false,
     errorCount: output.result?.errorCount || 0,
     googleSubmission: output.result?.googleSubmission,

@@ -1,4 +1,4 @@
-import {appendStoreLine, mutateStoreLines, readStoreLines} from '@/lib/durableStore';
+import {appendStoreLine, appendStoreLineOnce, mutateStoreLines, readStoreLines} from '@/lib/durableStore';
 import {shippingEstimateFor} from '@/lib/shipping';
 import {oneTimePaymentSlug, type CheckoutProductSlug} from '@/lib/site';
 import {getRuntimeCatalogProduct} from '@/lib/catalogRuntime';
@@ -441,6 +441,10 @@ function protectFinalPaymentState(
 
 export async function appendAnalyticsEvent(event: AnalyticsEvent) {
   await appendStoreLine(EVENTS_FILE, event);
+}
+
+export async function appendAnalyticsEventOnce(event: AnalyticsEvent) {
+  return appendStoreLineOnce(EVENTS_FILE, event);
 }
 
 export async function readAnalyticsEvents() {
