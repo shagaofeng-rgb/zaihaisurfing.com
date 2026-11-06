@@ -12,7 +12,8 @@ type VideoLabels = {
   open: string;
 };
 
-const ridingVideo = '/assets/banners/zaihai-home-hero-preview.mp4';
+const ridingVideo = '/assets/home-operations/riding-preview-640.mp4';
+const fullVideo = '/assets/banners/zaihai-video-home-faststart.mp4';
 
 export default function HomeRidingVideo({labels}: {labels: VideoLabels}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -66,12 +67,12 @@ export default function HomeRidingVideo({labels}: {labels: VideoLabels}) {
               onError={() => setStatus('error')}
             >
               <source src={ridingVideo} type="video/mp4" />
-              <source src="/assets/banners/zaihai-video-home-faststart.mp4" type="video/mp4" />
-              <a href={ridingVideo}>{labels.open}</a>
+              <source src={fullVideo} type="video/mp4" />
+              <a href={fullVideo}>{labels.open}</a>
             </video>
           ) : null}
           {status === 'loading' ? <p role="status">{labels.loading}</p> : null}
-          {status === 'error' ? <p role="status">{labels.error} <a href={ridingVideo}>{labels.open}</a></p> : null}
+          {status === 'error' ? <p role="status">{labels.error} <a href={fullVideo}>{labels.open}</a></p> : null}
         </div>
       </dialog>
     </>
