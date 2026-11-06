@@ -1,22 +1,32 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {PlayIcon, XIcon} from '@phosphor-icons/react';
+import {useRef, useState} from 'react';
 
-export default function HomeRidingVideo() {
+type VideoLabels = {
+  watch: string;
+  title: string;
+  close: string;
+  loading: string;
+  error: string;
+  open: string;
+};
+
+const ridingVideo = '/assets/banners/zaihai-home-hero-preview.mp4';
+
+export default function HomeRidingVideo({labels}: {labels: VideoLabels}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<'ready' | 'loading' | 'error'>('ready');
 
-  useEffect(() => {
-    if (!isOpen || !videoRef.current) return;
-
-    const video = videoRef.current;
+  function open() {
+    dialogRef.current?.showModal();
     setStatus('loading');
-    video.load();
-    void video.play().then(() => setStatus('ready')).catch(() => setStatus('error'));
-  }, [isOpen]);
+    setIsOpen(true);
+  }
 
-  function close() {
+  function reset() {
     videoRef.current?.pause();
     setIsOpen(false);
     setStatus('ready');
@@ -24,19 +34,29 @@ export default function HomeRidingVideo() {
 
   return (
     <>
-      <button className="ocean-button ocean-button-ghost" type="button" onClick={() => setIsOpen(true)}>
-        Watch riding video
+      <button className="operations-video-button" type="button" onClick={open} aria-haspopup="dialog">
+        <span aria-hidden="true"><PlayIcon size={12} weight="fill" /></span>
+        {labels.watch}
       </button>
-      {isOpen ? (
-        <div className="ocean-video-dialog" role="dialog" aria-modal="true" aria-labelledby="riding-video-title" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-          <section className="ocean-video-frame">
-            <div className="ocean-video-head">
-              <div><p>ON THE WATER</p><h2 id="riding-video-title">Riding in motion</h2></div>
-              <button type="button" onClick={close}>Close</button>
-            </div>
+      <dialog
+        className="operations-video-dialog"
+        ref={dialogRef}
+        aria-labelledby="riding-video-title"
+        onClose={reset}
+        onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}
+      >
+        <div className="operations-video-content">
+          <div className="operations-video-heading">
+            <h2 id="riding-video-title">{labels.title}</h2>
+            <button type="button" aria-label={labels.close} onClick={() => dialogRef.current?.close()}>
+              <XIcon size={22} aria-hidden="true" />
+            </button>
+          </div>
+          {isOpen ? (
             <video
               ref={videoRef}
               controls
+              autoPlay
               loop
               playsInline
               preload="metadata"
@@ -45,16 +65,15 @@ export default function HomeRidingVideo() {
               onCanPlay={() => setStatus('ready')}
               onError={() => setStatus('error')}
             >
-              <source src="/assets/banners/zaihai-home-hero-preview.mp4" type="video/mp4" />
+              <source src={ridingVideo} type="video/mp4" />
               <source src="/assets/banners/zaihai-video-home-faststart.mp4" type="video/mp4" />
-              Your browser does not support HTML video.
+              <a href={ridingVideo}>{labels.open}</a>
             </video>
-            <p className="ocean-video-status" aria-live="polite">
-              {status === 'loading' ? 'Loading video…' : status === 'error' ? 'The video could not be played. Please try again or contact us for a copy.' : 'Streaming a browser-compatible H.264 video.'}
-            </p>
-          </section>
+          ) : null}
+          {status === 'loading' ? <p role="status">{labels.loading}</p> : null}
+          {status === 'error' ? <p role="status">{labels.error} <a href={ridingVideo}>{labels.open}</a></p> : null}
         </div>
-      ) : null}
+      </dialog>
     </>
   );
 }

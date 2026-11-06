@@ -239,6 +239,7 @@ body:has(:is(.interior-page,.customer-design)) .site-header>.mobile-header-quote
 .contact-review-grid .form-status { margin: 0 0 3px; padding: 11px 13px; border: 1px solid #b7d6bd; background: #eef7ed; border-radius: 6px; color: #215030; }
 .contact-review-grid .form-status[data-tone=error] { border-color: #e9b9b9; background: #fff3f2; color: #851f2c; }
 .design-factory #oem-distributor { scroll-margin-top: 85px; }
+.design-applications .commercial-solution-card[id] { scroll-margin-block-start: 85px; }
 @media (max-width: 760px) {
   .interior-page .contact-review-grid .inquiry-section { margin-top: 0 !important; }
 }

@@ -1,7 +1,36 @@
-export default function HomeResponsiveImage({name, alt, sizes, widths = [480, 800], width = 1448, height = 1086}: {name: string; alt: string; sizes: string; widths?: number[]; width?: number; height?: number}) {
-  const srcSet = (format: string) => widths.map((size) => `/assets/home-fast-v1/${name}-${size}.${format} ${size}w`).join(', ');
-  return <picture>
-    <source type="image/avif" srcSet={srcSet('avif')} sizes={sizes} />
-    <img src={`/assets/home-fast-v1/${name}-${widths[0]}.webp`} srcSet={srcSet('webp')} sizes={sizes} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
-  </picture>;
+type HomeResponsiveImageProps = {
+  name: string;
+  widths: number[];
+  sizes: string;
+  width: number;
+  height: number;
+  alt?: string;
+  priority?: boolean;
+  avif?: boolean;
+};
+
+export default function HomeResponsiveImage({name, widths, sizes, width, height, alt = '', priority = false, avif = false}: HomeResponsiveImageProps) {
+  const path = (size: number, format: 'webp' | 'avif' = 'webp') => `/assets/home-operations/${name}-${size}.${format}`;
+  const srcSet = (format: 'webp' | 'avif') => widths.map((size) => `${path(size, format)} ${size}w`).join(', ');
+
+  const img = (
+    <img
+      src={path(widths[0])}
+      srcSet={srcSet('webp')}
+      sizes={sizes}
+      width={width}
+      height={height}
+      alt={alt}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : undefined}
+      decoding="async"
+    />
+  );
+
+  return avif ? (
+    <picture>
+      <source type="image/avif" srcSet={srcSet('avif')} sizes={sizes} />
+      {img}
+    </picture>
+  ) : img;
 }

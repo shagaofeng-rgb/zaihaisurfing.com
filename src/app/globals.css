@@ -1169,6 +1169,10 @@ a {
   text-decoration: none;
 }
 
+.operations-only {
+  display: none;
+}
+
 .site-header {
   position: sticky;
   top: 0;

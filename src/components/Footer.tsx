@@ -19,6 +19,12 @@ export default async function Footer({locale}: {locale: Locale}) {
           {copy.footer.quote}
         </Link>
       </div>
+      <nav className="operations-only operations-footer-nav" aria-label={copy.footer.buyerSupport}>
+        <Link href="/products">{copy.nav.products}</Link>
+        <Link href="/applications">{copy.nav.applications}</Link>
+        <Link href="/factory#oem-distributor">{copy.nav.oemDistributor}</Link>
+        <Link href="/about">{copy.nav.about}</Link>
+      </nav>
       <div className="footer-column">
         <h3>{copy.footer.products}</h3>
         <Link href="/products">{copy.mega.electricSurfboards}</Link>

@@ -4,6 +4,7 @@ import {notFound} from 'next/navigation';
 import {isLocale, type Locale} from '@/i18n/routing';
 import OceanPerformanceHome from '@/components/OceanPerformanceHome';
 import {localizedMetadata} from '@/lib/metadata';
+import '../home-operations.css';
 
 export async function generateMetadata({params}: {params: Promise<{locale: Locale}>}): Promise<Metadata> {
   const {locale} = await params;

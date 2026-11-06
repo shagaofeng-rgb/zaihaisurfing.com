@@ -61,6 +61,38 @@
     "oemTitle": "OEM/ODM, Branding and Distributor Cooperation",
     "oemText": "We support custom colors, logo branding, packaging, distributor catalogs, product media, sample orders, bulk order coordination and market positioning."
   },
+  "homeOperations": {
+    "title": "<line>Build a better</line> <line>water</line> <line>experience.</line>",
+    "intro": "High-performance water sports equipment and business solutions for resorts, rental fleets and global partners.",
+    "projectButton": "Discuss your project",
+    "quoteButton": "Get a quote",
+    "heroAlt": "A surfboard rider and a blue electric water kart beside a coastal resort dock",
+    "operationHeading": "Choose your operation",
+    "resorts": "Resorts",
+    "resortsText": "Add premium water activities to elevate guest experiences.",
+    "rentals": "Rental fleets",
+    "rentalsText": "Equipment for busy rental fleets and daily operations.",
+    "distributors": "Distributors",
+    "distributorsText": "Explore our product range and OEM support for your market.",
+    "equipmentHeading": "Explore the equipment",
+    "electricTitle": "Electric Surfboards",
+    "electricText": "Jet-powered, electric and responsive.",
+    "kartTitle": "Electric Go-Kart Boats",
+    "kartText": "Electric water karts with seated steering.",
+    "fuelTitle": "Fuel-Powered Surfboards",
+    "fuelText": "Fuel-powered performance for longer rides.",
+    "quoteHeading": "Tell us what you’re planning.",
+    "quoteText": "Share your water sports project and requirements. Our team will help you choose the right equipment.",
+    "moreNavigation": "More navigation links",
+    "video": {
+      "watch": "Watch riding video",
+      "title": "Riding in motion",
+      "close": "Close video",
+      "loading": "Loading video…",
+      "error": "This video could not be played.",
+      "open": "Open video file"
+    }
+  },
   "products": {
     "h1": "Explore ZAIHAI Water Sports Equipment",
     "intro": "Choose from electric surfboards, electric go-kart boats and fuel-powered surfboards for resorts, rentals, water parks and distributors.",

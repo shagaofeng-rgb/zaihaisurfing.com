@@ -1,24 +1,34 @@
+import {ArrowRightIcon, WhatsappLogoIcon} from '@phosphor-icons/react/dist/ssr';
+import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
 import {uiCopy} from '@/lib/uiCopy';
+import HomeHeaderMenu from './HomeHeaderMenu';
 import LanguageSwitcher from './LanguageSwitcher';
 import MobileMenu from './MobileMenu';
 import ProductsMegaMenu from './ProductsMegaMenu';
 
 export default async function Header({locale}: {locale: Locale}) {
   const copy = uiCopy[locale];
+  const home = await getTranslations({locale, namespace: 'homeOperations'});
   const authItems = [
     {href: '/account/login', label: 'Sign in'},
     {href: '/account/register', label: 'Register'}
   ];
+  const editorialItems = [
+    {href: '/news', label: copy.nav.news},
+    {href: '/blog', label: copy.nav.blog}
+  ];
+  const applications = {href: '/applications', label: copy.nav.applications};
+  const contact = {href: '/contact', label: copy.nav.contact};
   const mobileNavItems = [
     {href: '/', label: copy.nav.home},
     {href: '/products', label: copy.nav.products},
+    {...applications, className: 'operations-only'},
     {href: '/factory#oem-distributor', label: copy.nav.oemDistributor},
-    {href: '/news', label: copy.nav.news},
-    {href: '/blog', label: copy.nav.blog},
+    ...editorialItems,
     {href: '/about', label: copy.nav.about},
-    {href: '/contact', label: copy.nav.contact},
+    contact,
     ...authItems
   ];
 
@@ -29,20 +39,29 @@ export default async function Header({locale}: {locale: Locale}) {
         <span>ZAIHAI SURFING</span>
       </Link>
       <MobileMenu items={mobileNavItems} />
-      <a className="mobile-header-whatsapp" data-whatsapp-placement="mobile_header" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
-        WhatsApp
+      <a className="mobile-header-whatsapp" aria-label="WhatsApp" data-whatsapp-placement="mobile_header" href="https://api.whatsapp.com/send/?phone=8617621485205&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+        <span>WhatsApp</span><WhatsappLogoIcon className="operations-only" size={20} aria-hidden="true" />
       </a>
       <Link className="mobile-header-quote" href="/contact">
-        {copy.nav.quote}
+        <span className="operations-secondary">{copy.nav.quote}</span>
+        <span className="operations-only">{home('quoteButton')}</span>
       </Link>
       <nav className="nav-links">
-        <Link href="/" prefetch={false}>{copy.nav.home}</Link>
+        <Link className="operations-secondary" href="/" prefetch={false}>{copy.nav.home}</Link>
         <ProductsMegaMenu copy={copy} />
+        <HomeHeaderMenu label={copy.nav.applications} items={[
+          applications,
+          {href: '/applications#resorts-hotels', label: home('resorts')},
+          {href: '/applications#rental-businesses', label: home('rentals')},
+          {href: '/applications#distributors', label: home('distributors')}
+        ]} />
         <Link href="/factory#oem-distributor" prefetch={false}>{copy.nav.oemDistributor}</Link>
-        <Link href="/news" prefetch={false}>{copy.nav.news}</Link>
-        <Link href="/blog" prefetch={false}>{copy.nav.blog}</Link>
+        {editorialItems.map((item) => (
+          <Link className="operations-secondary" href={item.href} key={item.href} prefetch={false}>{item.label}</Link>
+        ))}
         <Link href="/about" prefetch={false}>{copy.nav.about}</Link>
-        <Link href="/contact" prefetch={false}>{copy.nav.contact}</Link>
+        <Link className="operations-secondary" href="/contact" prefetch={false}>{copy.nav.contact}</Link>
+        <HomeHeaderMenu compact label={home('moreNavigation')} items={[...editorialItems, contact, ...authItems]} />
       </nav>
       <div className="header-tools">
         <LanguageSwitcher locale={locale} />
@@ -52,7 +71,9 @@ export default async function Header({locale}: {locale: Locale}) {
           </a>
         ))}
         <Link className="header-cta" href="/contact" prefetch={false}>
-          {copy.nav.quote}
+          <span className="operations-secondary">{copy.nav.quote}</span>
+          <span className="operations-only">{home('quoteButton')}</span>
+          <ArrowRightIcon className="operations-only" size={15} aria-hidden="true" />
         </Link>
       </div>
     </header>
