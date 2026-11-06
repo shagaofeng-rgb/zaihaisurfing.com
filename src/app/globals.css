@@ -1304,8 +1304,7 @@ a {
   transform-origin: top center;
   transition:
     opacity 180ms ease,
-    transform 220ms ease,
-    visibility 0s linear 180ms;
+    transform 220ms ease;
 }
 
 .mega-panel::before {
@@ -1323,7 +1322,6 @@ a {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0) scale(1);
-  transition-delay: 0s;
 }
 
 .mega-feature,
