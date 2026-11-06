@@ -1,7 +1,7 @@
 'use client';
 
 import {PlayIcon, XIcon} from '@phosphor-icons/react';
-import {useRef, useState} from 'react';
+import {useRef, useState, type MouseEvent} from 'react';
 
 type VideoLabels = {
   watch: string;
@@ -21,8 +21,11 @@ export default function HomeRidingVideo({labels}: {labels: VideoLabels}) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState<'ready' | 'loading' | 'error'>('ready');
 
-  function open() {
-    dialogRef.current?.showModal();
+  function open(event: MouseEvent<HTMLAnchorElement>) {
+    const dialog = dialogRef.current;
+    if (!dialog || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    dialog.showModal();
     setStatus('loading');
     setIsOpen(true);
   }
@@ -35,10 +38,10 @@ export default function HomeRidingVideo({labels}: {labels: VideoLabels}) {
 
   return (
     <>
-      <button className="operations-video-button" type="button" onClick={open} aria-haspopup="dialog">
+      <a className="operations-video-button" href={ridingVideo} target="_blank" rel="noopener noreferrer" onClick={open} aria-haspopup="dialog">
         <span aria-hidden="true"><PlayIcon size={12} weight="fill" /></span>
         {labels.watch}
-      </button>
+      </a>
       <dialog
         className="operations-video-dialog"
         ref={dialogRef}
