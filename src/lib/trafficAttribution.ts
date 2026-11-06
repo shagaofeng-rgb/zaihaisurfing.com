@@ -70,7 +70,7 @@ const CLICK_ID_MAP: Record<string, {source: string; channel: TrafficChannel; med
   gclid: {source: 'google_ads', channel: 'paid_search', medium: 'cpc'},
   gbraid: {source: 'google_ads', channel: 'paid_search', medium: 'cpc'},
   wbraid: {source: 'google_ads', channel: 'paid_search', medium: 'cpc'},
-  fbclid: {source: 'meta', channel: 'paid_social', medium: 'paid_social'},
+  fbclid: {source: 'meta', channel: 'unknown', medium: 'unknown'},
   ttclid: {source: 'tiktok_ads', channel: 'paid_social', medium: 'paid_social'},
   li_fat_id: {source: 'linkedin_ads', channel: 'paid_social', medium: 'paid_social'},
   msclkid: {source: 'microsoft_ads', channel: 'paid_search', medium: 'cpc'},
@@ -176,7 +176,7 @@ export function classifyTraffic(input: {
     }
   }
 
-  if (utmSource === 'facebook' || utmSource === 'instagram') {
+  if (utmSource === 'facebook' || utmSource === 'instagram' || utmSource === 'meta') {
     source = utmSource;
     channel = utmMedium.includes('paid') || utmMedium === 'cpc' ? 'paid_social' : 'organic_social';
   } else if (clickEntry === 'fbclid' && referrerDomain.includes('instagram')) {
@@ -207,7 +207,7 @@ export function classifyTraffic(input: {
 }
 
 export function isMeaningfulMarketingTouch(touch: TrafficTouch) {
-  return touch.channel !== 'direct' && touch.channel !== 'unknown';
+  return touch.channel !== 'direct' && (touch.channel !== 'unknown' || Boolean(touch.source && touch.source !== 'unknown'));
 }
 
 export function compactAttribution(input: unknown): AttributionSnapshot | null {

@@ -71,7 +71,7 @@ export default function ProductsMegaMenu({copy}: ProductsMegaMenuProps) {
       >
         {copy.nav.products}
       </button>
-      <div ref={panel} className="mega-panel" id="products-mega-menu" aria-hidden={!open} inert={!open}>
+      <div ref={panel} className="mega-panel" id="products-mega-menu" hidden={!open}>
         <div className="mega-feature">
           <span>{copy.mega.featured}</span>
           <img src="/assets/catalog/x1-pro/product-mega-thumb.jpg" alt="ZAIHAI X1 Pro electric surfboard" loading="lazy" decoding="async" width="268" height="336" />

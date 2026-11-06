@@ -161,11 +161,16 @@ function isRealVisitorEvent(event: AnalyticsEvent) {
 function platformLabel(touch: TrafficTouch) {
   const source = (touch.source || '').toLowerCase();
   const click = (touch.clickIdType || '').toLowerCase();
-  if (source.includes('google') || ['gclid', 'gbraid', 'wbraid'].includes(click)) return 'Google Ads';
-  if (source === 'meta' || source.includes('facebook') || source.includes('instagram') || click === 'fbclid') return 'Meta Ads';
+  if (source === 'google_ads' || ['gclid', 'gbraid', 'wbraid'].includes(click)) return 'Google Ads';
+  if (source === 'google') return touch.channel === 'paid_search' ? 'Google Ads' : 'Google';
+  if (['meta', 'facebook', 'instagram'].includes(source) && touch.channel === 'paid_social') return 'Meta Ads';
+  if (source === 'facebook') return 'Facebook';
+  if (source === 'instagram') return 'Instagram';
+  if (source === 'meta' || click === 'fbclid') return 'Meta';
   if (source.includes('linkedin') || click === 'li_fat_id') return 'LinkedIn';
   if (source.includes('tiktok') || click === 'ttclid') return 'TikTok';
-  if (source.includes('bing') || click === 'msclkid') return 'Microsoft Ads';
+  if (source === 'microsoft_ads' || source === 'bing_ads' || click === 'msclkid') return 'Microsoft Ads';
+  if (source === 'bing') return touch.channel === 'paid_search' ? 'Microsoft Ads' : 'Bing';
   if (source === 'direct') return 'Direct';
   if (touch.referrerDomain) return touch.referrerDomain;
   return touch.source || 'Unknown';
@@ -263,8 +268,8 @@ function profileSummary(group: ProfileGroup, periodEvents: AnalyticsEvent[]): Vi
   const touch = latestEvent ? touchFor(latestEvent) : classifyTraffic({url: '/'});
   const formEvents = allEvents.filter((event) => FORM_EVENT_PATTERN.test(event.type));
   const hasCheckout = allEvents.some((event) => CHECKOUT_EVENT_PATTERN.test(event.type));
-  const totalPageViews = allEvents.filter((event) => event.type === 'page_view').length || allEvents.length;
-  const periodPageViews = periodEvents.filter((event) => event.type === 'page_view').length || periodEvents.length;
+  const totalPageViews = allEvents.filter((event) => event.type === 'page_view').length;
+  const periodPageViews = periodEvents.filter((event) => event.type === 'page_view').length;
   const name = lastValue(allEvents, (event) => event.payload?.name) || latestOrder?.customer.name || '';
   const email = lastValue(allEvents, (event) => event.payload?.email) || latestOrder?.customer.email || latestOrder?.checkout.contact || '';
   const phone = lastValue(allEvents, (event) => event.payload?.phone) || latestOrder?.customer.phone || '';

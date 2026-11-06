@@ -1296,15 +1296,9 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(30px) saturate(165%);
   -webkit-backdrop-filter: blur(30px) saturate(165%);
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
   overflow: hidden;
-  transform: translate(-50%, 14px) scale(0.985);
+  transform: translateX(-50%);
   transform-origin: top center;
-  transition:
-    opacity 180ms ease,
-    transform 220ms ease;
 }
 
 .mega-panel::before {
@@ -1317,11 +1311,17 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.13), transparent 42%);
 }
 
+.mega-panel[hidden] {
+  display: none;
+}
+
 .has-mega.is-open .mega-panel {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, 0) scale(1);
+  animation: mega-menu-enter 180ms ease-out both;
+}
+
+@keyframes mega-menu-enter {
+  from { opacity: 0; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 .mega-feature,

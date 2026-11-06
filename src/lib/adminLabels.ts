@@ -50,12 +50,15 @@ const sources: Record<string, string> = {
 };
 
 const platforms: Record<string, string> = {
-  meta: 'Meta 广告',
+  meta: 'Meta',
+  google: 'Google',
+  bing: 'Bing',
   facebook: 'Facebook',
   instagram: 'Instagram',
   linkedin: '领英',
   google_ads: '谷歌广告',
   bing_ads: '微软广告',
+  microsoft_ads: '微软广告',
   'Meta Ads': 'Meta 广告',
   LinkedIn: '领英',
   'Google Ads': '谷歌广告',

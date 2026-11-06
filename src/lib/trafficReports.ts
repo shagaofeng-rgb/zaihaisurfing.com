@@ -87,9 +87,9 @@ function group(events: AnalyticsEvent[], filter: Filter, keyOf: (touch: TrafficT
     if (event.type === 'purchase') {
       item.purchases += 1;
       item.convertedVisitors.add(event.visitorId);
+      const value = Number(event.payload?.total || event.payload?.value || 0);
+      if (Number.isFinite(value)) item.value += value;
     }
-    const value = Number(event.payload?.total || event.payload?.value || 0);
-    if (Number.isFinite(value)) item.value += value;
     inc(item.campaigns, touch.campaign);
     inc(item.landings, touch.landingPage || event.page);
     map.set(key, item);
